@@ -1,0 +1,6 @@
+torch
+accelerate
+pandas
+transformers
+pillow
+psutil
