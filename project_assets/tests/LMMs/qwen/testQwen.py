@@ -99,20 +99,20 @@ def addDataToTheDataFrame(model_name, df, outputs, times, allocate_total, reserv
 models_name = [
     "Qwen/Qwen2.5-VL-3B-Instruct", 
     "Qwen/Qwen2.5-VL-7B-Instruct",
-    # "Qwen/Qwen2.5-VL-7B-Instruct",
-    # "Qwen/Qwen2.5-VL-7B-Instruct",
-    # "Qwen/Qwen2.5-VL-7B-Instruct",
-    # "Qwen/Qwen2.5-VL-7B-Instruct",
-    # "Qwen/Qwen2.5-VL-7B-Instruct",
+    "Qwen/Qwen2.5-VL-7B-Instruct",
+    "Qwen/Qwen2.5-VL-7B-Instruct",
+    "Qwen/Qwen2.5-VL-7B-Instruct",
+    "Qwen/Qwen2.5-VL-7B-Instruct",
+    "Qwen/Qwen2.5-VL-7B-Instruct",
 ]
 
 max_pixels =[
     512*512,
     512*512,
-    # 512 * 640,
-    # 512 * 896,
-    # 512 * 1024,
-    # 1024 * 1024,
+    512 * 640,
+    512 * 896,
+    512 * 1024,
+    1024 * 1024,
 ]
 
 if __name__ == "__main__":
