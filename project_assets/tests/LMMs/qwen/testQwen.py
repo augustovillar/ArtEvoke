@@ -117,7 +117,6 @@ max_pixels =[
 
 if __name__ == "__main__":
     df, images_files = getImagesFileNames()
-    df, images_files = df[:10], images_files[:10]
 
     for model_name, pixel_limit in zip(models_name, max_pixels):
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
