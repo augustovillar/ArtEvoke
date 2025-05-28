@@ -6,9 +6,8 @@ This module evaluates the performance of the LLaMA model using outputs stored in
 
 ```
 llama/
-├── llama_env/ # (Optional) Virtual environment
-├── llama_output.csv # Main output CSV from LLaMA evaluation
-├── llama_output copy.csv # Backup or variant of the output CSV
+├── llama_env/
+├── llama_output.csv 
 ├── README.md # This file
 ├── requirements.txt # Python dependencies
 └── testLlama.py # Script to run the LLaMA output evaluation
@@ -16,7 +15,7 @@ llama/
 
 ## ✅ Requirements
 
-Make sure you have Python 3.8+ installed. You will also need to have the **SemArt dataset** available locally and preprocessed.
+Make sure you have Python 3.10+ installed. You will also need to have the **SemArt dataset** available locally and preprocessed.
 
 ## 🛠️ Installation
 
@@ -37,3 +36,14 @@ To run the evaluation on the LLaMA outputs:
 ```bash
 python testLlama.py
 ```
+
+## 📊 Output
+
+The final CSV (`llama_output.csv`) will include:
+
+- **Original image filename**
+- **Generated description** for each artwork, produced by the LLaMA model
+- **Inference time** per image (in seconds)
+- **Allocated GPU memory** (in MB) during generation
+- **Reserved GPU memory** (in MB) during generation
+- Cleaned metadata used for analysis
