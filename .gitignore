@@ -1,0 +1,19 @@
+# General
+**/__pycache__
+
+# SemArt
+**/Images
+**/semart_info
+
+# Museum
+**/fabritius_export.json.xz
+
+# WikiArt
+**/WikiArt15000.csv
+
+# Environments
+**/?*_env
+
+
+# Tests
+**/FAISS
