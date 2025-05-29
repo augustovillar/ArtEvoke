@@ -85,7 +85,6 @@ def evaluate_model(model_name=None, file_name=RESULTS_COS_SIM):
     score_columns = [col for col in df.columns if col.startswith("score_")]
 
     if model_name is not None:
-        # Filter to one model only
         df = df[df["model"] == model_name]
 
         # Calculate stats for that model
@@ -104,7 +103,6 @@ def evaluate_model(model_name=None, file_name=RESULTS_COS_SIM):
         return stats_df
 
     else:
-        # Group by model, calculate stats for each group
         all_stats = []
 
         for name, group in df.groupby("model"):
