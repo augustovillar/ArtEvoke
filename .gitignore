@@ -23,3 +23,5 @@
 **/consolidated_output.csv
 **/LLaVa
 **/llava_output.csv
+**/results_cos_sim.csv
+**/results_stats.csv
