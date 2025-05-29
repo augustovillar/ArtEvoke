@@ -1,0 +1,6 @@
+faiss-gpu
+psutil
+pandas
+sentence-transformers
+numpy<2
+pynvml

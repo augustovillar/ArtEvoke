@@ -25,3 +25,8 @@
 **/llava_output.csv
 **/results_cos_sim.csv
 **/results_stats.csv
+**/retrieval_examples
+
+
+# Descriptions
+project_assets/descriptions/?*.csv
