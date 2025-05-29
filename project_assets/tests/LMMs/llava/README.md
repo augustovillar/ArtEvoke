@@ -1,4 +1,4 @@
-# 🤖 LLaVA Evaluation - SemArt Dataset
+# 🧠 LLaVA Evaluation - SemArt Dataset
 
 This module evaluates the performance of a LLaVA-based model on the SemArt dataset. It generates visual descriptions and stores the results in CSV format. It assumes the SemArt dataset is already available and preprocessed.
 
@@ -15,12 +15,9 @@ llava/
 └── testLlava.py # Main script to run the evaluation
 ```
 
-
 ## ✅ Requirements
 
 Make sure you have **Python 3.10+** installed. You will also need to have the **SemArt dataset** locally available and preprocessed.
-
-
 
 ## 🛠️ Installation
 
@@ -56,7 +53,7 @@ python testLlava.py
 The final CSV file (`llava_output.csv`) will include:
 
 - **Original image filename**
-- **Description** per model combination
+- **Description** per model
 - **Inference time** per image (in seconds)
 - **Allocated GPU memory** (in MB) during generation
 - **Reserved GPU memory** (in MB) during generation
