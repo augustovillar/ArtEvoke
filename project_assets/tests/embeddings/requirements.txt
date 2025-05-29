@@ -1,0 +1,7 @@
+pandas
+transformers
+sentence-transformers
+open-clip-torch
+pillow
+faiss-gpu
+numpy==1.26.4
