@@ -28,6 +28,8 @@
 **/retrieval_examples
 **/llm_manual_evaluation_summary.csv
 **/llm_stories.csv
+**/test_text_seg
+**/retrieved_results
 
 
 # Descriptions
