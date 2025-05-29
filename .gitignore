@@ -26,6 +26,8 @@
 **/results_cos_sim.csv
 **/results_stats.csv
 **/retrieval_examples
+**/llm_manual_evaluation_summary.csv
+**/llm_stories.csv
 
 
 # Descriptions
