@@ -18,3 +18,8 @@
 # Tests
 **/FAISS
 **/llama_output.csv
+**/qwen_output.csv
+**/qwen_output2000.csv
+**/consolidated_output.csv
+**/LLaVa
+**/llava_output.csv

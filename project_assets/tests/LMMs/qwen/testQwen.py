@@ -4,7 +4,6 @@ import time
 import pandas as pd
 from tqdm import tqdm
 import os
-import sys
 import torch
 
 query = """
