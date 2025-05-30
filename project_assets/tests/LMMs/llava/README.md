@@ -6,8 +6,8 @@ This module evaluates the performance of a LLaVA-based model on the SemArt datas
 
 ```
 llava/
-├── LLaVA/ # Cloned or modified LLaVA repository (actual model files)
-│   ├── ...
+├── LLaVA/ # Cloned or modified LLaVA repository 
+├── llava_env/
 ├── llava_output.csv # Main output CSV
 ├── llavaMod.py # modifications of the LLVA files
 ├── README.md 

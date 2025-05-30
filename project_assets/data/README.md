@@ -18,6 +18,8 @@ This part of the repository provides scripts to download and organize datasets u
 │   ├── semart_info/
 │   └── download_and_filter.py
 ├── WikiArt/
+│   ├── Images/
+│   ├── WikiArt150000.csv
 │   └── download_and_filter.py
 ├── README.md
 └── requirements.txt
@@ -54,5 +56,5 @@ python SemArt/download_and_filter.py
 python WikiArt/download_and_filter.py
 ```
 
-## 🧹 Cleanup (Optional)
+## 🧹 Cleanup
 Some scripts may include functions to clean up directories after filtering and organizing data.

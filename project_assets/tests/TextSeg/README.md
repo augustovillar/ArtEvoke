@@ -10,7 +10,7 @@ This module explores the effect of **text segmentation strategies** on retrievin
 TextSeg/
 ├── retrieved_results/           # Output folders with retrieved image matches and overlays
 ├── test_text_seg/               # Saved FAISS index and image metadata
-├── textSeg_env/                 # Virtual environment (optional)
+├── textSeg_env/                 # Virtual environment 
 ├── testTextSeg.py               # Main script
 └── requirements.txt             # Dependency list
 ```
