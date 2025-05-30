@@ -34,6 +34,6 @@
 
 
 # Descriptions
-project_assets/outputs/descriptions/?*.csv
-project_assets/outputs/faiss/?*.faiss
-project_assets/outputs/faiss/?*.pkl
+project_assets/scripts/outputs/descriptions/?*.csv
+project_assets/scripts/outputs/faiss/?*.faiss
+project_assets/scripts/outputs/faiss/?*.pkl
