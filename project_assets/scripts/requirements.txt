@@ -1,0 +1,11 @@
+faiss-gpu
+pandas
+numpy<2
+sentence-transformers
+torch
+tqdm
+transformers
+kagglehub
+qwen_vl_utils
+torchvision
+accelerate
