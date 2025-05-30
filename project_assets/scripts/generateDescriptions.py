@@ -17,7 +17,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DATA_PATH = os.path.join(SCRIPT_DIR, "..", "data")
 
-DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "..",  "outputs", "descriptions")
+DESCRIPTION_PATH = os.path.join(SCRIPT_DIR,  "outputs", "descriptions")
 
 MUESUEM_DATA_PATH = "/DATA/public/siamese/dataset_mrbab/art-foto"
 

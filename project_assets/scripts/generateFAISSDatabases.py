@@ -6,9 +6,9 @@ from sentence_transformers import SentenceTransformer
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "..",  "outputs", "descriptions")
+DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "outputs", "descriptions")
 
-PATH_OUTPUT = os.path.join(SCRIPT_DIR, "..", "outputs", "faiss")
+PATH_OUTPUT = os.path.join(SCRIPT_DIR,"outputs", "faiss")
 
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
