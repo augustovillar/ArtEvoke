@@ -28,6 +28,17 @@ ArtEvoke/
 ├── .gitignore
 └── README.md                
 ```
+---
+
+## 🧪 Testing Suite
+
+The `tests/` folder includes validation scripts for:
+- 🔠 `embeddings/`: Sentence embedding benchmarks
+- 🧮 `faiss/`: FAISS performance evaluation and recall metrics
+- 🧾 `LLMs/`: Story generation and summary evaluation
+- 🖼️ `LMMs/`: Visual captioning comparison (e.g., Qwen vs. LLaVA)
+- ✂️ `TextSeg/`: Phrase segmentation strategies and analysis
+
 
 ---
 
@@ -48,16 +59,6 @@ After description generation, build FAISS-compatible vector embeddings using `gt
 python generateFAISSDatabases.py
 ```
 
----
-
-## 🧪 Testing Suite
-
-The `tests/` folder includes validation scripts for:
-- 🔠 `embeddings/`: Sentence embedding benchmarks
-- 🧮 `faiss/`: FAISS performance evaluation and recall metrics
-- 🧾 `LLMs/`: Story generation and summary evaluation
-- 🖼️ `LMMs/`: Visual captioning comparison (e.g., Qwen vs. LLaVA)
-- ✂️ `TextSeg/`: Phrase segmentation strategies and analysis
 
 ---
 

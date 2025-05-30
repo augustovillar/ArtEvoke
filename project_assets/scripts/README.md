@@ -59,22 +59,6 @@ python generateFAISSDatabases.py
   - `*.faiss`: FAISS index
   - `*.pkl`: metadata file with renamed & normalized fields
 
-## 📂 Datasets
-
-Expected dataset structure (update `DATA_PATH` in script if needed):
-
-```
-data/
-├── SemArt/
-│   ├── semart_info/SemArt15000.csv
-│   └── Images/
-├── WikiArt/
-│   ├── WikiArt15000.csv
-│   └── Images/
-├── Museum/
-│   └── input_data_museum.json
-```
-
 ## 🚀 Notes
 
 - Descriptions are generated in parallel using `torch.multiprocessing` on two GPUs.
