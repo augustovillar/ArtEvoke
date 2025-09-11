@@ -1,0 +1,29 @@
+# ArtEvoke - Unified Requirements
+# Used by both data acquisition and processing scripts
+
+# Core dependencies
+pandas>=2.0.0
+numpy<2.0.0
+tqdm>=4.65.0
+
+# Machine Learning
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.30.0
+sentence-transformers>=2.2.0
+accelerate>=0.20.0
+
+# Vector Search
+faiss-cpu>=1.7.4
+# Note: Use faiss-gpu if CUDA available
+
+# Vision and Language Models  
+qwen_vl_utils>=0.0.1
+
+# Data Acquisition
+requests>=2.31.0
+kagglehub>=0.2.0
+
+# Development
+jupyter>=1.0.0
+ipykernel>=6.25.0

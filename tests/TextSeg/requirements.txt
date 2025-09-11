@@ -1,0 +1,5 @@
+pandas
+sentence-transformers
+numpy<2
+Pillow
+faiss-gpu
