@@ -1,0 +1,19 @@
+.tts-button {
+    background-color: var(--button-bg); /* Blue background color */
+    color: var(--button-text);
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px; /* Add some space above the button */
+    transition: background-color 0.3s ease; /* Add a smooth hover effect */
+}
+
+.tts-button:hover {
+    background-color: var(--button-hover-bg); /* Darker blue on hover */
+}
+
+.tts-button.reading {
+    background-color: #dc3545; /* Bootstrap red */
+}

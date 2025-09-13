@@ -1,0 +1,59 @@
+services:
+  mongo:
+    image: mongo:7.0.5
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./FastAPI
+      dockerfile: Dockerfile.mac
+    depends_on:
+      - mongo
+    env_file:
+      - ./FastAPI/.env
+    environment:
+      - STATIC_DIR=/app/static
+    volumes:
+      - ./FastAPI/static/semart:/app/static/semart
+      - ./FastAPI/static/wikiart:/app/static/wikiart
+      - ./FastAPI/static/museum:/app/static/museum
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: /api
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  nginx:
+    image: nginx:latest
+    container_name: artevoke_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx-mac.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app_network
+
+volumes:
+  mongo_data:
+
+networks:
+  app_network:
+    driver: bridge

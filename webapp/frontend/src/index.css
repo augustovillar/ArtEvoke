@@ -1,0 +1,90 @@
+:root {
+  --base-font-size: 20px;
+
+  --background-color: #f8f9fa;
+  --container-color: #ffffff;
+  --text-color: #212529; /* Default text color (slightly lighter dark gray) */
+  --text-color-darker: #000000; /* Even darker gray/black for headings */
+  --text-color-paragraph: #212529; /* Same as default for paragraphs initially */
+  --button-bg: #007bff;
+  --button-text: #ffffff;
+  --button-hover-bg: #0056b3;
+  --textarea-bg: #ffffff;
+}
+
+body.theme-high-contrast {
+  --background-color: #000000;
+  --container-color: #ffffcc;
+  --text-color: #000000; /* Black text on light yellow */
+  --text-color-darker: #333333; /* Slightly lighter black for headings */
+  --text-color-paragraph: #000000; /* Black for paragraphs */
+  --button-bg: #ffff00;
+  --button-text: #000000;
+  --button-hover-bg: #ffd700;
+  --textarea-bg: #f0f0f0;
+}
+
+body.theme-soft {
+  --background-color: #e0f2f7;
+  --container-color: #fce4ec;
+  --text-color: #37474f; /* Dark grayish blue */
+  --text-color-darker: #263238; /* Even darker grayish blue for headings */
+  --text-color-paragraph: #37474f; /* Dark grayish blue for paragraphs */
+  --button-bg: #b2ebf2;
+  --button-text: #263238;
+  --button-hover-bg: #8dd3cf;
+  --textarea-bg: #fff;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color-paragraph); /* Default body text is paragraph color */
+  font-size: var(--base-font-size);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-color-darker); /* Apply darker color to headings */
+}
+
+p {
+  color: var(--text-color-paragraph); /* Apply paragraph color */
+}
+
+button{
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  padding: 10px 5px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Add a smooth hover effect */
+}
+
+button:hover{
+  background-color: var(--button-hover-bg);
+}
+
+input:hover{
+  background-color: #e4e4e4;
+}
+
+input,
+textarea {
+  font-size: 1.2em;
+  padding: 0.75em 1.5em;
+  margin: 0.5em 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: var(--textarea-bg);
+  color: var(--text-color-paragraph); /* Paragraph color for textarea text */
+  transition: background-color 0.3s ease;
+}
+
+textarea:hover {
+  background-color: #ddd;
+}

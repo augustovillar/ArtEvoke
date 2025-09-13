@@ -1,0 +1,13 @@
+backend/node_modules
+node_modules
+FastAPI/new_venv
+FastAPI/**/__pycache__
+FastAPI/Archive.zip
+FastAPI/static/archive
+FastAPI/static/*
+FastAPI/archive
+FastAPI/venv
+.env
+.DS_Store
+__pycache__
+FastAPI/embeddingsCLIP/*
