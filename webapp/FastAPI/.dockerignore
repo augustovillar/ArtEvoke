@@ -1,0 +1,10 @@
+static/archive/
+static/
+*.jpg
+*.png
+*.mp4
+*.avi
+__pycache__/
+*.pyc
+.git/
+.env
