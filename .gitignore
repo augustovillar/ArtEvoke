@@ -14,7 +14,7 @@
 **/pages/**
 
 # SemArt
-**/Images
+**/SemArt/Images
 **/semart_info
 
 # Museum
@@ -23,6 +23,8 @@
 
 # WikiArt
 **/WikiArt15000.csv
+**/WikiArt/Images
+
 
 # Environments
 **/?*_env

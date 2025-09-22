@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from routes import get_db
-from models import User, UserInDB, Token, UserLogin
+from models import User, UserInDB, UserLogin
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
