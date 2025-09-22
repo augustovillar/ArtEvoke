@@ -7,6 +7,8 @@ const Story = () => {
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
 
+    const API_URL = 'http://localhost:5001';
+
     const [storyText, setStoryText] = useState('');
     const [sectionsWithImages, setSectionsWithImages] = useState([]);
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
@@ -36,7 +38,7 @@ const Story = () => {
         setSelectedImagesPerSection({});
         setNumImagesPerSection(k);
 
-        fetch(`/api/select-images-per-section`, {
+        fetch(`${API_URL}/api/select-images-per-section`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -106,7 +108,7 @@ const Story = () => {
             segmentation: segmentation,
         };
 
-        fetch(`/api/save-generation`, {
+        fetch(`${API_URL}/api/save-generation`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -240,7 +242,7 @@ const Story = () => {
                                         onClick={() => handleImageClick(imageItem, sectionIndex)}
                                     >
                                         <img
-                                            src={imageItem.url}
+                                            src={`${API_URL}${imageItem.url}`}
                                             alt={`Section ${sectionIndex + 1} Image ${imageIndex + 1}`}
                                             className="generated-image"
                                         />

@@ -40,7 +40,7 @@ const Search = () => {
         setResponseText(null);
         setImages([]); // Clear *only* the currently displayed images
 
-        fetch(`/api/search-images`, {
+        fetch(`${API_URL}/api/search-images`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const Search = () => {
             }
         });
 
-        fetch(`/api/generate-story`, {
+        fetch(`${API_URL}/api/generate-story`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -190,7 +190,7 @@ const Search = () => {
         });
 
 
-        fetch(`/api/save-story`, {
+        fetch(`${API_URL}/api/save-story`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -310,7 +310,7 @@ const Search = () => {
                                 onClick={() => handleImageToggle(image)}
                             >
                                 <img
-                                    src={image.url}
+                                    src={`${API_URL}${image.url}`}
                                     alt={`Generated Image ${image.name}`}
                                     className="generated-image"
                                 />
@@ -329,7 +329,7 @@ const Search = () => {
                                         onClick={() => handleImageToggle(selectedImage)}
                                     >
                                         <img
-                                            src={selectedImage.url}
+                                            src={`${API_URL}${selectedImage.url}`}
                                             alt={`Selected Image ${selectedImage.name}`}
                                             className="generated-image"
                                         />

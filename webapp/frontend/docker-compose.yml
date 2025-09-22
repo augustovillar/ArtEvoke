@@ -2,8 +2,6 @@ services:
   frontend:
     build:
       context: .
-      args:
-        REACT_APP_API_URL: http://backend:5001
     ports:
       - "3000:3000"
     networks:

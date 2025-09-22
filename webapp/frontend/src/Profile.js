@@ -15,7 +15,7 @@ const Profile = () => {
         if (!token) return;
 
         try {
-            const response = await fetch(`/api/retrieve-searches`, {
+            const response = await fetch(`${API_URL}/api/retrieve-searches`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
