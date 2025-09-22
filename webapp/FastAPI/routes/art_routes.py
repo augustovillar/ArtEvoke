@@ -56,20 +56,23 @@ metadata_by_dataset = {
 }
 
 filename_columns = {
-    "wikiart": "filename",
-    "semart": "IMAGE_FILE",
-    "museum": "imageLinkHigh"
+    "wikiart": "file_name",
+    "semart": "file_name",
+    "museum": "file_name"
 }
 
 art_name_columns = {
-    "wikiart": "filename",
-    "semart": "TITLE",
-    "museum": "imageLinkHigh"
+    "wikiart": "file_name",
+    "semart": "title",
+    "museum": "title"
 }
 
 prefix_1 = "/DATA/public/siamese/dataset_mrbab/art-foto/mod/intranet/"
 prefix_2 = "/DATA/public/siamese/dataset_mrbab/art-foto/old/intranet/"
 prefix_3 = "/DATA/public/siamese/dataset_mrbab/art-foto/sculpt19/intranet/"
+prefix_4 = "mod/intranet/"
+prefix_5 = "old/intranet/"
+prefix_6 = "sculpt19/intranet/"
 
 def get_gte_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
@@ -88,8 +91,8 @@ def get_top_k_images_from_text(text, dataset, k=3):
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
-            image_url = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
-            image_name = (metadataImages.iloc[idx][name]).removeprefix(prefix_1).removeprefix(prefix_2)
+            image_url = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2).removeprefix(prefix_3).removeprefix(prefix_4).removeprefix(prefix_5).removeprefix(prefix_6)
+            image_name = (metadataImages.iloc[idx][name]).removeprefix(prefix_1).removeprefix(prefix_2).removeprefix(prefix_3).removeprefix(prefix_4).removeprefix(prefix_5).removeprefix(prefix_6)
             images.append({'image_url': f"/art-images/{dataset}/{image_url}", "art_name": image_name})
     return images
 
