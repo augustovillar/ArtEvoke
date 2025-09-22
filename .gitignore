@@ -6,6 +6,13 @@
 **/.DS_Store
 ._*
 
+#Ipiranga
+**/all_items_filtered.json
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/pages/**
+
 # SemArt
 **/Images
 **/semart_info
