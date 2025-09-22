@@ -11,6 +11,7 @@
 **/*.db
 **/*.db-shm
 **/*.db-wal
+**/pages/**
 
 # SemArt
 **/Images

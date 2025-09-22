@@ -16,9 +16,9 @@ PARAMS = {
 TOTAL_PAGES = 312
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUT_DIR = os.path.join(SCRIPT_DIR,"pages")
-COMBINED_FILTERED = os.path.join(SCRIPT_DIR,"all_items_filtered.json")
-DB_PATH = os.path.join(SCRIPT_DIR,"ipiranga.db")
+OUT_DIR = os.path.join(SCRIPT_DIR, "pages")
+COMBINED_FILTERED = os.path.join(SCRIPT_DIR, "all_items_filtered.json")
+DB_PATH = os.path.join(SCRIPT_DIR, "ipiranga.db")
 
 CONCURRENCY = 10
 TIMEOUT = 60
@@ -26,7 +26,7 @@ TIMEOUT = 60
 # Selected types to keep (filter out all others)
 SELECTED_TYPES = {
     "Boudoir | Fotografia",
-    "Cabinet-portrait | Fotografia", 
+    "Cabinet-portrait | Fotografia",
     "Cartaz | Impresso",
     "Carte-de-visite | Fotografia",
     "Cartão panel | Fotografia",
@@ -55,7 +55,7 @@ SELECTED_TYPES = {
     "Álbum | Cartão postal | Fotografia",
     "Álbum | Cartão postal | Impresso",
     "Álbum | Fotografia | Reprodução",
-    "Álbum | Impresso"
+    "Álbum | Impresso",
 }
 
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -67,13 +67,13 @@ TOPLEVEL_FIELDS = ["externalId", "url", "document"]
 # Original Portuguese field names to English column names mapping
 FIELD_MAPPING = {
     "codigo": "code",
-    "titulo": "title", 
+    "titulo": "title",
     "descricao": "description",
     "denominacao": "type",
     "autoria": "author",
     "orig_prod": "location",
     "seculo": "century",
-    "fase": "phase", 
+    "fase": "phase",
     "decada": "decade",
     "data": "date",
     "periodo-2": "period",
@@ -81,7 +81,7 @@ FIELD_MAPPING = {
     "altura_sm": "height_sm",
     "larg_sm": "width_sm",
     "altura-em-cm": "height",
-    "largura-em-cm": "width", 
+    "largura-em-cm": "width",
     "cor-2": "color",
     "historico": "history",
     "ref_acervo": "collection_ref",
@@ -91,22 +91,25 @@ FIELD_MAPPING = {
 
 DATA_SUBFIELDS = list(FIELD_MAPPING.values())
 
+
 def to_col_name(key: str) -> str:
     out = []
     for ch in key:
         if ch.isalnum():
             out.append(ch.lower())
         else:
-            out.append('_')
-    name = ''.join(out)
-    while '__' in name:
-        name = name.replace('__','_')
-    return name.strip('_')
+            out.append("_")
+    name = "".join(out)
+    while "__" in name:
+        name = name.replace("__", "_")
+    return name.strip("_")
+
 
 COL_TOPLEVEL = [to_col_name(k) for k in TOPLEVEL_FIELDS]
 COL_DATA = [to_col_name(k) for k in DATA_SUBFIELDS]
 
 FLAT_COLUMNS = ["id"] + COL_TOPLEVEL + COL_DATA  # keep 'id' first, then externalId
+
 
 # -------------------- Normalization --------------------
 def normalize_items(data: Any) -> List[Dict[str, Any]]:
@@ -122,6 +125,7 @@ def normalize_items(data: Any) -> List[Dict[str, Any]]:
         out.append(it if isinstance(it, dict) else {"value": it})
     return out
 
+
 # -------------------- Pruning (clean-up) --------------------
 JSONValue = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
 _SENTINEL = object()
@@ -134,12 +138,15 @@ _BAD_TOKENS = {
     "NÃO ATRIBUÍDO",
 }
 
+
 def _norm_text(s: str) -> str:
-    s2 = ''.join(
-        c for c in unicodedata.normalize('NFKD', s.strip().upper())
+    s2 = "".join(
+        c
+        for c in unicodedata.normalize("NFKD", s.strip().upper())
         if not unicodedata.combining(c)
     )
-    return ' '.join(s2.split())
+    return " ".join(s2.split())
+
 
 def _is_bad_string(s: str) -> bool:
     if s == "":
@@ -147,8 +154,10 @@ def _is_bad_string(s: str) -> bool:
     ns = _norm_text(s)
     return ns in _BAD_TOKENS
 
+
 def _is_container_empty(x: Any) -> bool:
-    return (isinstance(x, (list, dict)) and len(x) == 0)
+    return isinstance(x, (list, dict)) and len(x) == 0
+
 
 def prune_struct(obj: JSONValue) -> JSONValue:
     if isinstance(obj, str):
@@ -185,6 +194,7 @@ def prune_struct(obj: JSONValue) -> JSONValue:
     # numbers, bool, None: keep (None is filtered by parent checks)
     return obj
 
+
 # -------------------- Concurrent downloading --------------------
 async def fetch_page(session: aiohttp.ClientSession, p: int, sem: asyncio.Semaphore):
     out_path = os.path.join(OUT_DIR, f"page_{p:03d}.json")
@@ -208,14 +218,17 @@ async def fetch_page(session: aiohttp.ClientSession, p: int, sem: asyncio.Semaph
                     print(f"[{p}] saved")
                     return data
             except Exception as e:
-                wait = 2 ** attempt
+                wait = 2**attempt
                 print(f"[{p}] error: {e} – retrying in {wait}s", file=sys.stderr)
                 await asyncio.sleep(wait)
         raise RuntimeError(f"Failed to download page {p}")
 
+
 async def download_all_pages_and_filter() -> List[Dict[str, Any]]:
     sem = asyncio.Semaphore(CONCURRENCY)
-    async with aiohttp.ClientSession(headers={"User-Agent":"dataset-fetch/1.0"}) as session:
+    async with aiohttp.ClientSession(
+        headers={"User-Agent": "dataset-fetch/1.0"}
+    ) as session:
         tasks = [fetch_page(session, p, sem) for p in range(1, TOTAL_PAGES + 1)]
         results = await asyncio.gather(*tasks)
     all_items: List[Dict[str, Any]] = []
@@ -230,11 +243,13 @@ async def download_all_pages_and_filter() -> List[Dict[str, Any]]:
     await write_json(COMBINED_FILTERED, filtered)
     return filtered
 
+
 # -------------------- Persistence helpers --------------------
 async def write_json(path: str, data: Any):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     async with aiofiles.open(path, "w", encoding="utf-8") as f:
         await f.write(json.dumps(data, ensure_ascii=False))
+
 
 def ensure_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -243,15 +258,21 @@ def ensure_db():
         cur = conn.cursor()
         # Only flat table with explicit columns (all TEXT)
         cols_sql = ", ".join([f'"{c}" TEXT' for c in FLAT_COLUMNS])
-        cur.execute(f"""
-            CREATE TABLE IF NOT EXISTS ipirange_entrieslat(
+        cur.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS ipiranga_entries(
                 {cols_sql},
                 PRIMARY KEY(id)
             )
-        """)
+        """
+        )
         # optional indexes
-        cur.execute('CREATE INDEX IF NOT EXISTS idx_ipirange_entries_title ON ipirange_entrieslat(title)')
-        cur.execute('CREATE INDEX IF NOT EXISTS idx_ipirange_entries_code ON ipirange_entrieslat(code)')
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_ipiranga_entries_title ON ipiranga_entries(title)"
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_ipiranga_entries_code ON ipiranga_entries(code)"
+        )
         conn.commit()
         # pragmas
         cur.execute("PRAGMA journal_mode=WAL;")
@@ -260,8 +281,10 @@ def ensure_db():
     finally:
         conn.close()
 
+
 # -------------------- Scalar coercion --------------------
 PREFERRED_KEYS = ("value", "title", "name", "label")
+
 
 def _coerce_scalar(value: Any) -> Optional[str]:
     if value is None:
@@ -297,6 +320,7 @@ def _coerce_scalar(value: Any) -> Optional[str]:
     # other types -> not supported
     return None
 
+
 def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
     row: Dict[str, Optional[str]] = {c: None for c in FLAT_COLUMNS}
 
@@ -316,11 +340,13 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
         if orig == "url" and isinstance(val, str):
             base_url = "https://acervoonline.mp.usp.br/"
             if val.startswith(base_url):
-                val = val[len(base_url):]
+                val = val[len(base_url) :]
         if orig == "document" and isinstance(val, str):
-            doc_base = "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items"
+            doc_base = (
+                "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items"
+            )
             if val.startswith(doc_base):
-                val = val[len(doc_base):]
+                val = val[len(doc_base) :]
             val = val[:]
         row[col] = val
 
@@ -336,6 +362,7 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
 
     return row
 
+
 def upsert_items_sqlite(raw_items: List[Dict[str, Any]]):
     ensure_db()
     conn = sqlite3.connect(DB_PATH)
@@ -347,28 +374,33 @@ def upsert_items_sqlite(raw_items: List[Dict[str, Any]]):
         cols = FLAT_COLUMNS
         placeholders = ", ".join(["?"] * len(cols))
         col_list_sql = ", ".join([f'"{c}"' for c in cols])
-        insert_flat = f"INSERT INTO ipirange_entrieslat({col_list_sql}) VALUES({placeholders}) ON CONFLICT(id) DO UPDATE SET " + \
-                      ", ".join([f'"{c}"=excluded."{c}"' for c in cols])
+        insert_flat = (
+            f"INSERT INTO ipiranga_entries({col_list_sql}) VALUES({placeholders}) ON CONFLICT(id) DO UPDATE SET "
+            + ", ".join([f'"{c}"=excluded."{c}"' for c in cols])
+        )
 
         filtered_count = 0
         total_count = 0
-        
+
         for it in raw_items:
             total_count += 1
             row = extract_flat_row(it)
-            
+
             # Filter by selected types - only save items with selected types
-            item_type = row.get('type')
+            item_type = row.get("type")
             if item_type and item_type in SELECTED_TYPES:
                 # Also check that document field exists (has image)
-                if row.get('document'):
+                if row.get("document"):
                     cur.execute(insert_flat, [row[c] for c in cols])
                     filtered_count += 1
 
         conn.commit()
-        print(f"Filtered items: {filtered_count} out of {total_count} total items saved to database")
+        print(
+            f"Filtered items: {filtered_count} out of {total_count} total items saved to database"
+        )
     finally:
         conn.close()
+
 
 async def main():
     # 1) If COMBINED_FILTERED exists, skip downloading; otherwise download all pages and filter them.
@@ -384,16 +416,18 @@ async def main():
         await write_json(COMBINED_FILTERED, all_items)
         print(f"Combined saved to {COMBINED_FILTERED} with {len(all_items)} items")
 
-
     # 2) Write to SQLite: only selected types with images
     print("Writing to SQLite (filtering by selected types)...")
     upsert_items_sqlite(all_items)
-    print(f"SQLite ready at {DB_PATH} (table: 'ipirange_entrieslat' with selected types only).")
+    print(
+        f"SQLite ready at {DB_PATH} (table: 'ipiranga_entries' with selected types only)."
+    )
 
     # 3) Clean up: delete the pages folder if it exists
     if os.path.exists(OUT_DIR):
         print(f"Cleaning up: deleting {OUT_DIR}")
         shutil.rmtree(OUT_DIR)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
