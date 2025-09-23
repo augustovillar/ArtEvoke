@@ -5,7 +5,7 @@ import shutil
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH_DATASET = os.path.join(SCRIPT_DIR, "Images")
-INPUT_CSV = os.path.join(SCRIPT_DIR, "WikiArt15000.csv")
+INPUT_CSV = os.path.join(SCRIPT_DIR, "WikiArt.csv")
 
 genres_selected = {
     "New_Realism", "Realism", "Baroque", "Impressionism", "Northern_Renaissance",

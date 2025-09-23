@@ -26,49 +26,35 @@ embedding_model = SentenceTransformer("thenlper/gte-large")
 
 # Load FAISS index and metadata once
 print("Loading FAISS index and metadata...")
-wikiIndexImages = faiss.read_index("./embeddingsCLIP/index/wikiart_index.faiss")
-with open("./embeddingsCLIP/metadata/wikiart_metadata.pkl", "rb") as f:
+wikiIndexImages = faiss.read_index("./FAISS/index/wikiart_index.faiss")
+with open("./FAISS/metadata/wikiart_metadata.pkl", "rb") as f:
     wikiMetadataImages = pickle.load(f)
 
-semArtIndexImages = faiss.read_index("./embeddingsCLIP/index/semart_index.faiss")
-with open("./embeddingsCLIP/metadata/semart_metadata.pkl", "rb") as f:
+semArtIndexImages = faiss.read_index("./FAISS/index/semart_index.faiss")
+with open("./FAISS/metadata/semart_metadata.pkl", "rb") as f:
     semArtMetadataImages = pickle.load(f)
 
-museumIndexImages = faiss.read_index("./embeddingsCLIP/index/museum_index.faiss")
-with open("./embeddingsCLIP/metadata/museum_metadata.pkl", "rb") as f:
-    museumMetadataImages = pickle.load(f)
 print("FAISS index and metadata loaded successfully!")
 
 index_by_dataset = {
     "wikiart": wikiIndexImages,
     "semart": semArtIndexImages,
-    "museum": museumIndexImages,
 }
 
 metadata_by_dataset = {
     "wikiart": wikiMetadataImages,
     "semart": semArtMetadataImages,
-    "museum": museumMetadataImages
 }
 
 filename_columns = {
     "wikiart": "file_name",
     "semart": "file_name",
-    "museum": "file_name"
 }
 
 art_name_columns = {
       "wikiart": "file_name",
     "semart": "title",
-    "museum": "title"
 }
-
-prefix_1 = "/DATA/public/siamese/dataset_mrbab/art-foto/mod/intranet/"
-prefix_2 = "/DATA/public/siamese/dataset_mrbab/art-foto/old/intranet/"
-prefix_3 = "/DATA/public/siamese/dataset_mrbab/art-foto/sculpt19/intranet/"
-prefix_4 = "mod/intranet/"
-prefix_5 = "old/intranet/"
-prefix_6 = "sculpt19/intranet/"
 
 def get_gte_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
@@ -87,8 +73,8 @@ def get_top_k_images_from_text(text, dataset, k=3):
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
-            image_url = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2).removeprefix(prefix_3).removeprefix(prefix_4).removeprefix(prefix_5).removeprefix(prefix_6)
-            image_name = (metadataImages.iloc[idx][name]).removeprefix(prefix_1).removeprefix(prefix_2).removeprefix(prefix_3).removeprefix(prefix_4).removeprefix(prefix_5).removeprefix(prefix_6)
+            image_url = metadataImages.iloc[idx][filename]
+            image_name = metadataImages.iloc[idx][name]
             images.append({'image_url': f"/art-images/{dataset}/{image_url}", "art_name": image_name})
     return images
 
@@ -133,28 +119,12 @@ async def generate_story(body: dict):
         filename_col = filename_columns[dataset]
 
         for name in filenames:
-            if dataset == 'museum':
-                # Try first prefix
-                full_name_1 = prefix_1 + name
-                match = df.loc[df[filename_col] == full_name_1, 'description']
-
-                # If no match, try second prefix
-                if match.empty:
-                    full_name_2 = prefix_2 + name
-                    match = df.loc[df[filename_col] == full_name_2, 'description']
-
-                if not match.empty:
-                    art_descriptions.append(match.values[0])
-                else:
-                    print(f"[Warning] No description found for museum filename (tried both prefixes): {name}")
-
+            # Regular matching for wikiart and semart
+            match = df.loc[df[filename_col] == name, 'description']
+            if not match.empty:
+                art_descriptions.append(match.values[0])
             else:
-                # Regular matching for wikiart and semart
-                match = df.loc[df[filename_col] == name, 'description']
-                if not match.empty:
-                    art_descriptions.append(match.values[0])
-                else:
-                    print(f"[Warning] No description found for {dataset} filename: {name}")
+                print(f"[Warning] No description found for {dataset} filename: {name}")
 
     base_prompt = (
         "Descriptions:\n"
