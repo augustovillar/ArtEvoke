@@ -1,4 +1,4 @@
-faiss-gpu
+faiss-gpu-cu12
 pandas
 numpy<2
 sentence-transformers
