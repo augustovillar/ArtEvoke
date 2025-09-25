@@ -7,6 +7,7 @@ import torch
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import logging
+import sqlite3
 
 
 router = APIRouter()
@@ -34,32 +35,39 @@ semArtIndexImages = faiss.read_index("./FAISS/index/semart_index.faiss")
 with open("./FAISS/metadata/semart_metadata.pkl", "rb") as f:
     semArtMetadataImages = pickle.load(f)
 
+ipirangaIndexImages = faiss.read_index("./FAISS/index/ipiranga_index.faiss")
+with open("./FAISS/metadata/ipiranga_metadata.pkl", "rb") as f:
+    ipirangaMetadataImages = pickle.load(f)
+
 print("FAISS index and metadata loaded successfully!")
+
+# Connect to ipiranga database
+ipiranga_conn = sqlite3.connect("./db/ipiranga.db")
 
 index_by_dataset = {
     "wikiart": wikiIndexImages,
     "semart": semArtIndexImages,
+    "ipiranga": ipirangaIndexImages,
 }
 
 metadata_by_dataset = {
     "wikiart": wikiMetadataImages,
     "semart": semArtMetadataImages,
+    "ipiranga": ipirangaMetadataImages,
 }
 
-filename_columns = {
-    "wikiart": "file_name",
-    "semart": "file_name",
-}
+filename_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
 
-art_name_columns = {
-      "wikiart": "file_name",
-    "semart": "title",
-}
+art_name_columns = {"wikiart": "file_name", "semart": "title", "ipiranga": None}
+
 
 def get_gte_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
-    embedding = embedding / np.linalg.norm(embedding, axis=1, keepdims=True)  # Normalize
+    embedding = embedding / np.linalg.norm(
+        embedding, axis=1, keepdims=True
+    )  # Normalize
     return embedding.astype("float32")
+
 
 def get_top_k_images_from_text(text, dataset, k=3):
     query_embedding = get_gte_embedding(text)
@@ -72,10 +80,36 @@ def get_top_k_images_from_text(text, dataset, k=3):
     _, indices = indexImages.search(query_embedding, k)
     images = []
     for idx in indices[0]:
-        if idx < len(metadataImages):
-            image_url = metadataImages.iloc[idx][filename]
-            image_name = metadataImages.iloc[idx][name]
-            images.append({'image_url': f"/art-images/{dataset}/{image_url}", "art_name": image_name})
+        if dataset == "ipiranga":
+            # Query the database for ipiranga
+            cursor = ipiranga_conn.cursor()
+            cursor.execute(
+                "SELECT document, title FROM ipiranga_entries LIMIT 1 OFFSET ?",
+                (int(idx),),
+            )
+            row = cursor.fetchone()
+            if row:
+                image_url = (
+                    "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items"
+                    + row[0]
+                )
+                image_name = row[1]
+                url = image_url  # Use full URL for ipiranga
+            else:
+                continue
+        else:
+            if idx < len(metadataImages):
+                image_url = metadataImages.iloc[idx][filename]
+                image_name = metadataImages.iloc[idx][name]
+                url = f"/art-images/{dataset}/{image_url}"
+            else:
+                continue
+        images.append(
+            {
+                "image_url": url,
+                "art_name": image_name,
+            }
+        )
     return images
 
 
@@ -86,6 +120,7 @@ async def search_images(body: dict, db=Depends(get_db)):
 
     return {"images": listArt}
 
+
 @router.post("/select-images-per-section")
 async def select_images_per_section(body: dict, db=Depends(get_db)):
     story = correct_grammer_and_translate(body["story"], body["language"])
@@ -95,10 +130,13 @@ async def select_images_per_section(body: dict, db=Depends(get_db)):
     results = []
 
     for section in sections:
-        section_images = get_top_k_images_from_text(section, body["dataset"], k=int(body['k']))
+        section_images = get_top_k_images_from_text(
+            section, body["dataset"], k=int(body["k"])
+        )
         results.append({"section": section, "images": section_images})
 
     return {"sections": results}
+
 
 @router.post("/generate-story")
 async def generate_story(body: dict):
@@ -107,29 +145,50 @@ async def generate_story(body: dict):
     cleaned_filenames_by_dataset = {}
 
     for key, urls in data.items():
-        prefix = f"/art-images/{key}/"
-        cleaned_filenames_by_dataset[key] = [
-            url.replace(prefix, '') for url in urls
-        ]
+        if key == "ipiranga":
+            prefix = "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items"
+            cleaned_filenames_by_dataset[key] = [
+                url.replace(prefix, "") for url in urls
+            ]
+        else:
+            prefix = f"/art-images/{key}/"
+            cleaned_filenames_by_dataset[key] = [
+                url.replace(prefix, "") for url in urls
+            ]
 
     art_descriptions = []
 
     for dataset, filenames in cleaned_filenames_by_dataset.items():
-        df = metadata_by_dataset[dataset]
-        filename_col = filename_columns[dataset]
+        if dataset == "ipiranga":
+            cursor = ipiranga_conn.cursor()
+            for name in filenames:
+                cursor.execute(
+                    "SELECT description FROM ipiranga_entries WHERE document = ?",
+                    (name,),
+                )
+                row = cursor.fetchone()
+                if row and row[0]:
+                    art_descriptions.append(row[0])
+                else:
+                    print(
+                        f"[Warning] No description found for {dataset} document: {name}"
+                    )
+        else:
+            df = metadata_by_dataset[dataset]
+            filename_col = filename_columns[dataset]
 
-        for name in filenames:
-            # Regular matching for wikiart and semart
-            match = df.loc[df[filename_col] == name, 'description']
-            if not match.empty:
-                art_descriptions.append(match.values[0])
-            else:
-                print(f"[Warning] No description found for {dataset} filename: {name}")
+            for name in filenames:
+                # Regular matching for wikiart and semart
+                match = df.loc[df[filename_col] == name, "description"]
+                if not match.empty:
+                    art_descriptions.append(match.values[0])
+                else:
+                    print(
+                        f"[Warning] No description found for {dataset} filename: {name}"
+                    )
 
     base_prompt = (
-        "Descriptions:\n"
-        + "\n".join(f"- {desc}" for desc in art_descriptions)
-        + "\n\n"
+        "Descriptions:\n" + "\n".join(f"- {desc}" for desc in art_descriptions) + "\n\n"
         "Write a story that takes inspiration on these scenes. Use 2–3 short paragraphs (approximately). "
         "Tell it like a simple, flowing story with a start, middle and an end. The paragraphs have to be conneced and follow a sequence of events."
     )
@@ -137,18 +196,18 @@ async def generate_story(body: dict):
     messages = [{"role": "user", "content": base_prompt}]
 
     text = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
-            )
+        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+    )
     model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
     generated_ids = model.generate(
-                    **model_inputs,
-                    max_new_tokens=1024,
-                    do_sample=True,
-                    temperature=0.9,
-                )
+        **model_inputs,
+        max_new_tokens=1024,
+        do_sample=True,
+        temperature=0.9,
+    )
 
-    output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist()
+    output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
     story = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
 
     return {"text": story}

@@ -100,7 +100,7 @@ const Search = () => {
         setResponseText(null); // Clear previous story
 
         const selectedImagesByDataset = {};
-        const allDatasets = ['wikiart', 'semart', 'museum'];
+        const allDatasets = ['wikiart', 'semart', 'ipiranga'];
         allDatasets.forEach(ds => {
             selectedImagesByDataset[ds] = [];
         });
@@ -178,7 +178,7 @@ const Search = () => {
         }
 
         const selectedImagesByDatasetForSave = {};
-        const allDatasets = ['wikiart', 'semart', 'museum'];
+        const allDatasets = ['wikiart', 'semart', 'ipiranga'];
         allDatasets.forEach(ds => {
             selectedImagesByDatasetForSave[ds] = [];
         });
@@ -282,7 +282,7 @@ const Search = () => {
                             >
                                 <option value="wikiart">Wikiart</option>
                                 <option value="semart">SemArt</option>
-                                <option value="museum">Museum</option>
+                                <option value="ipiranga">Ipiranga</option>
                             </select>
                         </div>
                     </div>

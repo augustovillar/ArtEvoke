@@ -201,7 +201,7 @@ const Story = () => {
                             >
                                 <option value="wikiart">Wikiart</option>
                                 <option value="semart">SemArt</option>
-                                <option value="museum">Museum</option>
+                                <option value="ipiranga">Ipiranga</option>
                             </select>
                         </div>
                         <div className="select-group">

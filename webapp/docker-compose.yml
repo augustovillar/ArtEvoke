@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongo:
     image: mongo:7.0.5
@@ -22,7 +20,7 @@ services:
     volumes:
       - ./FastAPI/static/semart:/app/static/semart
       - ./FastAPI/static/wikiart:/app/static/wikiart
-      - ./FastAPI/static/museum:/app/static/museum
+      - ./FastAPI/db:/app/db
     networks:
       - app_network
     deploy:
