@@ -125,5 +125,50 @@
     "errorGeneral": "Falha no cadastro. Tente novamente.",
     "errorOccurred": "Ocorreu um erro durante o cadastro. Tente novamente.",
     "loginLink": "Já é registrado? Faça login aqui!"
+  },
+  "story": {
+    "pageTitle": "Instruções de Reconstrução da Memória",
+    "description": "A ferramenta de reconstrução da memória permite que você insira uma história ou uma memória (ou parte dela). Após enviar o texto, nosso modelo de IA irá segmentar o texto e sugerir a melhor pintura correspondente por seção da base de dados selecionada, o que pode ajudá-lo a lembrar de mais detalhes da história. Se não estiver satisfeito com o resultado, pode clicar no botão \"Mostrar 5 imagens por seção\" para gerar ainda mais imagens.",
+    "optionsIntro": "Após inserir o texto, você tem 3 opções para explorar.",
+    "instructions": {
+      "language": "Você pode selecionar o idioma que usou para ajudar nosso modelo a corrigir a ortografia e traduzir para o inglês",
+      "dataset": "Você pode escolher uma de 3 bases de dados para nosso modelo pesquisar, oferecendo uma gama mais ampla de resultados",
+      "segmentation": "Você pode escolher se quer que o texto seja segmentado de forma mais conservadora ou ampla"
+    },
+    "writeStoryTitle": "Escreva sua história abaixo!",
+    "textareaPlaceholder": "Digite algumas palavras-chave aqui...",
+    "selectLanguage": "Selecionar Idioma:",
+    "languages": {
+      "en": "Inglês",
+      "fr": "Francês",
+      "nl": "Holandês",
+      "es": "Espanhol",
+      "pt": "Português",
+      "de": "Alemão"
+    },
+    "selectDataset": "Selecionar Base de Dados:",
+    "datasets": {
+      "wikiart": "Wikiart",
+      "semart": "SemArt",
+      "museum": "Museu"
+    },
+    "imageSelection": "Seleção de Imagem:",
+    "segmentationOptions": {
+      "conservative": "Conservador",
+      "broader": "Mais Amplo"
+    },
+    "submitButton": "Enviar",
+    "searching": "Buscando...",
+    "chooseImagesTitle": "Escolha uma imagem para cada seção",
+    "sectionLabel": "Seção:",
+    "imageAlt": "Seção {{sectionIndex}} Imagem {{imageIndex}}",
+    "showMoreImages": "Mostrar 5 Imagens por Seção",
+    "saveStory": "Salvar História",
+    "messages": {
+      "loginRequired": "Faça login para salvar.",
+      "selectAllImages": "Selecione uma imagem para cada seção antes de salvar.",
+      "savedSuccessfully": "Salvo com sucesso!",
+      "saveFailed": "Falha ao salvar."
+    }
   }
 }

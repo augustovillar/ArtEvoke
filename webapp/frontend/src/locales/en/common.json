@@ -125,5 +125,50 @@
     "errorGeneral": "Signup failed. Please try again.",
     "errorOccurred": "An error occurred during signup. Please try again.",
     "loginLink": "Already registered? Login here!"
+  },
+  "story": {
+    "pageTitle": "Memory Reconstruction Instructions",
+    "description": "The memory reconstruction tool allows you to input a story or a memory (or part of it). After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story. If you are not satisfied with the given result, you can click on the \"Show 5 images per section\" button to generate even more images.",
+    "optionsIntro": "After inputting the text, you are given 3 options to play with.",
+    "instructions": {
+      "language": "You can select the language that you used in order to help our model correct the spelling and translate to english",
+      "dataset": "You can choose one of 3 databases for our model to search from, giving you a wider array of results",
+      "segmentation": "You can choose if you want to text to be segmented more conservatively or broadly"
+    },
+    "writeStoryTitle": "Write your story below!",
+    "textareaPlaceholder": "Input some keywords here...",
+    "selectLanguage": "Select Language:",
+    "languages": {
+      "en": "English",
+      "fr": "French",
+      "nl": "Dutch",
+      "es": "Spanish",
+      "pt": "Portuguese",
+      "de": "German"
+    },
+    "selectDataset": "Select Dataset:",
+    "datasets": {
+      "wikiart": "Wikiart",
+      "semart": "SemArt",
+      "museum": "Museum"
+    },
+    "imageSelection": "Image Selection:",
+    "segmentationOptions": {
+      "conservative": "Conservative",
+      "broader": "Broader"
+    },
+    "submitButton": "Submit",
+    "searching": "Searching...",
+    "chooseImagesTitle": "Choose one image for each section",
+    "sectionLabel": "Section:",
+    "imageAlt": "Section {{sectionIndex}} Image {{imageIndex}}",
+    "showMoreImages": "Show 5 Images per Section",
+    "saveStory": "Save Story",
+    "messages": {
+      "loginRequired": "Please log in to save.",
+      "selectAllImages": "Please select an image for every section before saving.",
+      "savedSuccessfully": "Saved successfully!",
+      "saveFailed": "Failed to save."
+    }
   }
 }
