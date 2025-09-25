@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import './Login.css';
 
 const Login = () => {
+    const { t } = useTranslation('common');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -35,21 +37,21 @@ const Login = () => {
                 // Login failed
                 const errorData = await response.json();
                 console.error('Login failed:', errorData);
-                setError('Invalid username or password');
+                setError(t('login.errorInvalid'));
             }
         } catch (error) {
             console.error('Error during login:', error);
-            setError('Something went wrong. Please try again later.');
+            setError(t('login.errorGeneral'));
         }
     };
     
 
     return (
         <div className="box">
-            <h1>Login</h1>
+            <h1>{t('login.title')}</h1>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label htmlFor="username">Username:</label>
+                    <label htmlFor="username">{t('login.username')}</label>
                     <input
                         type="text"
                         id="username"
@@ -60,7 +62,7 @@ const Login = () => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="password">Password:</label>
+                    <label htmlFor="password">{t('login.password')}</label>
                     <input
                         type="password"
                         id="password"
@@ -69,9 +71,9 @@ const Login = () => {
                         required
                     />
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit">{t('login.submit')}</button>
                 <div className="create-account-link">
-                    <Link to="/signup">Or create an account if you aren't registered</Link>
+                    <Link to="/signup">{t('login.createAccount')}</Link>
                 </div>
             </form>
             {error && <p style={{ color: 'red' }}>{error}</p>}
