@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './SignUp.css';
 
 const SignUp = () => {
+    const { t } = useTranslation();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -32,10 +34,10 @@ const SignUp = () => {
                 navigate('/login');
             } else {
                 const errorData = await response.json();
-                setError(errorData.message || 'Signup failed. Please try again.');
+                setError(errorData.message || t('signup.errorGeneral'));
             }
         } catch (error) {
-            setError('An error occurred during signup. Please try again.');
+            setError(t('signup.errorOccurred'));
             console.error('Error during signup:', error);
         } finally {
             setLoading(false);
@@ -44,10 +46,10 @@ const SignUp = () => {
 
     return (
         <div className='box'>
-            <h1>Sign Up</h1>
+            <h1>{t('signup.title')}</h1>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label htmlFor="username">Username:</label>
+                    <label htmlFor="username">{t('signup.username')}</label>
                     <input
                         type="text"
                         id="username"
@@ -57,7 +59,7 @@ const SignUp = () => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="email">Email:</label>
+                    <label htmlFor="email">{t('signup.email')}</label>
                     <input
                         type="email"
                         id="email"
@@ -67,7 +69,7 @@ const SignUp = () => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="password">Password:</label>
+                    <label htmlFor="password">{t('signup.password')}</label>
                     <input
                         type="password"
                         id="password"
@@ -77,10 +79,10 @@ const SignUp = () => {
                     />
                 </div>
                 <button type="submit" disabled={loading}>
-                    {loading ? 'Signing Up...' : 'Sign Up'}
+                    {loading ? t('signup.signingUp') : t('signup.signupButton')}
                 </button>
                 <div className="create-account-link">
-                    <Link to="/login">Already registered? Login here!</Link>
+                    <Link to="/login">{t('signup.loginLink')}</Link>
                 </div>
             </form>
 

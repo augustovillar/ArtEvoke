@@ -1,0 +1,182 @@
+{
+  "app": {
+    "name": "Art Evoke"
+  },
+  "navbar": {
+    "home": "Início",
+    "about": "Sobre",
+    "memoryReconstruction": "Reconstrução de Memória",
+    "artExploration": "Exploração de Arte",
+    "profile": "Perfil",
+    "logout": "Sair",
+    "account": "Conta",
+    "signUp": "Cadastrar",
+    "login": "Entrar",
+    "accessibility": "Acessibilidade"
+  },
+  "buttons": {
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "search": "Buscar",
+    "clear": "Limpar",
+    "delete": "Excluir",
+    "edit": "Editar"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados",
+    "contact": "Contato",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Serviço",
+    "copyright": "Marc Bejjani, Augusto Barbosa Villar Silva.",
+    "university": "Université Catholique de Louvain, EPL",
+    "supervisor": "Orientador da Tese: Benoît Macq"
+  },
+  "language": {
+    "select": "Selecionar Idioma",
+    "english": "Inglês",
+    "portuguese": "Português"
+  },
+  "accessibility": {
+    "fontSize": "Tamanho da Fonte",
+    "theme": "Tema",
+    "readAloud": "Leitura em Voz Alta",
+    "highContrast": "Alto Contraste",
+    "title": "Opções de Acessibilidade",
+    "changeColorTheme": "Alterar Tema de Cor",
+    "toggleTheme": "Alternar Tema",
+    "readPageAloud": "Ler Página em Voz Alta",
+    "adjustFontSize": "Ajustar Tamanho da Fonte: {{fontSize}}px",
+    "sliderExampleText": "Este texto será dimensionado dinamicamente com base no tamanho da fonte selecionado.",
+    "stopReading": "Parar Leitura",
+    "readAloudButton": "Ler em Voz Alta"
+  },
+  "about": {
+    "title": "Sobre Nós",
+    "paragraph1": "Este site foi criado no contexto de uma Tese de Mestrado na Université Catholique de Louvain, desenvolvida por Marc Bejjani e Augusto Barbosa Villar Silva, sob a supervisão do Professor Benoît Macq.",
+    "paragraph2": "Esta tese explora como a inteligência artificial pode apoiar intervenções não medicamentosas para pessoas que vivem com a doença de Alzheimer (DA) através do uso de estímulos visuais e arte. Apresentamos uma plataforma protótipo que combina grandes modelos multimodais (LMMs), grandes modelos de linguagem (LLMs) e busca vetorial baseada em embeddings para conectar histórias pessoais com obras de arte curadas. Projetado para auxiliar na recuperação de memória e engajamento cognitivo, o ArtEvoke gera narrativas visuais personalizadas ou recupera pinturas relevantes baseadas na história do usuário. A arte é usada não apenas como um gatilho de memória, mas também como uma ferramenta para promover conexão emocional e engajamento. O protótipo é destinado para testes em ambientes terapêuticos e de pesquisa futuros, particularmente como uma ferramenta de apoio escalável para cuidadores e profissionais clínicos. Avaliamos o desempenho do modelo, efetividade de recuperação usando FAISS e design de interação do usuário com foco em acessibilidade. Estes achados destacam o potencial das ferramentas de IA para apoiar estimulação cognitiva escalável no cuidado da demência."
+  },
+  "home": {
+    "heroTitle": "Bem-vindos à nossa aplicação Art Evoke!",
+    "heroDescription": "Este site permite que você interaja com diferentes modelos de IA que podem sugerir diferentes pinturas baseadas em uma história fornecida, ou gerar uma história baseada em arte selecionada. Para começar, por favor clique em uma das duas opções abaixo!",
+    "memoryReconstruction": "Reconstrução de Memória",
+    "memoryReconstructionDesc": "Gerar Imagens a partir de uma História",
+    "artExploration": "Exploração de Arte",
+    "artExplorationDesc": "Buscar Arte usando Palavras-chave"
+  },
+  "login": {
+    "title": "Entrar",
+    "username": "Nome de usuário:",
+    "password": "Senha:",
+    "submit": "Entrar",
+    "createAccount": "Ou crie uma conta se você não está registrado",
+    "errorInvalid": "Nome de usuário ou senha inválidos",
+    "errorGeneral": "Algo deu errado. Por favor, tente novamente mais tarde."
+  },
+  "profile": {
+    "welcomeTitle": "Bem-vindo ao seu painel, {{username}}!",
+    "welcomeDescription": "Você pode verificar o histórico de suas histórias criadas ou peças de arte.",
+    "storyHistoryTitle": "Histórico de Geração de Histórias",
+    "artHistoryTitle": "Histórico de Busca de Arte",
+    "noStoriesYet": "Nenhuma história salva ainda.",
+    "noSearchesYet": "Nenhuma busca de arte salva ainda.",
+    "date": "Data:",
+    "delete": "Excluir",
+    "deleteSuccess": "Item excluído com sucesso.",
+    "deleteFailed": "Falha ao excluir item. Por favor, tente novamente.",
+    "loginToDelete": "Por favor, faça login para excluir.",
+    "imagesLabel": "Imagens:",
+    "storyImageAlt": "Imagem da História {{number}}",
+    "datasetImageAlt": "Imagem {{dataset}} {{number}}"
+  },
+  "search": {
+    "title": "Instruções de Exploração de Arte",
+    "description1": "A ferramenta de exploração de arte permite buscar peças de arte digitando algumas palavras-chave. Nosso modelo de IA retornará algumas pinturas do nosso banco de dados, e você pode então selecionar a que achar mais interessante, e o modelo gerará uma história baseada nela.",
+    "description2": "Finalmente, se a história gerada não for do seu agrado, você pode escolher regenerar uma nova história, ou recomeçar.",
+    "description3": "Antes de enviar, você pode brincar com 2 opções",
+    "instruction1": "Você pode selecionar o idioma que usou para ajudar nosso modelo a corrigir a ortografia e traduzir para o inglês",
+    "instruction2": "Você pode escolher um de 3 bancos de dados para nosso modelo buscar, dando-lhe uma gama mais ampla de resultados",
+    "enterKeywords": "Digite algumas palavras-chave para buscar arte!",
+    "placeholder": "Digite algumas palavras-chave aqui...",
+    "selectLanguage": "Selecionar Idioma:",
+    "selectDataset": "Selecionar Conjunto de Dados:",
+    "submit": "Enviar",
+    "searching": "Buscando...",
+    "imageSelection": "Seleção de Imagem",
+    "imageSelectionDesc": "Nosso modelo de IA escolheu essas pinturas como as que mais se assemelham à sua entrada. Por favor **selecione uma ou mais** delas para gerar uma história. Imagens selecionadas permanecerão escolhidas entre múltiplas buscas.",
+    "generateStory": "Gerar História de {{count}} Imagem(ns) Selecionada(s)",
+    "generatingStory": "Gerando História...",
+    "clearSelections": "Limpar Todas as Seleções",
+    "aiGeneratedStory": "História Gerada por IA",
+    "regenerateStory": "Regenerar História",
+    "copyText": "Copiar Texto",
+    "saveToAccount": "Salvar na Conta",
+    "selectAtLeastOne": "Por favor, selecione pelo menos uma imagem para gerar uma história.",
+    "textCopied": "Texto copiado para a área de transferência!",
+    "copyFailed": "Falha ao copiar texto.",
+    "loginToSave": "Por favor, faça login para salvar a história na sua conta.",
+    "noStoryToSave": "Nenhuma história para salvar.",
+    "storySaved": "História salva com sucesso!",
+    "saveFailed": "Falha ao salvar a história. Por favor, tente novamente.",
+    "generatedImageAlt": "Imagem Gerada {{name}}",
+    "selectedImageAlt": "Imagem Selecionada {{name}}"
+  },
+  "signup": {
+    "title": "Cadastrar",
+    "username": "Nome de Usuário:",
+    "email": "E-mail:",
+    "password": "Senha:",
+    "signupButton": "Cadastrar",
+    "signingUp": "Cadastrando...",
+    "errorGeneral": "Falha no cadastro. Tente novamente.",
+    "errorOccurred": "Ocorreu um erro durante o cadastro. Tente novamente.",
+    "loginLink": "Já é registrado? Faça login aqui!"
+  },
+  "story": {
+    "pageTitle": "Instruções de Reconstrução da Memória",
+    "description": "A ferramenta de reconstrução da memória permite que você insira uma história ou uma memória (ou parte dela). Após enviar o texto, nosso modelo de IA irá segmentar o texto e sugerir a melhor pintura correspondente por seção da base de dados selecionada, o que pode ajudá-lo a lembrar de mais detalhes da história. Se não estiver satisfeito com o resultado, pode clicar no botão \"Mostrar 5 imagens por seção\" para gerar ainda mais imagens.",
+    "optionsIntro": "Após inserir o texto, você tem 3 opções para explorar.",
+    "instructions": {
+      "language": "Você pode selecionar o idioma que usou para ajudar nosso modelo a corrigir a ortografia e traduzir para o inglês",
+      "dataset": "Você pode escolher uma de 3 bases de dados para nosso modelo pesquisar, oferecendo uma gama mais ampla de resultados",
+      "segmentation": "Você pode escolher se quer que o texto seja segmentado de forma mais conservadora ou ampla"
+    },
+    "writeStoryTitle": "Escreva sua história abaixo!",
+    "textareaPlaceholder": "Digite algumas palavras-chave aqui...",
+    "selectLanguage": "Selecionar Idioma:",
+    "languages": {
+      "en": "Inglês",
+      "fr": "Francês",
+      "nl": "Holandês",
+      "es": "Espanhol",
+      "pt": "Português",
+      "de": "Alemão"
+    },
+    "selectDataset": "Selecionar Base de Dados:",
+    "datasets": {
+      "wikiart": "Wikiart",
+      "semart": "SemArt",
+      "museum": "Museu"
+    },
+    "imageSelection": "Seleção de Imagem:",
+    "segmentationOptions": {
+      "conservative": "Conservador",
+      "broader": "Mais Amplo"
+    },
+    "submitButton": "Enviar",
+    "searching": "Buscando...",
+    "chooseImagesTitle": "Escolha uma imagem para cada seção",
+    "sectionLabel": "Seção:",
+    "imageAlt": "Seção {{sectionIndex}} Imagem {{imageIndex}}",
+    "showMoreImages": "Mostrar 5 Imagens por Seção",
+    "saveStory": "Salvar História",
+    "messages": {
+      "loginRequired": "Faça login para salvar.",
+      "selectAllImages": "Selecione uma imagem para cada seção antes de salvar.",
+      "savedSuccessfully": "Salvo com sucesso!",
+      "saveFailed": "Falha ao salvar."
+    }
+  }
+}
