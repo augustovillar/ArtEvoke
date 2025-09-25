@@ -114,5 +114,16 @@
     "saveFailed": "Failed to save the story. Please try again.",
     "generatedImageAlt": "Generated Image {name}",
     "selectedImageAlt": "Selected Image {name}"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "username": "Username:",
+    "email": "Email:",
+    "password": "Password:",
+    "signupButton": "Sign Up",
+    "signingUp": "Signing Up...",
+    "errorGeneral": "Signup failed. Please try again.",
+    "errorOccurred": "An error occurred during signup. Please try again.",
+    "loginLink": "Already registered? Login here!"
   }
 }

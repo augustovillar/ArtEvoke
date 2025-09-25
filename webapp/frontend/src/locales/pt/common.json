@@ -114,5 +114,16 @@
     "saveFailed": "Falha ao salvar a história. Por favor, tente novamente.",
     "generatedImageAlt": "Imagem Gerada {name}",
     "selectedImageAlt": "Imagem Selecionada {name}"
+  },
+  "signup": {
+    "title": "Cadastrar",
+    "username": "Nome de Usuário:",
+    "email": "E-mail:",
+    "password": "Senha:",
+    "signupButton": "Cadastrar",
+    "signingUp": "Cadastrando...",
+    "errorGeneral": "Falha no cadastro. Tente novamente.",
+    "errorOccurred": "Ocorreu um erro durante o cadastro. Tente novamente.",
+    "loginLink": "Já é registrado? Faça login aqui!"
   }
 }
