@@ -1,8 +1,10 @@
 // src/components/FontSizeAdjuster.js
 import React, { useState, useEffect } from 'react';
 import './FontSizeAdjuster.css';
+import { useTranslation } from 'react-i18next';
 
 const FontSizeAdjuster = () => {
+    const { t } = useTranslation();
     // Initialize font size from a CSS custom property if it exists, otherwise default
     const getInitialFontSize = () => {
         const rootFontSize = getComputedStyle(document.documentElement).getPropertyValue('--base-font-size');
@@ -22,7 +24,7 @@ const FontSizeAdjuster = () => {
 
     return (
         <div className="font-size-adjuster">
-            <h3>Adjust Font Size: {fontSize}px</h3>
+            <h3>{t('accessibility.adjustFontSize', { fontSize })}</h3>
             <input
                 type="range"
                 min="14" // Minimum font size
@@ -32,7 +34,7 @@ const FontSizeAdjuster = () => {
                 className="font-size-slider"
             />
             <p className="slider-example-text">
-                This text will scale dynamically based on the font size you select.
+                {t('accessibility.sliderExampleText')}
             </p>
         </div>
     );

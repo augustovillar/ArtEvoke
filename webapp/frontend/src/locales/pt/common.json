@@ -43,7 +43,15 @@
     "fontSize": "Tamanho da Fonte",
     "theme": "Tema",
     "readAloud": "Leitura em Voz Alta",
-    "highContrast": "Alto Contraste"
+    "highContrast": "Alto Contraste",
+    "title": "Opções de Acessibilidade",
+    "changeColorTheme": "Alterar Tema de Cor",
+    "toggleTheme": "Alternar Tema",
+    "readPageAloud": "Ler Página em Voz Alta",
+    "adjustFontSize": "Ajustar Tamanho da Fonte: {{fontSize}}px",
+    "sliderExampleText": "Este texto será dimensionado dinamicamente com base no tamanho da fonte selecionado.",
+    "stopReading": "Parar Leitura",
+    "readAloudButton": "Ler em Voz Alta"
   },
   "about": {
     "title": "Sobre Nós",
@@ -68,7 +76,7 @@
     "errorGeneral": "Algo deu errado. Por favor, tente novamente mais tarde."
   },
   "profile": {
-    "welcomeTitle": "Bem-vindo ao seu painel, {username}!",
+    "welcomeTitle": "Bem-vindo ao seu painel, {{username}}!",
     "welcomeDescription": "Você pode verificar o histórico de suas histórias criadas ou peças de arte.",
     "storyHistoryTitle": "Histórico de Geração de Histórias",
     "artHistoryTitle": "Histórico de Busca de Arte",
@@ -80,8 +88,8 @@
     "deleteFailed": "Falha ao excluir item. Por favor, tente novamente.",
     "loginToDelete": "Por favor, faça login para excluir.",
     "imagesLabel": "Imagens:",
-    "storyImageAlt": "Imagem da História {number}",
-    "datasetImageAlt": "Imagem {dataset} {number}"
+    "storyImageAlt": "Imagem da História {{number}}",
+    "datasetImageAlt": "Imagem {{dataset}} {{number}}"
   },
   "search": {
     "title": "Instruções de Exploração de Arte",
@@ -98,7 +106,7 @@
     "searching": "Buscando...",
     "imageSelection": "Seleção de Imagem",
     "imageSelectionDesc": "Nosso modelo de IA escolheu essas pinturas como as que mais se assemelham à sua entrada. Por favor **selecione uma ou mais** delas para gerar uma história. Imagens selecionadas permanecerão escolhidas entre múltiplas buscas.",
-    "generateStory": "Gerar História de {count} Imagem(ns) Selecionada(s)",
+    "generateStory": "Gerar História de {{count}} Imagem(ns) Selecionada(s)",
     "generatingStory": "Gerando História...",
     "clearSelections": "Limpar Todas as Seleções",
     "aiGeneratedStory": "História Gerada por IA",
@@ -112,8 +120,8 @@
     "noStoryToSave": "Nenhuma história para salvar.",
     "storySaved": "História salva com sucesso!",
     "saveFailed": "Falha ao salvar a história. Por favor, tente novamente.",
-    "generatedImageAlt": "Imagem Gerada {name}",
-    "selectedImageAlt": "Imagem Selecionada {name}"
+    "generatedImageAlt": "Imagem Gerada {{name}}",
+    "selectedImageAlt": "Imagem Selecionada {{name}}"
   },
   "signup": {
     "title": "Cadastrar",

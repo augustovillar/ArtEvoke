@@ -43,7 +43,15 @@
     "fontSize": "Font Size",
     "theme": "Theme",
     "readAloud": "Read Aloud",
-    "highContrast": "High Contrast"
+    "highContrast": "High Contrast",
+    "title": "Accessibility Options",
+    "changeColorTheme": "Change Color Theme",
+    "toggleTheme": "Toggle Theme",
+    "readPageAloud": "Read Page Aloud",
+    "adjustFontSize": "Adjust Font Size: {{fontSize}}px",
+    "sliderExampleText": "This text will scale dynamically based on the font size you select.",
+    "stopReading": "Stop Reading",
+    "readAloudButton": "Read Aloud"
   },
   "about": {
     "title": "About Us",
@@ -68,7 +76,7 @@
     "errorGeneral": "Something went wrong. Please try again later."
   },
   "profile": {
-    "welcomeTitle": "Welcome to your dashboard, {username}!",
+    "welcomeTitle": "Welcome to your dashboard, {{username}}!",
     "welcomeDescription": "You can check the history of your created stories or art pieces.",
     "storyHistoryTitle": "Story Generation History",
     "artHistoryTitle": "Art Search History",
@@ -80,8 +88,8 @@
     "deleteFailed": "Failed to delete item. Please try again.",
     "loginToDelete": "Please log in to delete.",
     "imagesLabel": "Images:",
-    "storyImageAlt": "Story Image {number}",
-    "datasetImageAlt": "{dataset} Image {number}"
+    "storyImageAlt": "Story Image {{number}}",
+    "datasetImageAlt": "{{dataset}} Image {{number}}"
   },
   "search": {
     "title": "Art Exploration Instructions",
@@ -98,7 +106,7 @@
     "searching": "Searching...",
     "imageSelection": "Image Selection",
     "imageSelectionDesc": "Our AI model chose these paintings as the ones most resembling your input. Please **select one or more** of them to generate a story. Selected images will remain chosen across multiple searches.",
-    "generateStory": "Generate Story from {count} Selected Image(s)",
+    "generateStory": "Generate Story from {{count}} Selected Image(s)",
     "generatingStory": "Generating Story...",
     "clearSelections": "Clear All Selections",
     "aiGeneratedStory": "AI Generated Story",
@@ -112,8 +120,8 @@
     "noStoryToSave": "No story to save.",
     "storySaved": "Story saved successfully!",
     "saveFailed": "Failed to save the story. Please try again.",
-    "generatedImageAlt": "Generated Image {name}",
-    "selectedImageAlt": "Selected Image {name}"
+    "generatedImageAlt": "Generated Image {{name}}",
+    "selectedImageAlt": "Selected Image {{name}}"
   },
   "signup": {
     "title": "Sign Up",
