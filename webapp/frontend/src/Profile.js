@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './Profile.css';
 
 const Profile = () => {
+    const { t } = useTranslation('common');
     const [username, setUsername] = useState('');
     const [savedArtSearches, setSavedArtSearches] = useState([]);
     const [savedStoryGenerations, setSavedStoryGenerations] = useState([]);
@@ -63,7 +65,7 @@ const Profile = () => {
 
         const token = localStorage.getItem('token');
         if (!token) {
-            setDeleteMessage('Please log in to delete.');
+            setDeleteMessage(t('profile.loginToDelete'));
             return;
         }
 
@@ -89,17 +91,17 @@ const Profile = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setDeleteMessage(errorData.message || 'Failed to delete item.');
+                setDeleteMessage(errorData.message || t('profile.deleteFailed'));
                 console.error('Error deleting item:', errorData);
                 return;
             }
 
-            setDeleteMessage('Item deleted successfully.');
+            setDeleteMessage(t('profile.deleteSuccess'));
             fetchUserProfile();
             closeModal();
         } catch (error) {
             console.error('Error deleting item:', error);
-            setDeleteMessage('Failed to delete item. Please try again.');
+            setDeleteMessage(t('profile.deleteFailed'));
         }
     };
 
@@ -107,12 +109,12 @@ const Profile = () => {
     return (
         <div>
             <div className="content-box">
-                <h1>Welcome to your dashboard, {username}!</h1>
-                <p>You can check the history of your created stories or art pieces.</p>
+                <h1>{t('profile.welcomeTitle', { username })}</h1>
+                <p>{t('profile.welcomeDescription')}</p>
             </div>
 
             <div className="content-box">
-                <h1>Story Generation History</h1>
+                <h1>{t('profile.storyHistoryTitle')}</h1>
                 <div className="story-list">
                     {savedStoryGenerations.length > 0 ? (
                         savedStoryGenerations.map((story, index) => (
@@ -121,18 +123,18 @@ const Profile = () => {
                                 className="story-box"
                                 onClick={() => handleItemClick(story)}
                             >
-                                <h3><strong>Date:</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
+                                <h3><strong>{t('profile.date')}</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
                                 <p>{story.text.substring(0, 50)}...</p>
                             </div>
                         ))
                     ) : (
-                        <p>No saved stories yet.</p>
+                        <p>{t('profile.noStoriesYet')}</p>
                     )}
                 </div>
             </div>
 
             <div className="content-box">
-                <h1>Art Search History</h1>
+                <h1>{t('profile.artHistoryTitle')}</h1>
                 <div className="story-list">
                     {savedArtSearches.length > 0 ? (
                         savedArtSearches.map((search, index) => (
@@ -141,12 +143,12 @@ const Profile = () => {
                                 className="story-box"
                                 onClick={() => handleItemClick(search)}
                             >
-                                <h3><strong>Date:</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
+                                <h3><strong>{t('profile.date')}</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
                                 <p>{search.text.substring(0, 50)}...</p>
                             </div>
                         ))
                     ) : (
-                        <p>No saved art searches yet.</p>
+                        <p>{t('profile.noSearchesYet')}</p>
                     )}
                 </div>
             </div>
@@ -155,7 +157,7 @@ const Profile = () => {
                 <div className="modal-history">
                     <div className="modal-history-content">
                         <span className="history-close-button" onClick={closeModal}>&times;</span>
-                        <h3><strong>Date:</strong> {new Date(expandedItem.dateAdded).toLocaleString()}</h3>
+                        <h3><strong>{t('profile.date')}</strong> {new Date(expandedItem.dateAdded).toLocaleString()}</h3>
                         <p>{expandedItem.text}</p>
                         {expandedItem.hasOwnProperty('images') && Array.isArray(expandedItem.images) && expandedItem.images.length > 0 ? (
                             // This is for savedStoryGenerations (flat list of images)
@@ -164,7 +166,7 @@ const Profile = () => {
                                     <img
                                         key={index}
                                         src={imageUrl}
-                                        alt={`Story Image ${index + 1}`}
+                                        alt={t('profile.storyImageAlt', { number: index + 1 })}
                                         className="modal-history-image"
                                     />
                                 ))}
@@ -175,12 +177,12 @@ const Profile = () => {
                                 {Object.entries(expandedItem.selectedImagesByDataset).map(([datasetName, urls]) => (
                                     urls.length > 0 && (
                                         <div key={datasetName} className="dataset-images-section">
-                                            <h4>{datasetName.charAt(0).toUpperCase() + datasetName.slice(1)} Images:</h4>
+                                            <h4>{datasetName.charAt(0).toUpperCase() + datasetName.slice(1)} {t('profile.imagesLabel')}</h4>
                                             {urls.map((imageUrl, index) => (
                                                 <img
                                                     key={`${datasetName}-${index}`}
                                                     src={imageUrl}
-                                                    alt={`${datasetName} Image ${index + 1}`}
+                                                    alt={t('profile.datasetImageAlt', { dataset: datasetName, number: index + 1 })}
                                                     className="modal-history-image"
                                                 />
                                             ))}
@@ -191,7 +193,7 @@ const Profile = () => {
                         ) : null}
 
                         <div className="modal-actions">
-                            <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
+                            <button className="delete-button" onClick={handleDeleteClick}>{t('profile.delete')}</button>
                             {deleteMessage && <p className="delete-message">{deleteMessage}</p>}
                         </div>
                     </div>

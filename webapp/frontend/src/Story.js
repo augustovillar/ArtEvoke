@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import './Story.css';
 import SpeechInput from './SpeechInput';
 import { useReadAloud } from './contexts/ReadAloudContext';
+import { useTranslation } from 'react-i18next';
 
 const Story = () => {
+    const { t } = useTranslation();
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
 
@@ -85,7 +87,7 @@ const Story = () => {
     const handleSaveClick = () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            setSaveMessage('Please log in to save.');
+            setSaveMessage(t('story.messages.loginRequired'));
             setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
@@ -93,7 +95,7 @@ const Story = () => {
         const allSectionsCovered = sectionsWithImages.every((_, index) => selectedImagesPerSection.hasOwnProperty(index));
 
         if (!allSectionsCovered) {
-             setSaveMessage('Please select an image for every section before saving.');
+             setSaveMessage(t('story.messages.selectAllImages'));
              setTimeout(() => setSaveMessage(''), 4000);
              return;
         }
@@ -121,12 +123,12 @@ const Story = () => {
             return response.json();
         })
         .then(data => {
-            setSaveMessage('Saved successfully!');
+            setSaveMessage(t('story.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
         })
         .catch(error => {
             console.error('Error saving:', error);
-            setSaveMessage('Failed to save.');
+            setSaveMessage(t('story.messages.saveFailed'));
             setTimeout(() => setSaveMessage(''), 3000);
         });
     };
@@ -150,49 +152,47 @@ const Story = () => {
     return (
         <div>
             <div className="content-box" ref={contentRef}>
-                <h1>Memory Reconstruction Instructions</h1>
+                <h1>{t('story.pageTitle')}</h1>
                 <p>
-                    The memory reconstruction tool allows you to input a story or a memory (or part of it).
-                    After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story.
-                    If you are not satisifed with the given result, you can click on the "Show 5 images per section" button to generate even more images.
+                    {t('story.description')}
                     <br></br>
                     <br></br>
-                    After inputting the text, you are given 3 options to play with.
+                    {t('story.optionsIntro')}
                 </p>
                 <ol className="instructions-list">
-                    <li>You can select the language that you used in order to help our model correct the spelling and translate to english</li>
-                    <li>You can choose one of 3 databases for our model to search from, giving you a wider array of results</li>
-                    <li>You can choose if you want to text to be segmented more conservatively or broadely</li>
+                    <li>{t('story.instructions.language')}</li>
+                    <li>{t('story.instructions.dataset')}</li>
+                    <li>{t('story.instructions.segmentation')}</li>
                 </ol>
             </div>
             <div className="content-box">
-                <h1>Write your story below!</h1>
+                <h1>{t('story.writeStoryTitle')}</h1>
                 <div className="input-row">
                     <textarea
                         className="story-textbox"
-                        placeholder="Input some keywords here..."
+                        placeholder={t('story.textareaPlaceholder')}
                         value={storyText}
                         onChange={(e) => setStoryText(e.target.value)}
                     />
                     <div className="select-row">
                         <div className="select-group">
-                            <label htmlFor="language-select-id" className="select-label">Select Language:</label>
+                            <label htmlFor="language-select-id" className="select-label">{t('story.selectLanguage')}</label>
                             <select
                                 id="language-select-id"
                                 className="language-select"
                                 value={language}
                                 onChange={handleLanguageChange}
                             >
-                                <option value="en">English</option>
-                                <option value="fr">French</option>
-                                <option value="nl">Dutch</option>
-                                <option value="es">Spanish</option>
-                                <option value="pt">Portuguese</option>
-                                <option value="de">German</option>
+                                <option value="en">{t('story.languages.en')}</option>
+                                <option value="fr">{t('story.languages.fr')}</option>
+                                <option value="nl">{t('story.languages.nl')}</option>
+                                <option value="es">{t('story.languages.es')}</option>
+                                <option value="pt">{t('story.languages.pt')}</option>
+                                <option value="de">{t('story.languages.de')}</option>
                             </select>
                         </div>
                         <div className="select-group">
-                            <label htmlFor="dataset-select-id" className="select-label">Select Dataset:</label>
+                            <label htmlFor="dataset-select-id" className="select-label">{t('story.selectDataset')}</label>
                             <select
                                 id="dataset-select-id"
                                 className="language-select"
@@ -205,22 +205,22 @@ const Story = () => {
                             </select>
                         </div>
                         <div className="select-group">
-                            <label htmlFor="segmentation-select-id" className="select-label">Image Selection:</label>
+                            <label htmlFor="segmentation-select-id" className="select-label">{t('story.imageSelection')}</label>
                             <select
                                 id="segmentation-select-id"
                                 className="language-select"
                                 value={segmentation}
                                 onChange={handleSegmentationChange}
                             >
-                                <option value="conservative">Conservative</option>
-                                <option value="broader">Broader</option>
+                                <option value="conservative">{t('story.segmentationOptions.conservative')}</option>
+                                <option value="broader">{t('story.segmentationOptions.broader')}</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div className='input-buttons'>
                     <button className="submit-button" onClick={() => handleSubmit(1)} disabled={loading || !storyText.trim()}>
-                        {loading ? "Searching..." : "Submit"}
+                        {loading ? t('story.searching') : t('story.submitButton')}
                     </button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
@@ -228,10 +228,10 @@ const Story = () => {
 
             {sectionsWithImages.length > 0 && (
                 <div className="content-box">
-                    <h1>Choose one image for each section</h1>
+                    <h1>{t('story.chooseImagesTitle')}</h1>
                     {sectionsWithImages.map((sectionData, sectionIndex) => (
                         <div key={sectionIndex} className="section-images-container">
-                            {sectionData.section && <p><strong>Section:</strong> {sectionData.section}</p>}
+                            {sectionData.section && <p><strong>{t('story.sectionLabel')}</strong> {sectionData.section}</p>}
                             <div className="images-grid">
                                 {sectionData.images.map((imageItem, imageIndex) => (
                                     <div
@@ -241,7 +241,7 @@ const Story = () => {
                                     >
                                         <img
                                             src={imageItem.url}
-                                            alt={`Section ${sectionIndex + 1} Image ${imageIndex + 1}`}
+                                            alt={t('story.imageAlt', { sectionIndex: sectionIndex + 1, imageIndex: imageIndex + 1 })}
                                             className="generated-image"
                                         />
                                         <span className="image-name">{imageItem.name}</span>
@@ -257,7 +257,7 @@ const Story = () => {
                                 onClick={handleRequestMoreImages}
                                 disabled={loading || !storyText.trim()}
                             >
-                                Show 5 Images per Section
+                                {t('story.showMoreImages')}
                             </button>
                         )}
                         <button
@@ -265,7 +265,7 @@ const Story = () => {
                             onClick={handleSaveClick}
                             disabled={loading || Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length}
                         >
-                            Save Story
+                            {t('story.saveStory')}
                         </button>
                     </div>
                     {saveMessage && <p>{saveMessage}</p>}

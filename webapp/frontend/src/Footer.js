@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './Footer.css';
 import logoEpl from './images/logepl.jpg';
 import logoUcl from './images/logoucl.png';
@@ -6,13 +7,15 @@ import logoMuseum from './images/logo_museum.jpg';
 import logoIdLab from './images/idlab_logo.jpg';
 
 const Footer = () => {
+    const { t } = useTranslation('common');
+
     return (
         <footer className="footer">
             <div className="footer-main-content">
                 <div className="footer-text-column">
-                    <p>&copy; 2025 Marc Bejjani, Augusto Barbosa Villar Silva.</p>
-                    <p>Université Catholique de Louvain, EPL</p>
-                    <p>Thesis Supervisor: Benoît Macq</p>
+                    <p>&copy; 2025 {t('footer.copyright')}</p>
+                    <p>{t('footer.university')}</p>
+                    <p>{t('footer.supervisor')}</p>
                     <p>
                         <a href="mailto:marc.bejjani@student.uclouvain.be">marc.bejjani@student.uclouvain.be</a><br/>
                         <a href="mailto:augusto.silva@student.uclouvain.be">augusto.silva@student.uclouvain.be</a>

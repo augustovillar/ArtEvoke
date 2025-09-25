@@ -1,5 +1,6 @@
 // src/App.js
 import React from 'react';
+import './118n';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './Navbar';
 import Home from './Home';

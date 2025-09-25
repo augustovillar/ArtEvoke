@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const useTextToSpeech = () => {
+    const { i18n } = useTranslation();
     const [isReading, setIsReading] = useState(false);
     const utteranceRef = useRef(null);
 
@@ -12,7 +14,16 @@ export const useTextToSpeech = () => {
         if (!fullText) return;
 
         const utterance = new SpeechSynthesisUtterance(fullText);
-        utterance.lang = 'en-US';
+
+        // Set language dynamically
+        const currentLang = i18n.language;
+        if (currentLang === 'pt') {
+            utterance.lang = 'pt-BR';
+        } else if (currentLang === 'en') {
+            utterance.lang = 'en-US';
+        } else {
+            utterance.lang = 'en-US'; // Default
+        }
 
         utterance.onend = () => setIsReading(false);
         utterance.onerror = () => setIsReading(false);

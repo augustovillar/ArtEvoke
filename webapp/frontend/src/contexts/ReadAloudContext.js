@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ReadAloudContext = createContext();
 
@@ -11,6 +12,7 @@ export const useReadAloud = () => {
 };
 
 export const ReadAloudProvider = ({ children }) => {
+    const { i18n } = useTranslation();
     const [currentContentRef, setCurrentContentRef] = useState(null);
     const [extraText, setExtraText] = useState([]);
 
@@ -65,6 +67,16 @@ export const ReadAloudProvider = ({ children }) => {
 
         utteranceRef.current = new SpeechSynthesisUtterance(textToSpeak);
 
+        // Set language dynamically based on current i18n language
+        const currentLang = i18n.language;
+        if (currentLang === 'pt') {
+            utteranceRef.current.lang = 'pt-BR';
+        } else if (currentLang === 'en') {
+            utteranceRef.current.lang = 'en-US';
+        } else {
+            utteranceRef.current.lang = 'en-US'; // Default
+        }
+
         utteranceRef.current.onstart = () => setIsReading(true);
         utteranceRef.current.onend = () => setIsReading(false);
         utteranceRef.current.onerror = (event) => {
@@ -73,7 +85,7 @@ export const ReadAloudProvider = ({ children }) => {
         };
 
         synth.speak(utteranceRef.current);
-    }, [currentContentRef, extraText, isReading]);
+    }, [currentContentRef, extraText, isReading, i18n.language]);
 
     useEffect(() => {
         const synth = synthRef.current;

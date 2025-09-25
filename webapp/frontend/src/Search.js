@@ -1,11 +1,13 @@
 // src/Search.js
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './Search.css';
 import SpeechInput from './SpeechInput';
 // import ReadAloudButton from './components/ReadAloudButton'; // Removed ReadAloudButton import
 import { useReadAloud } from './contexts/ReadAloudContext'; // Import useReadAloud
 
 const Search = () => {
+    const { t } = useTranslation('common');
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud(); // Get registerContent from context
 
@@ -28,11 +30,11 @@ const Search = () => {
     // Register content for read aloud when the component mounts or contentRef changes
     useEffect(() => {
         registerContent(contentRef, [
-            "In the box below, you can enter text, or click a button to speak the words instead of typing.",
-            "Finally, there is a submit button to click once you are done inputting the text."
+            t('search.description1'),
+            t('search.description2')
         ]);
         return () => registerContent(null); // Cleanup on unmount
-    }, [registerContent]);
+    }, [registerContent, t]);
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
@@ -92,7 +94,7 @@ const Search = () => {
     // Handle story generation from selected images
     const handleGenerateStory = () => {
         if (selectedImages.length === 0) {
-            alert('Please select at least one image to generate a story.');
+            alert(t('search.selectAtLeastOne'));
             return;
         }
 
@@ -146,12 +148,12 @@ const Search = () => {
             navigator.clipboard.writeText(responseText)
                 .then(() => {
                     console.log('Text copied to clipboard!');
-                    setSaveMessage('Text copied to clipboard!');
+                    setSaveMessage(t('search.textCopied'));
                     setTimeout(() => setSaveMessage(''), 3000);
                 })
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
-                    setSaveMessage('Failed to copy text.');
+                    setSaveMessage(t('search.copyFailed'));
                     setTimeout(() => setSaveMessage(''), 3000);
                 });
         }
@@ -166,13 +168,13 @@ const Search = () => {
         const token = localStorage.getItem('token');
 
         if (!token) {
-            setSaveMessage('Please log in to save the story to your account.');
+            setSaveMessage(t('search.loginToSave'));
             setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
 
         if (!responseText) {
-            setSaveMessage('No story to save.');
+            setSaveMessage(t('search.noStoryToSave'));
             setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
@@ -208,12 +210,12 @@ const Search = () => {
             return response.json();
         })
         .then((data) => {
-            setSaveMessage('Story saved successfully!');
+            setSaveMessage(t('search.storySaved'));
             setTimeout(() => setSaveMessage(''), 3000);
         })
         .catch((error) => {
             console.error('There was a problem saving the story:', error);
-            setSaveMessage('Failed to save the story. Please try again.');
+            setSaveMessage(t('search.saveFailed'));
             setTimeout(() => setSaveMessage(''), 3000);
         });
     };
@@ -229,35 +231,34 @@ const Search = () => {
     return (
         <div>
             <div className="content-box" ref={contentRef}>
-                <h1>Art Exploration Instructions</h1>
+                <h1>{t('search.title')}</h1>
                 <p>
-                    The art exploration tool allows you to search for art pieces by typing in some keywords.
-                    Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.
+                    {t('search.description1')}
                     <br></br>
                     <br></br>
-                    Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
+                    {t('search.description2')}
                     <br></br>
                     <br></br>
-                    Before submitting, you can play with 2 options
+                    {t('search.description3')}
                 </p>
                 <ol className="instructions-list">
-                    <li>You can select the language that you used in order to help our model correct the spelling and translate to english</li>
-                    <li>You can choose one of 3 databases for our model to search from, giving you a wider array of results</li>
+                    <li>{t('search.instruction1')}</li>
+                    <li>{t('search.instruction2')}</li>
                 </ol>
                 {/* ReadAloudButton was here */}
             </div>
             <div className="content-box">
-                <h1>Enter some keywords to search for art!</h1>
+                <h1>{t('search.enterKeywords')}</h1>
                 <div className="input-row">
                     <textarea
                         className="search-textbox"
-                        placeholder="Input some keywords here..."
+                        placeholder={t('search.placeholder')}
                         value={storyText}
                         onChange={(e) => setStoryText(e.target.value)}
                     />
                     <div className="select-row">
                         <div className="select-group">
-                            <label htmlFor="language-select-id" className="select-label">Select Language:</label>
+                            <label htmlFor="language-select-id" className="select-label">{t('search.selectLanguage')}</label>
                             <select
                                 id="language-select-id"
                                 className="language-select"
@@ -273,7 +274,7 @@ const Search = () => {
                             </select>
                         </div>
                         <div className="select-group">
-                            <label htmlFor="dataset-select-id" className="select-label">Select Dataset:</label>
+                            <label htmlFor="dataset-select-id" className="select-label">{t('search.selectDataset')}</label>
                             <select
                                 id="dataset-select-id"
                                 className="language-select"
@@ -289,7 +290,7 @@ const Search = () => {
                 </div>
                 <div className='input-buttons'>
                     <button className="submit-button" onClick={handleSubmit} disabled={submitLoading}>
-                        {submitLoading ? "Searching..." : "Submit"}
+                        {submitLoading ? t('search.searching') : t('search.submit')}
                     </button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
@@ -297,10 +298,8 @@ const Search = () => {
 
             {(images.length > 0 || selectedImages.length > 0) && (
                 <div className="content-box">
-                    <h1>Image Selection</h1>
-                    <p>Our AI model chose these paintings as the ones most resembling your input.
-                    <br></br>
-                    Please **select one or more** of them to generate a story. Selected images will remain chosen across multiple searches.</p>
+                    <h1>{t('search.imageSelection')}</h1>
+                    <p>{t('search.imageSelectionDesc')}</p>
                     <div className="images-grid">
                         {/* Display currently searched images */}
                         {images.map((image) => (
@@ -311,7 +310,7 @@ const Search = () => {
                             >
                                 <img
                                     src={image.url}
-                                    alt={`Generated Image ${image.name}`}
+                                    alt={t('search.generatedImageAlt', { name: image.name })}
                                     className="generated-image"
                                 />
                                 <span className="image-name">{image.name}</span>
@@ -330,7 +329,7 @@ const Search = () => {
                                     >
                                         <img
                                             src={selectedImage.url}
-                                            alt={`Selected Image ${selectedImage.name}`}
+                                            alt={t('search.selectedImageAlt', { name: selectedImage.name })}
                                             className="generated-image"
                                         />
                                         <span className="image-name">{selectedImage.name}</span>
@@ -347,14 +346,14 @@ const Search = () => {
                             onClick={handleGenerateStory}
                             disabled={generateLoading || selectedImages.length === 0}
                         >
-                            {generateLoading ? 'Generating Story...' : `Generate Story from ${selectedImages.length} Selected Image(s)`}
+                            {generateLoading ? t('search.generatingStory') : t('search.generateStory', { count: selectedImages.length })}
                         </button>
                         <button
                             className="submit-button"
                             onClick={() => setSelectedImages([])}
                             disabled={selectedImages.length === 0}
                         >
-                            Clear All Selections
+                            {t('search.clearSelections')}
                         </button>
                     </div>
                 </div>
@@ -363,12 +362,12 @@ const Search = () => {
             {/* Display response text */}
             {responseText && (
                 <div id='generated-story' className="content-box">
-                    <h1>AI Generated Story</h1>
+                    <h1>{t('search.aiGeneratedStory')}</h1>
                     <p>{responseText}</p>
                     <div className="buttons-container">
-                        <button className="submit-button" onClick={handleRegenerateClick} disabled={generateLoading}>Regenerate Story</button>
-                        <button className="submit-button" onClick={copyToClipboard}>Copy Text</button>
-                        <button className="submit-button" onClick={handleSaveClick}>Save to Account</button>
+                        <button className="submit-button" onClick={handleRegenerateClick} disabled={generateLoading}>{t('search.regenerateStory')}</button>
+                        <button className="submit-button" onClick={copyToClipboard}>{t('search.copyText')}</button>
+                        <button className="submit-button" onClick={handleSaveClick}>{t('search.saveToAccount')}</button>
                     </div>
                     {saveMessage && <p>{saveMessage}</p>}
                 </div>

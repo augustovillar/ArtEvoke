@@ -1,0 +1,182 @@
+{
+  "app": {
+    "name": "Art Evoke"
+  },
+  "navbar": {
+    "home": "Home",
+    "about": "About",
+    "memoryReconstruction": "Memory Reconstruction",
+    "artExploration": "Art Exploration",
+    "profile": "Profile",
+    "logout": "Logout",
+    "account": "Account",
+    "signUp": "Sign Up",
+    "login": "Login",
+    "accessibility": "Accessibility"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "clear": "Clear",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "Marc Bejjani, Augusto Barbosa Villar Silva.",
+    "university": "Université Catholique de Louvain, EPL",
+    "supervisor": "Thesis Supervisor: Benoît Macq"
+  },
+  "language": {
+    "select": "Select Language",
+    "english": "English",
+    "portuguese": "Portuguese"
+  },
+  "accessibility": {
+    "fontSize": "Font Size",
+    "theme": "Theme",
+    "readAloud": "Read Aloud",
+    "highContrast": "High Contrast",
+    "title": "Accessibility Options",
+    "changeColorTheme": "Change Color Theme",
+    "toggleTheme": "Toggle Theme",
+    "readPageAloud": "Read Page Aloud",
+    "adjustFontSize": "Adjust Font Size: {{fontSize}}px",
+    "sliderExampleText": "This text will scale dynamically based on the font size you select.",
+    "stopReading": "Stop Reading",
+    "readAloudButton": "Read Aloud"
+  },
+  "about": {
+    "title": "About Us",
+    "paragraph1": "This website is created in the context of a Masters Thesis at the Université Catholique de Louvain, undertaken by Marc Bejjani and Augusto Barbosa Villar Silva, under the supervision of Professor Benoît Macq.",
+    "paragraph2": "This thesis explores how artificial intelligence can support non-drug interventions for people living with Alzheimer's disease (AD) through the use of visual stimuli and art. We present a prototype platform that combines large multimodal models (LMMs), large language models (LLMs), and embedding-based vector search to connect personal stories with curated artworks. Designed to assist memory recall and cognitive engagement, ArtEvoke generates personalized visual narratives or retrieves relevant paintings based on the user's story. Art is used not only as a memory trigger but also as a tool to promote emotional connection and engagement. The prototype is intended for testing in future therapeutic and research settings, particularly as a scalable support tool for caregivers and clinical practitioners. We evaluate model performance, retrieval effectiveness using FAISS, and user interaction design with a focus on accessibility. These findings highlight the potential of AI tools to support scalable cognitive stimulation in dementia care."
+  },
+  "home": {
+    "heroTitle": "Welcome to our Art Evoke application!",
+    "heroDescription": "This website allows you to interact with different AI models that can suggest different paintings based on a provided story, or generate a story based on selected art. To get started, please click on one of the two options down below!",
+    "memoryReconstruction": "Memory Reconstruction",
+    "memoryReconstructionDesc": "Generate Images from a Story",
+    "artExploration": "Art Exploration", 
+    "artExplorationDesc": "Search for Art using Keywords"
+  },
+  "login": {
+    "title": "Login",
+    "username": "Username:",
+    "password": "Password:",
+    "submit": "Login",
+    "createAccount": "Or create an account if you aren't registered",
+    "errorInvalid": "Invalid username or password",
+    "errorGeneral": "Something went wrong. Please try again later."
+  },
+  "profile": {
+    "welcomeTitle": "Welcome to your dashboard, {{username}}!",
+    "welcomeDescription": "You can check the history of your created stories or art pieces.",
+    "storyHistoryTitle": "Story Generation History",
+    "artHistoryTitle": "Art Search History",
+    "noStoriesYet": "No saved stories yet.",
+    "noSearchesYet": "No saved art searches yet.",
+    "date": "Date:",
+    "delete": "Delete",
+    "deleteSuccess": "Item deleted successfully.",
+    "deleteFailed": "Failed to delete item. Please try again.",
+    "loginToDelete": "Please log in to delete.",
+    "imagesLabel": "Images:",
+    "storyImageAlt": "Story Image {{number}}",
+    "datasetImageAlt": "{{dataset}} Image {{number}}"
+  },
+  "search": {
+    "title": "Art Exploration Instructions",
+    "description1": "The art exploration tool allows you to search for art pieces by typing in some keywords. Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.",
+    "description2": "Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.",
+    "description3": "Before submitting, you can play with 2 options",
+    "instruction1": "You can select the language that you used in order to help our model correct the spelling and translate to english",
+    "instruction2": "You can choose one of 3 databases for our model to search from, giving you a wider array of results",
+    "enterKeywords": "Enter some keywords to search for art!",
+    "placeholder": "Input some keywords here...",
+    "selectLanguage": "Select Language:",
+    "selectDataset": "Select Dataset:",
+    "submit": "Submit",
+    "searching": "Searching...",
+    "imageSelection": "Image Selection",
+    "imageSelectionDesc": "Our AI model chose these paintings as the ones most resembling your input. Please **select one or more** of them to generate a story. Selected images will remain chosen across multiple searches.",
+    "generateStory": "Generate Story from {{count}} Selected Image(s)",
+    "generatingStory": "Generating Story...",
+    "clearSelections": "Clear All Selections",
+    "aiGeneratedStory": "AI Generated Story",
+    "regenerateStory": "Regenerate Story",
+    "copyText": "Copy Text",
+    "saveToAccount": "Save to Account",
+    "selectAtLeastOne": "Please select at least one image to generate a story.",
+    "textCopied": "Text copied to clipboard!",
+    "copyFailed": "Failed to copy text.",
+    "loginToSave": "Please log in to save the story to your account.",
+    "noStoryToSave": "No story to save.",
+    "storySaved": "Story saved successfully!",
+    "saveFailed": "Failed to save the story. Please try again.",
+    "generatedImageAlt": "Generated Image {{name}}",
+    "selectedImageAlt": "Selected Image {{name}}"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "username": "Username:",
+    "email": "Email:",
+    "password": "Password:",
+    "signupButton": "Sign Up",
+    "signingUp": "Signing Up...",
+    "errorGeneral": "Signup failed. Please try again.",
+    "errorOccurred": "An error occurred during signup. Please try again.",
+    "loginLink": "Already registered? Login here!"
+  },
+  "story": {
+    "pageTitle": "Memory Reconstruction Instructions",
+    "description": "The memory reconstruction tool allows you to input a story or a memory (or part of it). After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story. If you are not satisfied with the given result, you can click on the \"Show 5 images per section\" button to generate even more images.",
+    "optionsIntro": "After inputting the text, you are given 3 options to play with.",
+    "instructions": {
+      "language": "You can select the language that you used in order to help our model correct the spelling and translate to english",
+      "dataset": "You can choose one of 3 databases for our model to search from, giving you a wider array of results",
+      "segmentation": "You can choose if you want to text to be segmented more conservatively or broadly"
+    },
+    "writeStoryTitle": "Write your story below!",
+    "textareaPlaceholder": "Input some keywords here...",
+    "selectLanguage": "Select Language:",
+    "languages": {
+      "en": "English",
+      "fr": "French",
+      "nl": "Dutch",
+      "es": "Spanish",
+      "pt": "Portuguese",
+      "de": "German"
+    },
+    "selectDataset": "Select Dataset:",
+    "datasets": {
+      "wikiart": "Wikiart",
+      "semart": "SemArt",
+      "museum": "Museum"
+    },
+    "imageSelection": "Image Selection:",
+    "segmentationOptions": {
+      "conservative": "Conservative",
+      "broader": "Broader"
+    },
+    "submitButton": "Submit",
+    "searching": "Searching...",
+    "chooseImagesTitle": "Choose one image for each section",
+    "sectionLabel": "Section:",
+    "imageAlt": "Section {{sectionIndex}} Image {{imageIndex}}",
+    "showMoreImages": "Show 5 Images per Section",
+    "saveStory": "Save Story",
+    "messages": {
+      "loginRequired": "Please log in to save.",
+      "selectAllImages": "Please select an image for every section before saving.",
+      "savedSuccessfully": "Saved successfully!",
+      "saveFailed": "Failed to save."
+    }
+  }
+}
