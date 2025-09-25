@@ -53,24 +53,22 @@ Now, describe the current image following the style and rules above.
 
 
 def build_prompt(dataset, info):
+    if not info:
+        return BASE_QUERY.format(metadata="")
+
     if dataset == "semart":
-        if info:
-            return BASE_QUERY.format(
-                metadata="\n\nYou may consider the following information:\n" + info
-            )
+        return BASE_QUERY.format(
+            metadata="\n\nYou may consider the following information:\n" + info
+        )
     elif dataset == "wikiart":
-        if info:
-            return BASE_QUERY.format(
-                metadata="\n\nYou may consider the following terms as visual hints:\n"
-                + info
-            )
-    elif dataset == "museum":
-        if isinstance(info, dict) and any(info.values()):
-            hint = "; ".join(f"{k}: {v}" for k, v in info.items() if v)
-            return BASE_QUERY.format(
-                metadata="\n\nYou may consider the following terms as visual hints:\n"
-                + hint
-            )
+        return BASE_QUERY.format(
+            metadata="\n\nYou may consider the following terms as visual hints:\n"
+            + info
+        )
+    elif dataset == "ipiranga":
+        return BASE_QUERY.format(
+            metadata="\n\nYou may consider the following information:\n" + info
+        )
 
     return BASE_QUERY.format(metadata="")
 
@@ -85,10 +83,6 @@ def load_data(dataset):
         df = pd.read_csv(path)
         df = df.sample(frac=1, random_state=42).reset_index(drop=True)
         return df.to_dict(orient="records")
-    elif dataset == "museum":
-        path = os.path.join(DATA_PATH, "Museum", "input_data_museum.json")
-        with open(path, "r", encoding="utf-8") as f:
-            return list(json.load(f).values())
     elif dataset == "ipiranga":
         path = os.path.join(DATA_PATH, "Ipiranga", "ipiranga.db")
         conn = sqlite3.connect(path)
@@ -112,8 +106,6 @@ def get_image_path(dataset, row):
         return os.path.join(SEMART_PATH, row.get("IMAGE_FILE", ""))
     elif dataset == "wikiart":
         return os.path.join(WIKI_PATH, row.get("filename", ""))
-    elif dataset == "museum":
-        return row.get("imageLinkHigh", "")
     elif dataset == "ipiranga":
         doc = row.get("document", "")
         if doc:
@@ -144,8 +136,6 @@ def get_info(dataset, row) -> str:
         return row.get("DESCRIPTION", "")
     elif dataset == "wikiart":
         return row.get("description", "")
-    elif dataset == "museum":
-        return row.get("subjectMatter", "")
     elif dataset == "ipiranga":
         return getValidInformationFromDb(
             row, ["id", "externalid", "url", "document", "code", "height", "width"]
@@ -238,7 +228,7 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
 
 if __name__ == "__main__":
     dataset = sys.argv[1]  # "semart", "wikiart", "museum", or "ipiranga"
-    valid_datasets = {"semart", "wikiart", "museum", "ipiranga"}
+    valid_datasets = {"semart", "wikiart", "ipiranga"}
     if dataset not in valid_datasets:
         print(
             f"❌ Invalid dataset '{dataset}'. Choose one of: {', '.join(valid_datasets)}."
