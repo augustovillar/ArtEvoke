@@ -66,5 +66,21 @@
     "createAccount": "Ou crie uma conta se você não está registrado",
     "errorInvalid": "Nome de usuário ou senha inválidos",
     "errorGeneral": "Algo deu errado. Por favor, tente novamente mais tarde."
+  },
+  "profile": {
+    "welcomeTitle": "Bem-vindo ao seu painel, {username}!",
+    "welcomeDescription": "Você pode verificar o histórico de suas histórias criadas ou peças de arte.",
+    "storyHistoryTitle": "Histórico de Geração de Histórias",
+    "artHistoryTitle": "Histórico de Busca de Arte",
+    "noStoriesYet": "Nenhuma história salva ainda.",
+    "noSearchesYet": "Nenhuma busca de arte salva ainda.",
+    "date": "Data:",
+    "delete": "Excluir",
+    "deleteSuccess": "Item excluído com sucesso.",
+    "deleteFailed": "Falha ao excluir item. Por favor, tente novamente.",
+    "loginToDelete": "Por favor, faça login para excluir.",
+    "imagesLabel": "Imagens:",
+    "storyImageAlt": "Imagem da História {number}",
+    "datasetImageAlt": "Imagem {dataset} {number}"
   }
 }

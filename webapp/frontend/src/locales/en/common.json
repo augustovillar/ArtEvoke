@@ -66,5 +66,21 @@
     "createAccount": "Or create an account if you aren't registered",
     "errorInvalid": "Invalid username or password",
     "errorGeneral": "Something went wrong. Please try again later."
+  },
+  "profile": {
+    "welcomeTitle": "Welcome to your dashboard, {username}!",
+    "welcomeDescription": "You can check the history of your created stories or art pieces.",
+    "storyHistoryTitle": "Story Generation History",
+    "artHistoryTitle": "Art Search History",
+    "noStoriesYet": "No saved stories yet.",
+    "noSearchesYet": "No saved art searches yet.",
+    "date": "Date:",
+    "delete": "Delete",
+    "deleteSuccess": "Item deleted successfully.",
+    "deleteFailed": "Failed to delete item. Please try again.",
+    "loginToDelete": "Please log in to delete.",
+    "imagesLabel": "Images:",
+    "storyImageAlt": "Story Image {number}",
+    "datasetImageAlt": "{dataset} Image {number}"
   }
 }
