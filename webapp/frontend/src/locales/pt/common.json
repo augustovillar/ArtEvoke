@@ -1,0 +1,45 @@
+{
+  "app": {
+    "name": "Art Evoke"
+  },
+  "navbar": {
+    "home": "Início",
+    "about": "Sobre",
+    "memoryReconstruction": "Reconstrução de Memória",
+    "artExploration": "Exploração de Arte",
+    "profile": "Perfil",
+    "logout": "Sair",
+    "account": "Conta",
+    "signUp": "Cadastrar",
+    "login": "Entrar",
+    "accessibility": "Acessibilidade"
+  },
+  "buttons": {
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "search": "Buscar",
+    "clear": "Limpar",
+    "delete": "Excluir",
+    "edit": "Editar"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados",
+    "contact": "Contato",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Serviço"
+  },
+  "language": {
+    "select": "Selecionar Idioma",
+    "english": "Inglês",
+    "portuguese": "Português"
+  },
+  "accessibility": {
+    "fontSize": "Tamanho da Fonte",
+    "theme": "Tema",
+    "readAloud": "Leitura em Voz Alta",
+    "highContrast": "Alto Contraste"
+  }
+}

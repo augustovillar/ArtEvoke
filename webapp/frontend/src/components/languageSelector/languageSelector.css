@@ -1,0 +1,47 @@
+.language-selector {
+  display: inline-block;
+  position: relative;
+}
+
+.language-select {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.language-select:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.language-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Dark theme support */
+.dark-theme .language-select {
+  background-color: #333;
+  color: white;
+  border-color: #555;
+}
+
+.dark-theme .language-select:hover {
+  background-color: #444;
+  border-color: #007bff;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .language-select {
+    min-width: 100px;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
