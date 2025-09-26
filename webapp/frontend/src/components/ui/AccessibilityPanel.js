@@ -1,6 +1,6 @@
 import React from 'react';
 import './AccessibilityPanel.css';
-import { useTheme } from './ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import FontSizeAdjuster from './FontSizeAdjuster';
 import ReadAloudButton from './ReadAloudButton';
 import { useTranslation } from 'react-i18next';

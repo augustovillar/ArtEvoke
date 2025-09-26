@@ -1,5 +1,5 @@
 import React from 'react';
-import { useReadAloud } from '../contexts/ReadAloudContext';
+import { useReadAloud } from '../../contexts/ReadAloudContext';
 import './ReadAloudButton.css';
 import { useTranslation } from 'react-i18next';
 

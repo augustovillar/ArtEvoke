@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
-import logo from './images/logepl.jpg';
-import { useTheme } from './components/ThemeContext';
-import AccessibilityPanel from './components/AccessibilityPanel';
-import LanguageSelector from './components/languageSelector/languageSelector';
+import logo from '../../../assets/images/logepl.jpg';
+import { useTheme } from '../../../contexts/ThemeContext';
+import AccessibilityPanel from '../../ui/AccessibilityPanel';
+import LanguageSelector from '../../../components/languageSelector/languageSelector';
 
 const Navbar = () => {
     const { t } = useTranslation('common');

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSupportedLanguages } from '../../118n/detector';
+import { getSupportedLanguages } from '../../i18n/detector';
 import './languageSelector.css';
 
 const LanguageSelector = ({ className = '' }) => {
