@@ -1,18 +1,11 @@
 // src/App.js
 import React from 'react';
-import './118n';
+import './i18n';
 import { Routes, Route } from 'react-router-dom';
-import Navbar from './Navbar';
-import Home from './Home';
-import About from './About';
-import Footer from './Footer';
-import Story from './Story';
-import Search from './Search';
-import SignUp from './SignUp';
-import Login from './Login';
-import Profile from './Profile';
-import './App.css';
-import { ThemeProvider } from './components/ThemeContext';
+import { Navbar, Footer } from './components/common';
+import { Home, About, Story, Search, SignUp, Login, Profile } from './pages';
+import './styles/App.css';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { ReadAloudProvider } from './contexts/ReadAloudContext';
 
 function App() {
