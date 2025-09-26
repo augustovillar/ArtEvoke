@@ -199,9 +199,9 @@ const Story = () => {
                                 value={dataset}
                                 onChange={handleDatasetChange}
                             >
-                                <option value="wikiart">{t('story.datasets.wikiart')}</option>
-                                <option value="semart">{t('story.datasets.semart')}</option>
-                                <option value="museum">{t('story.datasets.museum')}</option>
+                                <option value="wikiart">Wikiart</option>
+                                <option value="semart">SemArt</option>
+                                <option value="ipiranga">Ipiranga</option>
                             </select>
                         </div>
                         <div className="select-group">

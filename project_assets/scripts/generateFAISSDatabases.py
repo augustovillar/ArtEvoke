@@ -3,37 +3,53 @@ import pandas as pd
 import pickle
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from concurrent.futures import ThreadPoolExecutor
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "outputs", "descriptions")
 
-PATH_OUTPUT = os.path.join(SCRIPT_DIR,"outputs", "faiss")
+PATH_OUTPUT = os.path.join(SCRIPT_DIR, "outputs", "faiss")
 
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
 OUTPUT_FILES = {
-    "museum": "output_merged_museum.csv",
-    "semart": "output_merged_semart.csv",
-    "wikiart": "output_merged_wikiart.csv"
+    # "semart": "output_merged_semart.csv",
+    # "wikiart": "output_merged_wikiart.csv",
+    "ipiranga": "output_merged_ipiranga.csv",
 }
 
 COLUMNS = {
-    "museum": {
-        "desc": "description",
-        "meta": ["recordID", "titleText", "imageLinkHigh", "creatorDescription", "subjectMatter", "description"],
-        "renaming": {"imageLinkHigh": "file_name", "titleText": "title", "creatorDescription": "author"}
-    },
     "semart": {
         "desc": "description",
-        "meta": ["IMAGE_FILE", "DESCRIPTION", "AUTHOR", "TITLE", "TECHNIQUE", "DATE", "TYPE", "SCHOOL", "description"],
-        "renaming": {"IMAGE_FILE": "file_name", "TITLE": "title", "AUTHOR": "author", "TYPE": "genre"}
+        "meta": [
+            "IMAGE_FILE",
+            "DESCRIPTION",
+            "AUTHOR",
+            "TITLE",
+            "TECHNIQUE",
+            "DATE",
+            "TYPE",
+            "SCHOOL",
+            "description",
+        ],
+        "renaming": {
+            "IMAGE_FILE": "file_name",
+            "TITLE": "title",
+            "AUTHOR": "author",
+            "TYPE": "genre",
+        },
     },
     "wikiart": {
         "desc": "description",
         "meta": ["filename", "artist", "genre", "description"],
-        "renaming": {"filename": "file_name", "artist": "author", "genre": "genre"}
-    }
+        "renaming": {"filename": "file_name", "artist": "author", "genre": "genre"},
+    },
+    "ipiranga": {
+        "desc": "description",
+        "meta": ["id", "code", "description"],
+        "renaming": None,
+    },
 }
 
 
@@ -41,35 +57,46 @@ print("Loading model...")
 model0 = SentenceTransformer("thenlper/gte-large", device="cuda:0")
 model1 = SentenceTransformer("thenlper/gte-large", device="cuda:1")
 
+
 def generate_faiss_datasets(df, dataset_name, column_description, column_metadata):
     descriptions = df[column_description].tolist()
-    descriptions_part0 = descriptions[:len(descriptions)//2]
-    descriptions_part1 = descriptions[len(descriptions)//2:]
+    descriptions_part0 = descriptions[: len(descriptions) // 2]
+    descriptions_part1 = descriptions[len(descriptions) // 2 :]
 
-    part0_embeddings = model0.encode(descriptions_part0, normalize_embeddings=True).astype("float32")
-    part1_embeddings = model1.encode(descriptions_part1, normalize_embeddings=True).astype("float32")
+    def encode_part(model, descs):
+        return model.encode(descs, normalize_embeddings=True).astype("float32")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future0 = executor.submit(encode_part, model0, descriptions_part0)
+        future1 = executor.submit(encode_part, model1, descriptions_part1)
+        part0_embeddings = future0.result()
+        part1_embeddings = future1.result()
+
     embeddings = np.concatenate((part0_embeddings, part1_embeddings), axis=0)
 
     index_flat = faiss.IndexFlatIP(embeddings.shape[1])
     index_flat.add(embeddings)
 
     # Save FAISS index
-    faiss.write_index(index_flat, os.path.join(PATH_OUTPUT, f"{dataset_name}_index.faiss"))
+    faiss.write_index(
+        index_flat, os.path.join(PATH_OUTPUT, f"{dataset_name}_index.faiss")
+    )
 
     # Save metadata
     metadata = df[column_metadata].copy().reset_index(drop=True)
     renaming_dict = COLUMNS[dataset_name].get("renaming", {})
-    metadata.rename(columns=renaming_dict, inplace=True)
+    if renaming_dict:
+        metadata.rename(columns=renaming_dict, inplace=True)
 
     if "file_name" in metadata.columns:
         prefix_to_strip = "/DATA/public/siamese/dataset_mrbab/art-foto/"
-        metadata["file_name"] = metadata["file_name"].str.replace(prefix_to_strip, "", regex=False)
-    
+        metadata["file_name"] = metadata["file_name"].str.replace(
+            prefix_to_strip, "", regex=False
+        )
 
     with open(os.path.join(PATH_OUTPUT, f"{dataset_name}_metadata.pkl"), "wb") as f:
         pickle.dump(metadata, f)
 
-    # print(f"{dataset_name} done: {len(embeddings)} embeddings, index + metadata saved.")
 
 # Process each dataset
 for name, file_name in OUTPUT_FILES.items():

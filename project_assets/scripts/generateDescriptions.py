@@ -4,6 +4,7 @@ import torch
 import pandas as pd
 import random
 import multiprocessing as mp
+import sqlite3
 from tqdm import tqdm
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
@@ -17,7 +18,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DATA_PATH = os.path.join(SCRIPT_DIR, "..", "data")
 
-DESCRIPTION_PATH = os.path.join(SCRIPT_DIR,  "outputs", "descriptions")
+DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "outputs", "descriptions")
 
 MUESUEM_DATA_PATH = "/DATA/public/siamese/dataset_mrbab/art-foto"
 
@@ -25,31 +26,52 @@ MAX_PIXELS = 512 * 512
 DESC_COL_BASE = "description_Qwen2_5"
 
 
-BASE_QUERY = """Task: Describe the visual content of the following artwork in detail.
+BASE_QUERY = """
+Task: Describe the visual content of the following artwork in detail.
 Your description should focus only on what is visible in the image — such as people, objects, colors, emotions, actions, setting, and atmosphere.
 Do not include the title, artist, art movement, or historical context.
+
+Style:
+- Be accurate, descriptive, and grounded in what can be seen.
+- Write in flowing prose, not bullet points.
+- Avoid speculation unless it is strongly suggested by the visual elements.
 
 Example of a good description:
 “The lunette on the back wall of the loggia depicts a colorful fruit and vegetable market. The scene is split in two: women run their stalls beneath a tall arcade supported by a striking red pillar. Besides produce, other goods hang from a molding along the back wall.”
 
-Now, describe the current image following the same style.
-Be accurate, descriptive, and grounded in what can be seen.
+---
 
-{subject_hint}
+Additional Information (may vary across images, use only if useful to enrich the description):
+The following information provides metadata fields about the image. Treat them as hints, but **do not override what is visibly seen**. If the metadata conflicts with what you see, prioritize the image.
+
+{metadata}
+
+---
+
+Now, describe the current image following the style and rules above.
 """
 
+
 def build_prompt(dataset, info):
+    if not info:
+        return BASE_QUERY.format(metadata="")
+
     if dataset == "semart":
-        if info:
-            return BASE_QUERY.format(subject_hint="\n\nYou may consider the following information:\n" + info)
+        return BASE_QUERY.format(
+            metadata="\n\nYou may consider the following information:\n" + info
+        )
     elif dataset == "wikiart":
-        if info:
-            return BASE_QUERY.format(subject_hint="\n\nYou may consider the following terms as visual hints:\n" + info)
-    elif dataset == "museum":
-        if isinstance(info, dict) and any(info.values()):
-            hint = "; ".join(f"{k}: {v}" for k, v in info.items() if v)
-            return BASE_QUERY.format(subject_hint="\n\nYou may consider the following terms as visual hints:\n" + hint)
-    return BASE_QUERY.format(subject_hint="")
+        return BASE_QUERY.format(
+            metadata="\n\nYou may consider the following terms as visual hints:\n"
+            + info
+        )
+    elif dataset == "ipiranga":
+        return BASE_QUERY.format(
+            metadata="\n\nYou may consider the following information:\n" + info
+        )
+
+    return BASE_QUERY.format(metadata="")
+
 
 def load_data(dataset):
     if dataset == "semart":
@@ -61,33 +83,65 @@ def load_data(dataset):
         df = pd.read_csv(path)
         df = df.sample(frac=1, random_state=42).reset_index(drop=True)
         return df.to_dict(orient="records")
-    elif dataset == "museum":
-        path = os.path.join(DATA_PATH, "Museum", "input_data_museum.json")
-        with open(path, "r", encoding="utf-8") as f:
-            return list(json.load(f).values())
+    elif dataset == "ipiranga":
+        path = os.path.join(DATA_PATH, "Ipiranga", "ipiranga.db")
+        conn = sqlite3.connect(path)
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM ipiranga_entries")
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        data = [dict(zip(columns, row)) for row in rows]
+        conn.close()
+        return data
     else:
         raise ValueError("Unknown dataset")
 
+
 SEMART_PATH = os.path.join(DATA_PATH, "SemArt", "Images")
-WIKI_PATH = os.path.join(DATA_PATH, "WikiArt",  "Images")
+WIKI_PATH = os.path.join(DATA_PATH, "WikiArt", "Images")
+
 
 def get_image_path(dataset, row):
     if dataset == "semart":
         return os.path.join(SEMART_PATH, row.get("IMAGE_FILE", ""))
     elif dataset == "wikiart":
         return os.path.join(WIKI_PATH, row.get("filename", ""))
-    elif dataset == "museum":
-        return row.get("imageLinkHigh", "")
+    elif dataset == "ipiranga":
+        doc = row.get("document", "")
+        if doc:
+            return (
+                "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items" + doc
+            )
+        return ""
     return ""
 
-def get_info(dataset, row):
+
+def getValidInformationFromDb(row, exclude_cols=None) -> str:
+    if exclude_cols is None:
+        exclude_cols = {"id", "externalid", "url", "document"}
+    info_parts = []
+    for col, val in row.items():
+        if (
+            col not in exclude_cols
+            and pd.notna(val)
+            and isinstance(val, str)
+            and val.strip()
+        ):
+            info_parts.append(f"{col}: {val.strip()}")
+    return "\n".join(info_parts)
+
+
+def get_info(dataset, row) -> str:
     if dataset == "semart":
         return row.get("DESCRIPTION", "")
     elif dataset == "wikiart":
         return row.get("description", "")
-    elif dataset == "museum":
-        return row.get("subjectMatter", "")
+    elif dataset == "ipiranga":
+        return getValidInformationFromDb(
+            row, ["id", "externalid", "url", "document", "code", "height", "width"]
+        )
     return ""
+
 
 def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
     torch.cuda.set_device(gpu_id)
@@ -96,40 +150,58 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
     if os.path.exists(output_file):
         df_saved = pd.read_csv(output_file)
         df_saved[desc_col] = df_saved[desc_col].astype("string")
-        print(f"[GPU {gpu_id}] Resuming from {output_file} with {df_saved[desc_col].notna().sum()} done")
+        print(
+            f"[GPU {gpu_id}] Resuming from {output_file} with {df_saved[desc_col].notna().sum()} done"
+        )
     else:
         df_saved = pd.DataFrame(data_items)
         df_saved[desc_col] = pd.NA
 
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, device_map={"" : f"cuda:{gpu_id}"})
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        MODEL_NAME, dtype=torch.bfloat16, device_map={"": f"cuda:{gpu_id}"}
+    )
     processor = AutoProcessor.from_pretrained(MODEL_NAME)
 
-    for idx, row in tqdm(df_saved.iterrows(), total=len(df_saved), desc=f"GPU {gpu_id}", position=gpu_id):
+    for idx, row in tqdm(
+        df_saved.iterrows(), total=len(df_saved), desc=f"GPU {gpu_id}", position=gpu_id
+    ):
         desc_val = row.get(desc_col)
 
         if pd.notna(desc_val):
             continue
 
-        image_path = get_image_path(dataset, row)
-        if not os.path.exists(image_path):
+        image = get_image_path(dataset, row)
+        if not image.startswith("http") and not os.path.exists(image):
             df_saved.at[idx, desc_col] = "Image not found"
             continue
 
         try:
             prompt = build_prompt(dataset, get_info(dataset, row))
 
-            messages = [{
-                "role": "user", "content": [
-                    {"type": "image", "image": image_path, "max_pixels": MAX_PIXELS},
-                    {"type": "text", "text": prompt},
-            ],}]
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "image": image,
+                            "max_pixels": MAX_PIXELS,
+                        },
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ]
 
             text = processor.apply_chat_template(messages, add_generation_prompt=True)
             image_inputs, _ = process_vision_info(messages)
-            inputs = processor(text=[text], images=image_inputs, padding=True, return_tensors="pt").to(f"cuda:{gpu_id}")
+            inputs = processor(
+                text=[text], images=image_inputs, padding=True, return_tensors="pt"
+            ).to(f"cuda:{gpu_id}")
 
             output_ids = model.generate(**inputs, max_new_tokens=1000)
-            output_text = processor.batch_decode(output_ids, skip_special_tokens=True)[0]
+            output_text = processor.batch_decode(output_ids, skip_special_tokens=True)[
+                0
+            ]
 
             if "assistant" in output_text.lower():
                 parts = output_text.rsplit("assistant", 1)
@@ -138,6 +210,8 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
                 description = output_text.strip()
 
             df_saved.at[idx, desc_col] = description.replace("\n", " ")
+            if dataset == "ipiranga":
+                df_saved = df_saved[["id", "code", desc_col]]
             df_saved.to_csv(output_file, index=False)
 
         except Exception as e:
@@ -145,11 +219,20 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
             df_saved.to_csv(output_file, index=False)
             continue
 
+    # For ipiranga, keep only id, code, and description column
+    if dataset == "ipiranga":
+        df_saved = df_saved[["id", "code", desc_col]]
+    # Save final state
+    df_saved.to_csv(output_file, index=False)
+
+
 if __name__ == "__main__":
-    dataset = sys.argv[1]  # "semart", "wikiart", or "museum"
-    valid_datasets = {"semart", "wikiart", "museum"}
+    dataset = sys.argv[1]  # "semart", "wikiart", "museum", or "ipiranga"
+    valid_datasets = {"semart", "wikiart", "ipiranga"}
     if dataset not in valid_datasets:
-        print(f"❌ Invalid dataset '{dataset}'. Choose one of: {', '.join(valid_datasets)}.")
+        print(
+            f"❌ Invalid dataset '{dataset}'. Choose one of: {', '.join(valid_datasets)}."
+        )
         sys.exit(1)
 
     desc_col_base = f"description_Qwen2_5_{dataset}"
@@ -159,13 +242,15 @@ if __name__ == "__main__":
 
     records = load_data(dataset)
 
-    records = records[:10]
-
     mid = len(records) // 2
     part0, part1 = records[:mid], records[mid:]
 
-    p0 = mp.Process(target=process_partition, args=(dataset, part0, 0, output0, desc_col_base))
-    p1 = mp.Process(target=process_partition, args=(dataset, part1, 1, output1, desc_col_base))
+    p0 = mp.Process(
+        target=process_partition, args=(dataset, part0, 0, output0, desc_col_base)
+    )
+    p1 = mp.Process(
+        target=process_partition, args=(dataset, part1, 1, output1, desc_col_base)
+    )
 
     p0.start()
     p1.start()

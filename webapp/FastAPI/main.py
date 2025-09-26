@@ -14,7 +14,7 @@ app = FastAPI()
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,17 +22,26 @@ app.add_middleware(
 
 STATIC_DIR = os.getenv("STATIC_DIR", "static")
 # app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-app.mount("/art-images/wikiart", StaticFiles(directory=os.path.join(STATIC_DIR, "wikiart")), name="wikiart_images")
-app.mount("/art-images/semart", StaticFiles(directory=os.path.join(STATIC_DIR, "semart")), name="semart_images")
-app.mount("/art-images/museum", StaticFiles(directory=os.path.join(STATIC_DIR, "museum")), name="museum_images")
+app.mount(
+    "/art-images/wikiart",
+    StaticFiles(directory=os.path.join(STATIC_DIR, "wikiart")),
+    name="wikiart_images",
+)
+app.mount(
+    "/art-images/semart",
+    StaticFiles(directory=os.path.join(STATIC_DIR, "semart")),
+    name="semart_images",
+)
 
 # Include routers
 app.include_router(art_routes.router, prefix="/api", tags=["Art"])
 app.include_router(user_routes.router, prefix="/api", tags=["User"])
 
+
 @app.on_event("startup")
 async def startup_event():
     await database.connect_to_mongo()
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
