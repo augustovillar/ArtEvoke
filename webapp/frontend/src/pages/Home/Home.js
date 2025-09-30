@@ -2,9 +2,9 @@ import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './Home.css';
-import storyImage from './images/storyImage.png';
-import artImage from './images/artImage.png';
-import { useReadAloud } from './contexts/ReadAloudContext';
+import storyImage from '../../assets/images/storyImage.png';
+import artImage from '../../assets/images/artImage.png';
+import { useReadAloud } from '../../contexts/ReadAloudContext';
 
 const Home = () => {
     const { t } = useTranslation('common');

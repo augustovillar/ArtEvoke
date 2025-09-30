@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './About.css';
-import poster from './images/poster.png'
+import poster from '../../assets/images/poster.png';
 
 const About = () => {
     const { t } = useTranslation('common');

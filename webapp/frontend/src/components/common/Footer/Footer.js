@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './Footer.css';
-import logoEpl from './images/logepl.jpg';
-import logoUcl from './images/logoucl.png';
-import logoMuseum from './images/logo_museum.jpg';
-import logoIdLab from './images/idlab_logo.jpg';
+import logoEpl from '../../../assets/images/logepl.jpg';
+import logoUcl from '../../../assets/images/logoucl.png';
+import logoMuseum from '../../../assets/images/logo_museum.jpg';
+import logoIdLab from '../../../assets/images/idlab_logo.jpg';
 
 const Footer = () => {
     const { t } = useTranslation('common');

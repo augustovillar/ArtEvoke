@@ -14,7 +14,7 @@
 **/*.db
 **/*.db-shm
 **/*.db-wal
-**/pages/**
+**Ipiranga/pages/**
 
 # SemArt
 **/SemArt/Images

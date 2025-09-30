@@ -3,8 +3,8 @@ version: '3.8'
 services:
   backend:
     build: .
-    ports:
-      - "5001:5001"
+    expose:
+      - "5001" 
     depends_on:
       - mongo
     env_file:
@@ -20,8 +20,8 @@ services:
 
   mongo:
     image: mongo:7.0.5
-    ports:
-      - "27018:27017"
+    expose:
+      - "27017" 
     networks:
       - app_network
     volumes:

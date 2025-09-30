@@ -2,9 +2,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './Search.css';
-import SpeechInput from './SpeechInput';
+import SpeechInput from '../../features/speech';
 // import ReadAloudButton from './components/ReadAloudButton'; // Removed ReadAloudButton import
-import { useReadAloud } from './contexts/ReadAloudContext'; // Import useReadAloud
+import { useReadAloud } from '../../contexts/ReadAloudContext'; // Import useReadAloud
 
 const Search = () => {
     const { t } = useTranslation('common');

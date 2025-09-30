@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Story.css';
-import SpeechInput from './SpeechInput';
-import { useReadAloud } from './contexts/ReadAloudContext';
+import SpeechInput from '../../features/speech';
+import { useReadAloud } from '../../contexts/ReadAloudContext';
 import { useTranslation } from 'react-i18next';
 
 const Story = () => {
