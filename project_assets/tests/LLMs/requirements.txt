@@ -2,3 +2,5 @@ transformers
 pandas
 torch
 accelerate
+openai
+python-dotenv

@@ -2,12 +2,20 @@ import time
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import re, sys, os
 import pandas as pd
+import openai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 models = [
     "Qwen/Qwen3-1.7B",
     "Qwen/Qwen3-4B",
-    "microsoft/Phi-4-mini-instruct"
+    "microsoft/Phi-4-mini-instruct",
+    "sabia-3",
+    "sabiazinho-3",
 ]
+
+api_models = ["sabia-3", "sabiazinho-3"]
 
 art_descriptions = [
     "The painting presents a serene garden scene, rich with lush greenery and vibrant blooms. In the foreground, a variety of roses in shades of pink and white dominate the composition, their petals delicately detailed and arranged in clusters. The foliage is dense, with leaves of varying shades of green, creating a sense of depth and texture. A wooden fence runs horizontally across the lower part of the image, partially obscuring the view of the garden beyond.  In the mid-ground, a small figure, possibly a woman, is seated on a bench, her back turned to the viewer. She appears to be gazing into the distance, adding a contemplative element to the scene. The bench is positioned under a canopy of leaves, which filters the sunlight, casting dappled shadows on the ground. The background is filled with more greenery and hints of additional flowers, suggesting a continuation of the garden's beauty.  The overall atmosphere is tranquil and idyllic, evoking a sense of peace and natural beauty. The artist's attention to detail in the flora and the subtle presence of the human figure create a harmonious blend of nature and humanity within this picturesque setting.",
@@ -16,9 +24,7 @@ art_descriptions = [
 ]
 
 base_prompt = (
-    "Descriptions:\n"
-    + "\n".join(f"- {desc}" for desc in art_descriptions)
-    + "\n\n"
+    "Descriptions:\n" + "\n".join(f"- {desc}" for desc in art_descriptions) + "\n\n"
     "Write a story that takes inspiration on these scenes. Use 2–3 short paragraphs (approximately). "
     "Tell it like a simple, flowing story with a start, middle and an end. The paragraphs have to be conneced and follow a sequence of events."
 )
@@ -30,47 +36,84 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RUN_INFO = os.path.join(SCRIPT_DIR, "llm_stories.csv")
 EVALUATION_INFO = os.path.join(SCRIPT_DIR, "llm_evaluation.csv")
 
+
 def is_successful_story(text):
-    sentences = re.split(r'(?<=[.!?]) +', text.strip())
-    return len(sentences) >= 2 and any(" and " in s or "then" in s or "," in s for s in sentences)
+    sentences = re.split(r"(?<=[.!?]) +", text.strip())
+    return len(sentences) >= 2 and any(
+        " and " in s or "then" in s or "," in s for s in sentences
+    )
+
 
 def run_models():
     rows = []
 
     for model_name in models:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name, torch_dtype="auto", device_map="cuda:0"
-        )
-
-        text = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
-        )
-        model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-
-        for i in range(REPEAT):
-            start = time.time()
-            generated_ids = model.generate(
-                **model_inputs,
-                max_new_tokens=1024,
-                do_sample=True,
-                temperature=0.9,
+        if model_name in api_models:
+            client = openai.OpenAI(
+                api_key=os.getenv("MARITACA_API_KEY"),
+                base_url="https://chat.maritaca.ai/api",
             )
-            end = time.time()
-            output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist()
-            content = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
-            duration = end - start
-            success = is_successful_story(content)
-            rows.append({
-                "model": model_name,
-                "run": i + 1,
-                "generation_time": duration,
-                "success": success,
-                "story": content
-            })
+            for i in range(REPEAT):
+                start = time.time()
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    max_tokens=1024,
+                    temperature=0.9,
+                )
+                end = time.time()
+                content = response.choices[0].message.content.strip()
+                duration = end - start
+                success = is_successful_story(content)
+                rows.append(
+                    {
+                        "model": model_name,
+                        "run": i + 1,
+                        "generation_time": duration,
+                        "success": success,
+                        "story": content,
+                    }
+                )
+        else:
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name, torch_dtype="auto", device_map="cuda:0"
+            )
+
+            text = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=False,
+            )
+            model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+            for i in range(REPEAT):
+                start = time.time()
+                generated_ids = model.generate(
+                    **model_inputs,
+                    max_new_tokens=1024,
+                    do_sample=True,
+                    temperature=0.9,
+                )
+                end = time.time()
+                output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
+                content = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
+                duration = end - start
+                success = is_successful_story(content)
+                rows.append(
+                    {
+                        "model": model_name,
+                        "run": i + 1,
+                        "generation_time": duration,
+                        "success": success,
+                        "story": content,
+                    }
+                )
 
     df = pd.DataFrame(rows)
     df.to_csv(RUN_INFO, index=False)
+
 
 def evaluate():
     df = pd.read_csv(RUN_INFO)
@@ -87,7 +130,9 @@ def evaluate():
             print(row["story"])
             valid_success = False
             while not valid_success:
-                success_input = input("Is this a successful story? (y/n): ").strip().lower()
+                success_input = (
+                    input("Is this a successful story? (y/n): ").strip().lower()
+                )
                 if success_input in ("y", "n"):
                     valid_success = True
                     if success_input == "y":
@@ -105,24 +150,28 @@ def evaluate():
         success_rate = manual_successes / len(group)
         avg_quality = (
             sum(manual_quality_scores) / len(manual_quality_scores)
-            if manual_quality_scores else 0
+            if manual_quality_scores
+            else 0
         )
 
-        evaluation_summary.append({
-            "Model": model_name,
-            "Avg Time (s)": round(avg_time, 2),
-            "Manual Success Rate (%)": round(success_rate * 100, 1),
-            "Avg Quality Score (1–5)": round(avg_quality, 2)
-        })
+        evaluation_summary.append(
+            {
+                "Model": model_name,
+                "Avg Time (s)": round(avg_time, 2),
+                "Manual Success Rate (%)": round(success_rate * 100, 1),
+                "Avg Quality Score (1–5)": round(avg_quality, 2),
+            }
+        )
 
     summary_df = pd.DataFrame(evaluation_summary)
     print("\n=== Evaluation Summary ===")
     print(summary_df.to_string(index=False))
     summary_df.to_csv("llm_manual_evaluation_summary.csv", index=False)
 
+
 if __name__ == "__main__":
     mode = sys.argv[1]
     if mode == "run":
         run_models()
     elif mode == "evaluate":
-        evaluate()        
+        evaluate()
