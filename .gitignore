@@ -6,9 +6,6 @@
 **/.DS_Store
 ._*
 
-# Data
-**/embeddings
-
 #Ipiranga
 **/all_items_filtered.json
 **/*.db
@@ -55,3 +52,5 @@ project_assets/scripts/outputs/descriptions/?*.csv
 project_assets/scripts/outputs/faiss/?*.faiss
 project_assets/scripts/outputs/faiss/?*.pkl
 .gitignore
+
+**/.env

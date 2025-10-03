@@ -44,9 +44,9 @@ model_names = {
 }
 
 print_results_of = {
-    "test_LMMs/SemArt_sample2000/15281-111geric.jpg": 254,
-    "test_LMMs/SemArt_sample2000/06684-village.jpg": 1,
-    "test_LMMs/SemArt_sample2000/28363-1market.jpg": 49,
+    "project_assets/data/SemArt/Images/15281-111geric.jpg": 254,
+    "project_assets/data/SemArt/Images/06684-village.jpg": 1,
+    "project_assets/data/SemArt/Images/28363-1market.jpg": 49,
 }
 
 
@@ -382,13 +382,22 @@ def calculate_recall(
     for i in indices:
         print(f"\nQuery {i}:")
         print(f"Description: {df.iloc[i]['original_description']}")
-        print(f"Ground truth image: {df.iloc[i]['image_file']}")
+        print(
+            f"Ground truth image: {df.iloc[i]['image_file'].replace(
+                "test_LMMs/SemArt_sample2000/", "project_assets/data/SemArt/Images/"
+            )}"
+        )
         for rank in range(len(combined_I[i])):
             idx = combined_I[i][rank]
             retrieved_item = combined_metadata[idx]
-            retrieved_image = retrieved_item["image_file"]
+            retrieved_image = retrieved_item["image_file"].replace(
+                "test_LMMs/SemArt_sample2000/", "project_assets/data/SemArt/Images/"
+            )
             tag = retrieved_item.get("tag", "N/A")
-            mark = "✅" if retrieved_image == df.iloc[i]["image_file"] else "❌"
+            ground_truth_image = df.iloc[i]["image_file"].replace(
+                "test_LMMs/SemArt_sample2000/", "project_assets/data/SemArt/Images/"
+            )
+            mark = "✅" if retrieved_image == ground_truth_image else "❌"
             print(
                 f"  Rank {rank+1}: {retrieved_image} [{tag}] (Score: {combined_D[i][rank]:.4f}) {mark}"
             )
