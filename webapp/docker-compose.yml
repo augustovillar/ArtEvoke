@@ -18,6 +18,7 @@ services:
     environment:
       - STATIC_DIR=/app/static
     volumes:
+      - ./FastAPI:/app
       - ./FastAPI/static/semart:/app/static/semart
       - ./FastAPI/static/wikiart:/app/static/wikiart
       - ./FastAPI/db:/app/db
