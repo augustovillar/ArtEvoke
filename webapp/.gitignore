@@ -11,3 +11,5 @@ FastAPI/venv
 .DS_Store
 __pycache__
 FastAPI/faiss/*
+
+!**/.gitkeep

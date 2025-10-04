@@ -28,22 +28,22 @@ embedding_model = SentenceTransformer("thenlper/gte-large")
 
 # Load FAISS index and metadata once
 print("Loading FAISS index and metadata...")
-wikiIndexImages = faiss.read_index("./FAISS/index/wikiart_index.faiss")
-with open("./FAISS/metadata/wikiart_metadata.pkl", "rb") as f:
+wikiIndexImages = faiss.read_index("../data/embeddings/wikiart_index.faiss")
+with open("../data/embeddings/wikiart_metadata.pkl", "rb") as f:
     wikiMetadataImages = pickle.load(f)
 
-semArtIndexImages = faiss.read_index("./FAISS/index/semart_index.faiss")
-with open("./FAISS/metadata/semart_metadata.pkl", "rb") as f:
+semArtIndexImages = faiss.read_index("../data/embeddings/semart_index.faiss")
+with open("../data/embeddings/semart_metadata.pkl", "rb") as f:
     semArtMetadataImages = pickle.load(f)
 
-ipirangaIndexImages = faiss.read_index("./FAISS/index/ipiranga_index.faiss")
-with open("./FAISS/metadata/ipiranga_metadata.pkl", "rb") as f:
+ipirangaIndexImages = faiss.read_index("../data/embeddings/museum_index.faiss")
+with open("../data/embeddings/museum_metadata.pkl", "rb") as f:
     ipirangaMetadataImages = pickle.load(f)
 
 print("FAISS index and metadata loaded successfully!")
 
 # Connect to ipiranga database
-ipiranga_conn = sqlite3.connect("./db/ipiranga.db")
+ipiranga_conn = sqlite3.connect("../data/db/ipiranga.db")
 
 index_by_dataset = {
     "wikiart": wikiIndexImages,
