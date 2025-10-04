@@ -5,7 +5,8 @@ import faiss
 import pickle
 import torch
 import numpy as np
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import openai
+import os
 import logging
 import sqlite3
 
@@ -15,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-MODEL_NAME = "Qwen/Qwen3-1.7B"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME, torch_dtype="auto", device_map="cuda:0"
+# Maritaca AI client
+client = openai.OpenAI(
+    api_key=os.getenv("MARITACA_API_KEY"),
+    base_url="https://chat.maritaca.ai/api",
 )
 
 # Load the model **once** at startup
@@ -195,19 +196,13 @@ async def generate_story(body: dict):
 
     messages = [{"role": "user", "content": base_prompt}]
 
-    text = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
-    )
-    model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-
-    generated_ids = model.generate(
-        **model_inputs,
-        max_new_tokens=1024,
-        do_sample=True,
+    response = client.chat.completions.create(
+        model="sabiazinho-3",
+        messages=messages,
+        max_tokens=1024,
         temperature=0.9,
     )
 
-    output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
-    story = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
+    story = response.choices[0].message.content.strip()
 
     return {"text": story}

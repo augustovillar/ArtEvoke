@@ -92,3 +92,4 @@ deep-translator==1.11.4
 sentence-transformers==4.1.0
 pandas==2.2.3
 hf-xet==1.1.2
+openai==1.58.1
