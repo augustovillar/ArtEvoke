@@ -7,7 +7,9 @@
 ._*
 
 # Data
-**/embeddings
+**/data/embeddings/**
+**/data/static/**
+
 
 #Ipiranga
 **/all_items_filtered.json
@@ -57,3 +59,6 @@ project_assets/scripts/outputs/faiss/?*.pkl
 .gitignore
 
 **/.env
+
+# keep all .gitkeep
+!**/.gitkeep

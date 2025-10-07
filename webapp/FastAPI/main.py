@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-STATIC_DIR = os.getenv("STATIC_DIR", "static")
+STATIC_DIR = os.getenv("STATIC_DIR", "../data/static")
 # app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount(
     "/art-images/wikiart",
