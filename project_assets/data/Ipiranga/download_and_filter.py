@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, sqlite3, asyncio, aiohttp, aiofiles, unicodedata, uuid, shutil
+import os, sys, json, asyncio, aiohttp, aiofiles, unicodedata, uuid, shutil
 from typing import Any, Dict, List, Union, Optional
 
 # -------------------- Config --------------------
@@ -18,7 +18,6 @@ TOTAL_PAGES = 312
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "pages")
 COMBINED_FILTERED = os.path.join(SCRIPT_DIR, "all_items_filtered.json")
-DB_PATH = os.path.join(SCRIPT_DIR, "ipiranga.db")
 OUTPUT_SQL = os.path.join(SCRIPT_DIR, "Ipiranga_insert.sql")
 
 CONCURRENCY = 10
@@ -252,37 +251,6 @@ async def write_json(path: str, data: Any):
         await f.write(json.dumps(data, ensure_ascii=False))
 
 
-def ensure_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        cur = conn.cursor()
-        # Only flat table with explicit columns (all TEXT)
-        cols_sql = ", ".join([f'"{c}" TEXT' for c in FLAT_COLUMNS])
-        cur.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS ipiranga_entries(
-                {cols_sql},
-                PRIMARY KEY(id)
-            )
-        """
-        )
-        # optional indexes
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_ipiranga_entries_title ON ipiranga_entries(title)"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_ipiranga_entries_code ON ipiranga_entries(code)"
-        )
-        conn.commit()
-        # pragmas
-        cur.execute("PRAGMA journal_mode=WAL;")
-        cur.execute("PRAGMA synchronous=NORMAL;")
-        conn.commit()
-    finally:
-        conn.close()
-
-
 # -------------------- Scalar coercion --------------------
 PREFERRED_KEYS = ("value", "title", "name", "label")
 
@@ -325,7 +293,7 @@ def _coerce_scalar(value: Any) -> Optional[str]:
 def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
     row: Dict[str, Optional[str]] = {c: None for c in FLAT_COLUMNS}
 
-    row["id"] = str(uuid.uuid4())
+    # row["id"] = str(uuid.uuid4())  # Remove random UUID
 
     # externalId: original id if present
     ext_id = None
@@ -351,6 +319,9 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
             val = val[:]
         row[col] = val
 
+    if row["document"]:
+        row["id"] = str(uuid.uuid5(uuid.NAMESPACE_DNS, row["document"]))
+
     data_obj = item.get("data")
     if isinstance(data_obj, dict):
         for orig_key, eng_key in FIELD_MAPPING.items():
@@ -362,45 +333,6 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
             row[k] = None
 
     return row
-
-
-def upsert_items_sqlite(raw_items: List[Dict[str, Any]]):
-    ensure_db()
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        cur = conn.cursor()
-        cur.execute("BEGIN")
-
-        # Insert/Upsert only flat rows
-        cols = FLAT_COLUMNS
-        placeholders = ", ".join(["?"] * len(cols))
-        col_list_sql = ", ".join([f'"{c}"' for c in cols])
-        insert_flat = (
-            f"INSERT INTO ipiranga_entries({col_list_sql}) VALUES({placeholders}) ON CONFLICT(id) DO UPDATE SET "
-            + ", ".join([f'"{c}"=excluded."{c}"' for c in cols])
-        )
-
-        filtered_count = 0
-        total_count = 0
-
-        for it in raw_items:
-            total_count += 1
-            row = extract_flat_row(it)
-
-            # Filter by selected types - only save items with selected types
-            item_type = row.get("type")
-            if item_type and item_type in SELECTED_TYPES:
-                # Also check that document field exists (has image)
-                if row.get("document"):
-                    cur.execute(insert_flat, [row[c] for c in cols])
-                    filtered_count += 1
-
-        conn.commit()
-        print(
-            f"Filtered items: {filtered_count} out of {total_count} total items saved to database"
-        )
-    finally:
-        conn.close()
 
 
 def escape_sql_string(value):
