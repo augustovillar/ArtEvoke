@@ -57,3 +57,7 @@ project_assets/scripts/outputs/faiss/?*.pkl
 .gitignore
 
 **/.env
+
+# Ignore for now all .sql
+*.sql
+SemArt.zip

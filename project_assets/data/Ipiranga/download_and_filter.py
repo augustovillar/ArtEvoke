@@ -19,6 +19,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "pages")
 COMBINED_FILTERED = os.path.join(SCRIPT_DIR, "all_items_filtered.json")
 DB_PATH = os.path.join(SCRIPT_DIR, "ipiranga.db")
+OUTPUT_SQL = os.path.join(SCRIPT_DIR, "Ipiranga_insert.sql")
 
 CONCURRENCY = 10
 TIMEOUT = 60
@@ -402,6 +403,131 @@ def upsert_items_sqlite(raw_items: List[Dict[str, Any]]):
         conn.close()
 
 
+def escape_sql_string(value):
+    """Escape single quotes and backslashes for SQL INSERT statements"""
+    if value is None or value == "":
+        return "NULL"
+    value = str(value)
+    value = value.replace("\\", "\\\\").replace("'", "''")
+    return f"'{value}'"
+
+
+def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
+    """Generate SQL INSERT statements directly from filtered items"""
+    print("Generating SQL INSERT statements for Ipiranga...")
+
+    # Filter and extract rows
+    filtered_rows = []
+    filtered_count = 0
+    total_count = 0
+
+    for it in raw_items:
+        total_count += 1
+        row = extract_flat_row(it)
+
+        # Filter by selected types - only save items with selected types
+        item_type = row.get("type")
+        if item_type and item_type in SELECTED_TYPES:
+            # Also check that document field exists (has image)
+            if row.get("document"):
+                filtered_rows.append(row)
+                filtered_count += 1
+
+    print(
+        f"Filtered items: {filtered_count} out of {total_count} total items will be saved to SQL"
+    )
+
+    if len(filtered_rows) == 0:
+        print("No items to export!")
+        return
+
+    with open(OUTPUT_SQL, "w", encoding="utf-8") as f:
+        # Write table creation statement matching your schema
+        f.write("-- Ipiranga Dataset SQL Import\n")
+        f.write("-- Generated automatically from download_and_filter.py\n")
+        f.write(f"-- Total records: {len(filtered_rows)}\n\n")
+
+        f.write("CREATE TABLE IF NOT EXISTS Ipiranga (\n")
+        f.write("    id CHAR(36) PRIMARY KEY,\n")
+        f.write("    external_id CHAR(36),\n")
+        f.write("    url VARCHAR(100),\n")
+        f.write("    document VARCHAR(100),\n")
+        f.write("    code VARCHAR(20),\n")
+        f.write("    title VARCHAR(100),\n")
+        f.write("    description TEXT,\n")
+        f.write("    type VARCHAR(50),\n")
+        f.write("    location VARCHAR(50),\n")
+        f.write("    century VARCHAR(50),\n")
+        f.write("    decade VARCHAR(20),\n")
+        f.write("    date DATE,\n")
+        f.write("    period VARCHAR(20),\n")
+        f.write("    technique VARCHAR(50),\n")
+        f.write("    height VARCHAR(8),\n")
+        f.write("    width VARCHAR(8),\n")
+        f.write("    color VARCHAR(20),\n")
+        f.write("    history TEXT,\n")
+        f.write("    collection_ref TEXT,\n")
+        f.write("    bibliography TEXT,\n")
+        f.write("    collection_alt TEXT,\n")
+        f.write("    description_generated TEXT,\n")
+        f.write("    INDEX idx_type (type),\n")
+        f.write("    INDEX idx_code (code),\n")
+        f.write("    INDEX idx_title (title)\n")
+        f.write(
+            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
+        )
+
+        # Write INSERT statements in batches
+        batch_size = 100
+        total_rows = len(filtered_rows)
+
+        for i in range(0, total_rows, batch_size):
+            batch = filtered_rows[i : i + batch_size]
+
+            f.write(
+                "INSERT INTO Ipiranga (id, external_id, url, document, code, title, description, type, location, century, decade, date, period, technique, height, width, color, history, collection_ref, bibliography, collection_alt, description_generated) VALUES\n"
+            )
+
+            values = []
+            for row_dict in batch:
+                # Map fields to match schema
+                id_val = escape_sql_string(row_dict.get("id"))
+                external_id = escape_sql_string(row_dict.get("externalid"))
+                url = escape_sql_string(row_dict.get("url"))
+                document = escape_sql_string(row_dict.get("document"))
+                code = escape_sql_string(row_dict.get("code"))
+                title = escape_sql_string(row_dict.get("title"))
+                description = escape_sql_string(row_dict.get("description"))
+                type_val = escape_sql_string(row_dict.get("type"))
+                location = escape_sql_string(row_dict.get("location"))
+                century = escape_sql_string(row_dict.get("century"))
+                decade = escape_sql_string(row_dict.get("decade"))
+                date_val = escape_sql_string(row_dict.get("date"))
+                period = escape_sql_string(row_dict.get("period"))
+                technique = escape_sql_string(row_dict.get("technique"))
+                height = escape_sql_string(row_dict.get("height"))
+                width = escape_sql_string(row_dict.get("width"))
+                color = escape_sql_string(row_dict.get("color"))
+                history = escape_sql_string(row_dict.get("history"))
+                collection_ref = escape_sql_string(row_dict.get("collection_ref"))
+                bibliography = escape_sql_string(row_dict.get("bibliography"))
+                collection_alt = escape_sql_string(row_dict.get("collection_alt"))
+                description_generated = ""  # Initialize as NULL
+
+                values.append(
+                    f"    ({id_val}, {external_id}, {url}, {document}, {code}, {title}, {description}, {type_val}, {location}, {century}, {decade}, {date_val}, {period}, {technique}, {height}, {width}, {color}, {history}, {collection_ref}, {bibliography}, {collection_alt}, {description_generated})"
+                )
+
+            f.write(",\n".join(values))
+            f.write(";\n\n")
+
+        print(f"SQL file generated: {OUTPUT_SQL}")
+        print(
+            f"Total INSERT statements: {(total_rows + batch_size - 1) // batch_size} batches"
+        )
+        print(f"Total records: {total_rows}")
+
+
 async def main():
     # 1) If COMBINED_FILTERED exists, skip downloading; otherwise download all pages and filter them.
     if os.path.exists(COMBINED_FILTERED):
@@ -416,12 +542,9 @@ async def main():
         await write_json(COMBINED_FILTERED, all_items)
         print(f"Combined saved to {COMBINED_FILTERED} with {len(all_items)} items")
 
-    # 2) Write to SQLite: only selected types with images
-    print("Writing to SQLite (filtering by selected types)...")
-    upsert_items_sqlite(all_items)
-    print(
-        f"SQLite ready at {DB_PATH} (table: 'ipiranga_entries' with selected types only)."
-    )
+    # 2) Generate SQL INSERT statements directly (with filtering)
+    print("Generating SQL INSERT file with filtering...")
+    generate_sql_inserts(all_items)
 
     # 3) Clean up: delete the pages folder if it exists
     if os.path.exists(OUT_DIR):
