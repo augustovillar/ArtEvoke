@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Story.css';
 import SpeechInput from '../../features/speech';
 import { useReadAloud } from '../../contexts/ReadAloudContext';
 import { useTranslation } from 'react-i18next';
+import InterruptionModal from '../../components/interruptionModal';
+import { INTERRUPTION_CONFIG } from '../../config/interruption.config';
 
 const Story = () => {
     const { t } = useTranslation();
+    const location = useLocation();
+    const navigate = useNavigate();
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
 
@@ -14,12 +19,21 @@ const Story = () => {
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
 
+    // Estados para interrupção
+    const [showInterruption, setShowInterruption] = useState(false);
+    const [savedStoryData, setSavedStoryData] = useState(null);
+
     const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
     const [segmentation, setSegmentation] = useState('conservative');
     const [numImagesPerSection, setNumImagesPerSection] = useState(1);
 
     const [loading, setLoading] = useState(false);
+
+    // Verifica se deve mostrar interrupção 
+    // PARA TESTE: deixado como true para sempre mostrar a interrupção
+    // FUTURO: quando vier das sessões, trocar por: location.state?.fromSession || false
+    const shouldShowInterruption = true;
 
     // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
@@ -125,6 +139,15 @@ const Story = () => {
         .then(data => {
             setSaveMessage(t('story.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
+            
+            // Após salvar com sucesso, verificar se deve mostrar interrupção
+            if (shouldShowInterruption) {
+                setSavedStoryData(saveData);
+                setShowInterruption(true);
+            } else {
+                // Se não tem interrupção, vai direto para próxima etapa (futura)
+                handleProceedToNextStep(saveData);
+            }
         })
         .catch(error => {
             console.error('Error saving:', error);
@@ -135,6 +158,28 @@ const Story = () => {
 
     const handleRequestMoreImages = () => {
         handleSubmit(5);
+    };
+
+    // Função chamada quando a interrupção é completada
+    const handleInterruptionComplete = () => {
+        setShowInterruption(false);
+        handleProceedToNextStep(savedStoryData);
+    };
+
+    // Função para prosseguir para próxima etapa (preparado para futuras implementações)
+    const handleProceedToNextStep = (storyData) => {
+        console.log("Prosseguindo para próxima etapa (avaliação futura)...");
+        console.log("Story Data:", storyData);
+        
+        // Futuro: navigate('/evaluation/art-exploration', { 
+        //     state: { 
+        //         storyData,
+        //         mode: 'art_exploration'
+        //     } 
+        // });
+        
+        // Por enquanto, só mostra uma mensagem
+        alert("Etapa concluída! (Futuramente será redirecionado para avaliação)");
     };
 
     const handleLanguageChange = (event) => {
@@ -271,6 +316,16 @@ const Story = () => {
                     {saveMessage && <p>{saveMessage}</p>}
                 </div>
             )}
+
+            {/* Modal de Interrupção */}
+            <InterruptionModal
+                isOpen={showInterruption}
+                duration={INTERRUPTION_CONFIG.ART_EXPLORATION.duration}
+                title={INTERRUPTION_CONFIG.ART_EXPLORATION.title}
+                message={INTERRUPTION_CONFIG.ART_EXPLORATION.message}
+                buttonText={INTERRUPTION_CONFIG.ART_EXPLORATION.buttonText}
+                onComplete={handleInterruptionComplete}
+            />
         </div>
     );
 };
