@@ -1,4 +1,4 @@
-.search-textbox {
+.art-exploration-textbox {
     width: calc(100% - 40px);
     min-height: 50px;
     padding: 10px;
@@ -172,7 +172,7 @@
     width: 100%;
 }
 
-.search-textbox {
+.art-exploration-textbox {
     width: calc(100% - 40px);
     margin-top: 20px;
 }

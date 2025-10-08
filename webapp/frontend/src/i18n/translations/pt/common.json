@@ -91,7 +91,7 @@
     "storyImageAlt": "Imagem da História {{number}}",
     "datasetImageAlt": "Imagem {{dataset}} {{number}}"
   },
-  "search": {
+  "artExploration": {
     "title": "Instruções de Exploração de Arte",
     "description1": "A ferramenta de exploração de arte permite buscar peças de arte digitando algumas palavras-chave. Nosso modelo de IA retornará algumas pinturas do nosso banco de dados, e você pode então selecionar a que achar mais interessante, e o modelo gerará uma história baseada nela.",
     "description2": "Finalmente, se a história gerada não for do seu agrado, você pode escolher regenerar uma nova história, ou recomeçar.",
