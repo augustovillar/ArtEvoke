@@ -1,10 +1,13 @@
 // src/Search.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Search.css';
 import SpeechInput from '../../features/speech';
 // import ReadAloudButton from './components/ReadAloudButton'; // Removed ReadAloudButton import
 import { useReadAloud } from '../../contexts/ReadAloudContext'; // Import useReadAloud
+import InterruptionModal from '../../components/interruptionModal';
+import { INTERRUPTION_CONFIG } from '../../config/interruption.config';
 
 const Search = () => {
     const { t } = useTranslation('common');
@@ -24,6 +27,16 @@ const Search = () => {
 
     const [responseText, setResponseText] = useState(null);
     const [saveMessage, setSaveMessage] = useState('');
+
+    // Interruption states
+    const [showInterruption, setShowInterruption] = useState(false);
+    const [savedStoryData, setSavedStoryData] = useState(null);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // For testing, always show interruption. FUTURE: use location.state?.fromSession
+    const shouldShowInterruption = true;
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
@@ -131,6 +144,7 @@ const Search = () => {
             return response.json();
         })
         .then((data) => {
+            // Apenas definir o texto gerado; a interrupção só será exibida quando o usuário salvar
             setResponseText(data.text);
         })
         .catch((error) => {
@@ -212,12 +226,38 @@ const Search = () => {
         .then((data) => {
             setSaveMessage(t('search.storySaved'));
             setTimeout(() => setSaveMessage(''), 3000);
+
+            // Após salvar com sucesso, verificar se deve mostrar interrupção
+            const saveData = {
+                storyText: responseText,
+                selectedImages: selectedImages,
+            };
+
+            if (shouldShowInterruption) {
+                setSavedStoryData(saveData);
+                setShowInterruption(true);
+            } else {
+                handleProceedToNextStep(saveData);
+            }
         })
         .catch((error) => {
             console.error('There was a problem saving the story:', error);
             setSaveMessage(t('search.saveFailed'));
             setTimeout(() => setSaveMessage(''), 3000);
         });
+    };
+
+    // Função chamada quando a interrupção é completada
+    const handleInterruptionComplete = () => {
+        setShowInterruption(false);
+        handleProceedToNextStep(savedStoryData);
+    };
+
+    // Função para prosseguir para próxima etapa (preparado para futuras implementações)
+    const handleProceedToNextStep = (data) => {
+        console.log('Prosseguindo para avaliação (futuro) com:', data);
+        // Futuro: navigate('/evaluation/memory-reconstruction', { state: { data } });
+        alert('Interrupção concluída — futuramente irá para avaliação.');
     };
 
     const handleLanguageChange = (event) => {
@@ -372,6 +412,16 @@ const Search = () => {
                     {saveMessage && <p>{saveMessage}</p>}
                 </div>
             )}
+
+            {/* Modal de Interrupção */}
+            <InterruptionModal
+                isOpen={showInterruption}
+                duration={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.duration}
+                title={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.title}
+                message={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.message}
+                buttonText={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.buttonText}
+                onComplete={handleInterruptionComplete}
+            />
         </div>
     );
 };
