@@ -25,6 +25,20 @@
     "delete": "Excluir",
     "edit": "Editar"
   },
+  "interruption": {
+    "artExploration": {
+      "title": "História Gerada com Sucesso!",
+      "message": "Por favor, aguarde um momento antes de prosseguir para a avaliação.",
+      "buttonText": "Continuar para Avaliação",
+      "waitText": "Aguarde {{seconds}}s..."
+    },
+    "memoryReconstruction": {
+      "title": "Visualização Concluída!",
+      "message": "Reserve um momento para refletir sobre as imagens que você viu.",
+      "buttonText": "Iniciar Avaliação",
+      "waitText": "Aguarde {{seconds}}s..."
+    }
+  },
   "footer": {
     "rights": "Todos os direitos reservados",
     "contact": "Contato",

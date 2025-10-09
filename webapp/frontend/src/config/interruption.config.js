@@ -1,15 +1,11 @@
 export const INTERRUPTION_CONFIG = {
   ART_EXPLORATION: {
     duration: 5, // segundos
-    title: "História Gerada com Sucesso!",
-    message: "Por favor, aguarde um momento antes de prosseguir para a avaliação.",
-    buttonText: "Continuar para Avaliação"
+    translationKey: "interruption.artExploration"
   },
   MEMORY_RECONSTRUCTION: {
     duration: 7, // segundos
-    title: "Visualização Concluída!",
-    message: "Reserve um momento para refletir sobre as imagens que você viu.",
-    buttonText: "Iniciar Avaliação"
+    translationKey: "interruption.memoryReconstruction"
   }
 };
 

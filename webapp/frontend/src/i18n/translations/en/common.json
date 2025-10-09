@@ -25,6 +25,20 @@
     "delete": "Delete",
     "edit": "Edit"
   },
+  "interruption": {
+    "artExploration": {
+      "title": "Story Generated Successfully!",
+      "message": "Please wait a moment before proceeding to the evaluation.",
+      "buttonText": "Continue to Evaluation",
+      "waitText": "Wait {{seconds}}s..."
+    },
+    "memoryReconstruction": {
+      "title": "Visualization Complete!",
+      "message": "Take a moment to reflect on the images you have seen.",
+      "buttonText": "Start Evaluation",
+      "waitText": "Wait {{seconds}}s..."
+    }
+  },
   "footer": {
     "rights": "All rights reserved",
     "contact": "Contact",

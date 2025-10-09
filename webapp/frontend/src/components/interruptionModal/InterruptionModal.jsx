@@ -1,15 +1,15 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Timer from '../Timer/Timer';
 import styles from './InterruptionModal.module.css';
 
 const InterruptionModal = ({
   isOpen,
   duration,
-  title,
-  message,
-  onComplete,
-  buttonText = "Prosseguir"
+  translationKey,
+  onComplete
 }) => {
+  const { t } = useTranslation('common');
   const [timeLeft, setTimeLeft] = React.useState(duration);
   const [isTimerComplete, setIsTimerComplete] = React.useState(false);
 
@@ -45,7 +45,7 @@ const InterruptionModal = ({
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.content}>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 className={styles.title}>{t(`${translationKey}.title`)}</h2>
           
           <Timer 
             timeLeft={timeLeft} 
@@ -53,14 +53,14 @@ const InterruptionModal = ({
             isComplete={isTimerComplete}
           />
           
-          <p className={styles.message}>{message}</p>
+          <p className={styles.message}>{t(`${translationKey}.message`)}</p>
           
           <button
             className={`${styles.button} ${!isTimerComplete ? styles.buttonDisabled : styles.buttonEnabled}`}
             onClick={onComplete}
             disabled={!isTimerComplete}
           >
-            {isTimerComplete ? buttonText : `Aguarde ${timeLeft}s...`}
+            {isTimerComplete ? t(`${translationKey}.buttonText`) : t(`${translationKey}.waitText`, { seconds: timeLeft })}
           </button>
         </div>
       </div>

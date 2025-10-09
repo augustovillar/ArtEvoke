@@ -118,9 +118,7 @@ const ArtExploration = () => {
             <InterruptionModal
                 isOpen={showInterruption}
                 duration={INTERRUPTION_CONFIG.ART_EXPLORATION.duration}
-                title={INTERRUPTION_CONFIG.ART_EXPLORATION.title}
-                message={INTERRUPTION_CONFIG.ART_EXPLORATION.message}
-                buttonText={INTERRUPTION_CONFIG.ART_EXPLORATION.buttonText}
+                translationKey={INTERRUPTION_CONFIG.ART_EXPLORATION.translationKey}
                 onComplete={handleInterruptionComplete}
             />
         </div>

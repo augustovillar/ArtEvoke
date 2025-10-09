@@ -320,10 +320,8 @@ const Story = () => {
             {/* Modal de Interrupção */}
             <InterruptionModal
                 isOpen={showInterruption}
-                duration={INTERRUPTION_CONFIG.ART_EXPLORATION.duration}
-                title={INTERRUPTION_CONFIG.ART_EXPLORATION.title}
-                message={INTERRUPTION_CONFIG.ART_EXPLORATION.message}
-                buttonText={INTERRUPTION_CONFIG.ART_EXPLORATION.buttonText}
+                duration={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.duration}
+                translationKey={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.translationKey}
                 onComplete={handleInterruptionComplete}
             />
         </div>
