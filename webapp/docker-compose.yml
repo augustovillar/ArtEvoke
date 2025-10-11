@@ -16,10 +16,11 @@ services:
     env_file:
       - ./FastAPI/.env
     environment:
-      - STATIC_DIR=/app/data/static
+      - STATIC_DIR=/data/static
+      - DATA_DIR=/data
     volumes:
       - ./FastAPI:/app
-      - ./data:/app/data  # Mount entire data directory
+      - ./data:/data  # Mount entire data directory to /data to avoid overlay on /app
     networks:
       - app_network
     deploy:

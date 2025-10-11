@@ -28,22 +28,32 @@ embedding_model = SentenceTransformer("thenlper/gte-large")
 
 # Load FAISS index and metadata once
 print("Loading FAISS index and metadata...")
-wikiIndexImages = faiss.read_index("/app/data/embeddings/index/wikiart_index.faiss")
-with open("/app/data/embeddings/metadata/wikiart_metadata.pkl", "rb") as f:
+DATA_DIR = os.getenv("DATA_DIR", "/data") 
+
+wiki_index_path = os.path.join(DATA_DIR, "embeddings", "index", "wikiart_index.faiss")
+wiki_meta_path = os.path.join(DATA_DIR, "embeddings", "metadata", "wikiart_metadata.pkl")
+semart_index_path = os.path.join(DATA_DIR, "embeddings", "index", "semart_index.faiss")
+semart_meta_path = os.path.join(DATA_DIR, "embeddings", "metadata", "semart_metadata.pkl")
+ipiranga_index_path = os.path.join(DATA_DIR, "embeddings", "index", "ipiranga_index.faiss")
+ipiranga_meta_path = os.path.join(DATA_DIR, "embeddings", "metadata", "ipiranga_metadata.pkl")
+
+wikiIndexImages = faiss.read_index(wiki_index_path)
+with open(wiki_meta_path, "rb") as f:
     wikiMetadataImages = pickle.load(f)
 
-semArtIndexImages = faiss.read_index("/app/data/embeddings/index/semart_index.faiss")
-with open("/app/data/embeddings/metadata/semart_metadata.pkl", "rb") as f:
+semArtIndexImages = faiss.read_index(semart_index_path)
+with open(semart_meta_path, "rb") as f:
     semArtMetadataImages = pickle.load(f)
 
-ipirangaIndexImages = faiss.read_index("/app/data/embeddings/index/ipiranga_index.faiss")
-with open("/app/data/embeddings/metadata/ipiranga_metadata.pkl", "rb") as f:
+ipirangaIndexImages = faiss.read_index(ipiranga_index_path)
+with open(ipiranga_meta_path, "rb") as f:
     ipirangaMetadataImages = pickle.load(f)
 
 print("FAISS index and metadata loaded successfully!")
 
 # Connect to ipiranga database
-ipiranga_conn = sqlite3.connect("/app/data/db/ipiranga.db")
+ipiranga_db_path = os.path.join(DATA_DIR, "db", "ipiranga.db")
+ipiranga_conn = sqlite3.connect(ipiranga_db_path)
 
 index_by_dataset = {
     "wikiart": wikiIndexImages,

@@ -25,6 +25,20 @@
     "delete": "Delete",
     "edit": "Edit"
   },
+  "interruption": {
+    "artExploration": {
+      "title": "Story Generated Successfully!",
+      "message": "Please wait a moment before proceeding to the evaluation.",
+      "buttonText": "Continue to Evaluation",
+      "waitText": "Wait {{seconds}}s..."
+    },
+    "memoryReconstruction": {
+      "title": "Visualization Complete!",
+      "message": "Take a moment to reflect on the images you have seen.",
+      "buttonText": "Start Evaluation",
+      "waitText": "Wait {{seconds}}s..."
+    }
+  },
   "footer": {
     "rights": "All rights reserved",
     "contact": "Contact",
@@ -91,7 +105,7 @@
     "storyImageAlt": "Story Image {{number}}",
     "datasetImageAlt": "{{dataset}} Image {{number}}"
   },
-  "search": {
+  "artExploration": {
     "title": "Art Exploration Instructions",
     "description1": "The art exploration tool allows you to search for art pieces by typing in some keywords. Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.",
     "description2": "Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.",
