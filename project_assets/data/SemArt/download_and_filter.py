@@ -44,7 +44,7 @@ def download_and_extract():
     with zipfile.ZipFile(ZIP_FILE, "r") as zip_ref:
         zip_ref.extractall(SCRIPT_DIR)
     print("Extraction complete.")
-    # os.remove(ZIP_FILE)
+    os.remove(ZIP_FILE)
 
 
 # --- Merge train/val/test into a single CSV ---
@@ -172,12 +172,12 @@ def generate_sql_inserts():
     column_mapping = {
         "IMAGE_FILE": "image_file",
         "DESCRIPTION": "description",
-        "AUTHOR": "author",
+        "AUTHOR": "artist_name",
         "TITLE": "title",
         "TECHNIQUE": "technique",
         "DATE": "date",
         "TYPE": "type",
-        "SCHOOL": "school",
+        "SCHOOL": "art_school",
     }
     df = df.rename(columns=column_mapping)
 
@@ -192,12 +192,12 @@ def generate_sql_inserts():
         "id",
         "image_file",
         "description",
-        "author",
+        "artist_name",
         "title",
         "technique",
         "date",
         "type",
-        "school",
+        "art_school",
         "description_generated",
     ]
     df = df[cols]
@@ -217,16 +217,16 @@ def generate_sql_inserts():
         f.write("    id CHAR(36) PRIMARY KEY,\n")
         f.write("    image_file CHAR(36),\n")
         f.write("    description TEXT,\n")
-        f.write("    author VARCHAR(100),\n")
+        f.write("    artist_name VARCHAR(100),\n")
         f.write("    title VARCHAR(100),\n")
         f.write("    technique VARCHAR(50),\n")
         f.write("    date DATE,\n")
         f.write("    type VARCHAR(50),\n")
-        f.write("    school VARCHAR(50),\n")
+        f.write("    art_school VARCHAR(50),\n")
         f.write("    description_generated TEXT,\n")
-        f.write("    INDEX idx_author (author),\n")
+        f.write("    INDEX idx_artist_name (artist_name),\n")
         f.write("    INDEX idx_type (type),\n")
-        f.write("    INDEX idx_school (school)\n")
+        f.write("    INDEX idx_art_school (art_school)\n")
         f.write(
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
         )
@@ -239,7 +239,7 @@ def generate_sql_inserts():
             batch = df.iloc[i : i + batch_size]
 
             f.write(
-                "INSERT INTO SemArt (id, image_file, description, author, title, technique, date, type, school, description_generated) VALUES\n"
+                "INSERT INTO SemArt (id, image_file, description, artist_name, title, technique, date, type, art_school, description_generated) VALUES\n"
             )
 
             values = []
@@ -247,18 +247,18 @@ def generate_sql_inserts():
                 id_val = escape_sql_string(row.get("id"))
                 image_file = escape_sql_string(row.get("image_file"))
                 description = escape_sql_string(row.get("description", ""))
-                author = escape_sql_string(row.get("author", ""))
+                artist_name = escape_sql_string(row.get("artist_name", ""))
                 title = escape_sql_string(row.get("title", ""))
                 technique = escape_sql_string(row.get("technique", ""))
-                date_val = escape_sql_string(row.get("date", ""))
-                type_val = escape_sql_string(row.get("type", ""))
-                school = escape_sql_string(row.get("school", ""))
+                date = escape_sql_string(row.get("date", ""))
+                type = escape_sql_string(row.get("type", ""))
+                art_school = escape_sql_string(row.get("art_school", ""))
                 description_generated = escape_sql_string(
                     row.get("description_generated", "")
                 )
 
                 values.append(
-                    f"    ({id_val}, {image_file}, {description}, {author}, {title}, {technique}, {date_val}, {type_val}, {school}, {description_generated})"
+                    f"    ({id_val}, {image_file}, {description}, {artist_name}, {title}, {technique}, {date}, {type}, {art_school}, {description_generated})"
                 )
 
             f.write(",\n".join(values))

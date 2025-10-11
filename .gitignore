@@ -64,5 +64,7 @@ project_assets/scripts/outputs/faiss/?*.pkl
 !**/.gitkeep
 
 # Ignore for now all .sql
-*.sql
+Ipiranga_insert.sql
+SemArt_insert.sql
+WikiArt_insert.sql
 SemArt.zip

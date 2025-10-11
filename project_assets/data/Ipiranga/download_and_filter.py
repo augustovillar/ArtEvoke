@@ -66,30 +66,47 @@ TOPLEVEL_FIELDS = ["externalId", "url", "document"]
 
 # Original Portuguese field names to English column names mapping
 FIELD_MAPPING = {
-    "codigo": "code",
+    "codigo": "inventory_code",
     "titulo": "title",
     "descricao": "description",
     "denominacao": "type",
-    "autoria": "author",
+    "autoria": "artist_name",
     "orig_prod": "location",
-    "seculo": "century",
     "fase": "phase",
-    "decada": "decade",
     "data": "date",
     "periodo-2": "period",
     "tecnica": "technique",
-    "altura_sm": "height_sm",
-    "larg_sm": "width_sm",
     "altura-em-cm": "height",
     "largura-em-cm": "width",
     "cor-2": "color",
     "historico": "history",
-    "ref_acervo": "collection_ref",
-    "biblio": "bibliography",
-    "colecao-2": "collection_alt",
+    "colecao-2": "collection_alt_name",
 }
 
 DATA_SUBFIELDS = list(FIELD_MAPPING.values())
+
+IPIRANGA_RENAME = {
+    "id": "id",
+    "external_id": "external_id",
+    "document": "image_file",
+    "code": "inventory_code",
+    "title": "title",
+    "description": "description",
+    "type": "type",
+    "author": "artist_name",
+    "location": "location",
+    "date": "date",
+    "period": "period",
+    "technique": "technique",
+    "height": "height",
+    "width": "width",
+    "color": "color",
+    "history": "history",
+    "collection_alt": "collection_alt_name",
+    "description_generated": "description_generated",
+}
+
+COLUMN_RENAME = IPIRANGA_RENAME.copy()
 
 
 def to_col_name(key: str) -> str:
@@ -108,7 +125,11 @@ def to_col_name(key: str) -> str:
 COL_TOPLEVEL = [to_col_name(k) for k in TOPLEVEL_FIELDS]
 COL_DATA = [to_col_name(k) for k in DATA_SUBFIELDS]
 
-FLAT_COLUMNS = ["id"] + COL_TOPLEVEL + COL_DATA  # keep 'id' first, then externalId
+FLAT_COLUMNS = (
+    ["id"]
+    + [COLUMN_RENAME.get(c, c) for c in COL_TOPLEVEL]
+    + [COLUMN_RENAME.get(c, c) for c in COL_DATA]
+)  # keep 'id' first, then externalId
 
 
 # -------------------- Normalization --------------------
@@ -301,12 +322,12 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
         if candidate_key in item and isinstance(item[candidate_key], (str, int)):
             ext_id = str(item[candidate_key])
             break
-    row["externalid"] = ext_id
+    row["external_id"] = ext_id
 
     # top-level fields (skip externalId)
     for orig, col in zip(TOPLEVEL_FIELDS[1:], COL_TOPLEVEL[1:]):
         val = _coerce_scalar(item.get(orig))
-        if orig == "url" and isinstance(val, str):
+        if orig == "image_file" and isinstance(val, str):
             base_url = "https://acervoonline.mp.usp.br/"
             if val.startswith(base_url):
                 val = val[len(base_url) :]
@@ -317,10 +338,12 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
             if val.startswith(doc_base):
                 val = val[len(doc_base) :]
             val = val[:]
-        row[col] = val
+        new_col = COLUMN_RENAME.get(col, col)
 
-    if row["document"]:
-        row["id"] = str(uuid.uuid5(uuid.NAMESPACE_DNS, row["document"]))
+        row[new_col] = val
+
+    if row["image_file"]:
+        row["id"] = str(uuid.uuid5(uuid.NAMESPACE_DNS, row["image_file"]))
 
     data_obj = item.get("data")
     if isinstance(data_obj, dict):
@@ -361,7 +384,7 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
         item_type = row.get("type")
         if item_type and item_type in SELECTED_TYPES:
             # Also check that document field exists (has image)
-            if row.get("document"):
+            if row.get("image_file"):
                 filtered_rows.append(row)
                 filtered_count += 1
 
@@ -382,15 +405,13 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
         f.write("CREATE TABLE IF NOT EXISTS Ipiranga (\n")
         f.write("    id CHAR(36) PRIMARY KEY,\n")
         f.write("    external_id CHAR(36),\n")
-        f.write("    url VARCHAR(100),\n")
-        f.write("    document VARCHAR(100),\n")
-        f.write("    code VARCHAR(20),\n")
+        f.write("    image_file VARCHAR(100),\n")
+        f.write("    inventory_code VARCHAR(20),\n")
         f.write("    title VARCHAR(100),\n")
         f.write("    description TEXT,\n")
         f.write("    type VARCHAR(50),\n")
+        f.write("    artist_name VARCHAR(50),\n")
         f.write("    location VARCHAR(50),\n")
-        f.write("    century VARCHAR(50),\n")
-        f.write("    decade VARCHAR(20),\n")
         f.write("    date DATE,\n")
         f.write("    period VARCHAR(20),\n")
         f.write("    technique VARCHAR(50),\n")
@@ -398,12 +419,10 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
         f.write("    width VARCHAR(8),\n")
         f.write("    color VARCHAR(20),\n")
         f.write("    history TEXT,\n")
-        f.write("    collection_ref TEXT,\n")
-        f.write("    bibliography TEXT,\n")
-        f.write("    collection_alt TEXT,\n")
+        f.write("    collection_alt_name TEXT,\n")
         f.write("    description_generated TEXT,\n")
         f.write("    INDEX idx_type (type),\n")
-        f.write("    INDEX idx_code (code),\n")
+        f.write("    INDEX idx_inventory_code (inventory_code),\n")
         f.write("    INDEX idx_title (title)\n")
         f.write(
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
@@ -417,23 +436,21 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
             batch = filtered_rows[i : i + batch_size]
 
             f.write(
-                "INSERT INTO Ipiranga (id, external_id, url, document, code, title, description, type, location, century, decade, date, period, technique, height, width, color, history, collection_ref, bibliography, collection_alt, description_generated) VALUES\n"
+                "INSERT INTO Ipiranga (id, external_id, image_file, inventory_code, title, description, type, artist_name, location, date, period, technique, height, width, color, history, collection_alt_name, description_generated) VALUES\n"
             )
 
             values = []
             for row_dict in batch:
                 # Map fields to match schema
                 id_val = escape_sql_string(row_dict.get("id"))
-                external_id = escape_sql_string(row_dict.get("externalid"))
-                url = escape_sql_string(row_dict.get("url"))
-                document = escape_sql_string(row_dict.get("document"))
-                code = escape_sql_string(row_dict.get("code"))
+                external_id = escape_sql_string(row_dict.get("external_id"))
+                image_file = escape_sql_string(row_dict.get("image_file"))
+                inventory_code = escape_sql_string(row_dict.get("inventory_code"))
                 title = escape_sql_string(row_dict.get("title"))
                 description = escape_sql_string(row_dict.get("description"))
                 type_val = escape_sql_string(row_dict.get("type"))
+                artist_name = escape_sql_string(row_dict.get("artist_name"))
                 location = escape_sql_string(row_dict.get("location"))
-                century = escape_sql_string(row_dict.get("century"))
-                decade = escape_sql_string(row_dict.get("decade"))
                 date_val = escape_sql_string(row_dict.get("date"))
                 period = escape_sql_string(row_dict.get("period"))
                 technique = escape_sql_string(row_dict.get("technique"))
@@ -441,15 +458,14 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
                 width = escape_sql_string(row_dict.get("width"))
                 color = escape_sql_string(row_dict.get("color"))
                 history = escape_sql_string(row_dict.get("history"))
-                collection_ref = escape_sql_string(row_dict.get("collection_ref"))
-                bibliography = escape_sql_string(row_dict.get("bibliography"))
-                collection_alt = escape_sql_string(row_dict.get("collection_alt"))
+                collection_alt_name = escape_sql_string(
+                    row_dict.get("collection_alt_name")
+                )
                 description_generated = ""  # Initialize as NULL
 
-                values.append(
-                    f"    ({id_val}, {external_id}, {url}, {document}, {code}, {title}, {description}, {type_val}, {location}, {century}, {decade}, {date_val}, {period}, {technique}, {height}, {width}, {color}, {history}, {collection_ref}, {bibliography}, {collection_alt}, {description_generated})"
-                )
-
+            values.append(
+                f"    ({id_val}, {external_id}, {image_file}, {inventory_code}, {title}, {description}, {type_val}, {artist_name}, {location}, {date_val}, {period}, {technique}, {height}, {width}, {color}, {history}, {collection_alt_name}, {description_generated})"
+            )
             f.write(",\n".join(values))
             f.write(";\n\n")
 

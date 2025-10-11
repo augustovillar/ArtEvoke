@@ -9,6 +9,17 @@ PATH_DATASET = os.path.join(SCRIPT_DIR, "Images")
 INPUT_CSV = os.path.join(SCRIPT_DIR, "WikiArt.csv")
 OUTPUT_SQL = os.path.join(SCRIPT_DIR, "WikiArt_insert.sql")
 
+WIKIART_RENAME = {
+    "id": "id",
+    "filename": "image_file",
+    "artist": "artist_name",
+    "genre": "type",
+    "description": "description",
+    "width": "width",
+    "height": "height",
+    "description_generated": "description_generated",
+}
+
 genres_selected = {
     "New_Realism",
     "Realism",
@@ -26,18 +37,6 @@ genres_selected = {
     "Ukiyo_e",
 }
 # I would like to add this: Art_nouveau_modern, expressionism, fauvism
-
-
-# wikiart_to_ipiranga = {
-#     "id": "id",
-#     "filename": "filename",
-#     "artist": "author",
-#     "genre": "type",
-#     "description": "description",
-#     "width": "width",
-#     "height": "height",
-#     "description_generated": "description_generated",
-# }
 
 
 def download_and_unzip():
@@ -109,26 +108,26 @@ def escape_sql_string(value):
     return f"'{value}'"
 
 
-def process_genre(genre_value):
-    """Convert genre array to semicolon-separated string"""
-    if pd.isna(genre_value) or genre_value is None:
+def process_type(type_value):
+    """Convert type array to semicolon-separated string"""
+    if pd.isna(type_value) or type_value is None:
         return "NULL"
 
     # If it's already a string representation of an array like "['Baroque']"
-    if isinstance(genre_value, str):
+    if isinstance(type_value, str):
         # Remove brackets and quotes, then split by comma
-        genre_value = genre_value.strip("[]").replace("'", "").replace('"', "")
-        genres = [g.strip() for g in genre_value.split(",") if g.strip()]
-        result = ";".join(genres)
+        type_value = type_value.strip("[]").replace("'", "").replace('"', "")
+        types = [g.strip() for g in type_value.split(",") if g.strip()]
+        result = ";".join(types)
         return f"'{result}'"
 
     # If it's a list
-    if isinstance(genre_value, list):
-        result = ";".join(str(g) for g in genre_value)
+    if isinstance(type_value, list):
+        result = ";".join(str(g) for g in type_value)
         return f"'{result}'"
 
     # Otherwise just escape as string
-    return escape_sql_string(genre_value)
+    return escape_sql_string(type_value)
 
 
 def generate_sql_inserts():
@@ -141,8 +140,23 @@ def generate_sql_inserts():
     # Using UUID5 with DNS namespace to ensure same filename always gets same UUID
     df["id"] = df["filename"].apply(lambda f: str(uuid.uuid5(uuid.NAMESPACE_DNS, f)))
 
+    # Rename columns
+    df = df.rename(columns=WIKIART_RENAME)
+
+    # Add empty description_generated column
+    df["description_generated"] = None
+
     # Reorder columns to have id first
-    cols = ["id"] + [col for col in df.columns if col != "id"]
+    cols = [
+        "id",
+        "image_file",
+        "artist_name",
+        "type",
+        "description",
+        "width",
+        "height",
+        "description_generated",
+    ]
     df = df[cols]
 
     # Save updated CSV with id
@@ -156,15 +170,15 @@ def generate_sql_inserts():
 
         f.write("CREATE TABLE IF NOT EXISTS WikiArt (\n")
         f.write("    id CHAR(36) PRIMARY KEY,\n")
-        f.write("    filename VARCHAR(50),\n")
-        f.write("    artist VARCHAR(50),\n")
-        f.write("    genre VARCHAR(50),\n")
+        f.write("    image_file VARCHAR(50),\n")
+        f.write("    artist_name VARCHAR(50),\n")
+        f.write("    type VARCHAR(50),\n")
         f.write("    description TEXT,\n")
-        f.write("    width INT,\n")
-        f.write("    height INT,\n")
+        f.write("    width VARCHAR(8),\n")
+        f.write("    height VARCHAR(8),\n")
         f.write("    description_generated TEXT,\n")
-        f.write("    INDEX idx_artist (artist),\n")
-        f.write("    INDEX idx_genre (genre)\n")
+        f.write("    INDEX idx_artist_name (artist_name),\n")
+        f.write("    INDEX idx_type (type)\n")
         f.write(
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
         )
@@ -177,15 +191,15 @@ def generate_sql_inserts():
             batch = df.iloc[i : i + batch_size]
 
             f.write(
-                "INSERT INTO WikiArt (id, filename, artist, genre, description, width, height, description_generated) VALUES\n"
+                "INSERT INTO WikiArt (id, image_file, artist_name, type, description, width, height, description_generated) VALUES\n"
             )
 
             values = []
             for _, row in batch.iterrows():
                 id_val = escape_sql_string(row.get("id"))
-                filename = escape_sql_string(row.get("filename"))
-                artist = escape_sql_string(row.get("artist"))
-                genre = process_genre(row.get("genre"))
+                image_file = escape_sql_string(row.get("image_file"))
+                artist_name = escape_sql_string(row.get("artist_name"))
+                type = process_type(row.get("type"))
                 description = escape_sql_string(row.get("description", ""))
                 width = int(row.get("width")) if pd.notna(row.get("width")) else "NULL"
                 height = (
@@ -196,7 +210,7 @@ def generate_sql_inserts():
                 )
 
                 values.append(
-                    f"    ({id_val}, {filename}, {artist}, {genre}, {description}, {width}, {height}, {description_generated})"
+                    f"    ({id_val}, {image_file}, {artist_name}, {type}, {description}, {width}, {height}, {description_generated})"
                 )
 
             f.write(",\n".join(values))
@@ -213,4 +227,3 @@ if __name__ == "__main__":
     download_and_unzip()
     remove_unwanted_files()
     filter_dataset()
-    generate_sql_inserts()
