@@ -17,7 +17,7 @@ ecdsa==0.19.1
 einops==0.8.1
 email_validator==2.2.0
 exceptiongroup==1.2.2
-faiss-gpu==1.7.2
+faiss-gpu-cu12==1.12.0
 fastapi==0.115.11
 filelock==3.18.0
 fonttools==4.56.0
@@ -93,3 +93,5 @@ sentence-transformers==4.1.0
 pandas==2.2.3
 hf-xet==1.1.2
 openai==1.58.1
+sqlalchemy==2.0.36
+pymysql==1.1.1
