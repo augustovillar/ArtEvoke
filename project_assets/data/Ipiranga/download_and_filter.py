@@ -435,11 +435,11 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
                 collection_alt_name = escape_sql_string(
                     row_dict.get("collection_alt_name")
                 )
-                description_generated = ""  # Initialize as NULL
+                description_generated = "NULL"
 
-            values.append(
-                f"    ({id_val}, {external_id}, {image_file}, {inventory_code}, {title}, {description}, {type_val}, {artist_name}, {location}, {date_val}, {period}, {technique}, {height}, {width}, {color}, {history}, {collection_alt_name}, {description_generated})"
-            )
+                values.append(
+                    f"    ({id_val}, {external_id}, {image_file}, {inventory_code}, {title}, {description}, {type_val}, {artist_name}, {location}, {date_val}, {period}, {technique}, {height}, {width}, {color}, {history}, {collection_alt_name}, {description_generated})"
+                )
             f.write(",\n".join(values))
             f.write(";\n\n")
 
