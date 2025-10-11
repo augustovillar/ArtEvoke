@@ -15,7 +15,7 @@ SEM_ART_DIR = os.path.join(SCRIPT_DIR, "SemArt")
 IMG_DIR_OLD = os.path.join(SEM_ART_DIR, "Images")
 IMG_DIR_NEW = os.path.join(SCRIPT_DIR, "Images")
 EXPORT_DIR = os.path.join(SCRIPT_DIR, "semart_info")
-OUTPUT_SQL = os.path.join(SCRIPT_DIR, "SemArt_insert.sql")
+OUTPUT_SQL = os.path.join(SCRIPT_DIR, "B_SemArt.sql")
 
 # semart_to_ipiranga = {
 #     "id": "id",
@@ -212,24 +212,6 @@ def generate_sql_inserts():
         f.write("-- SemArt Dataset SQL Import\n")
         f.write("-- Generated automatically from download_and_filter.py\n")
         f.write(f"-- Total records: {len(df)}\n\n")
-
-        f.write("CREATE TABLE IF NOT EXISTS SemArt (\n")
-        f.write("    id CHAR(36) PRIMARY KEY,\n")
-        f.write("    image_file CHAR(36),\n")
-        f.write("    description TEXT,\n")
-        f.write("    artist_name VARCHAR(100),\n")
-        f.write("    title VARCHAR(100),\n")
-        f.write("    technique VARCHAR(50),\n")
-        f.write("    date DATE,\n")
-        f.write("    type VARCHAR(50),\n")
-        f.write("    art_school VARCHAR(50),\n")
-        f.write("    description_generated TEXT,\n")
-        f.write("    INDEX idx_artist_name (artist_name),\n")
-        f.write("    INDEX idx_type (type),\n")
-        f.write("    INDEX idx_art_school (art_school)\n")
-        f.write(
-            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
-        )
 
         # Write INSERT statements in batches
         batch_size = 100

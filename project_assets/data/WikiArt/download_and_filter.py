@@ -7,7 +7,7 @@ import uuid
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH_DATASET = os.path.join(SCRIPT_DIR, "Images")
 INPUT_CSV = os.path.join(SCRIPT_DIR, "WikiArt.csv")
-OUTPUT_SQL = os.path.join(SCRIPT_DIR, "WikiArt_insert.sql")
+OUTPUT_SQL = os.path.join(SCRIPT_DIR, "B_WikiArt.sql")
 
 WIKIART_RENAME = {
     "id": "id",
@@ -168,21 +168,6 @@ def generate_sql_inserts():
         f.write("-- Generated automatically from download_and_filter.py\n")
         f.write(f"-- Total records: {len(df)}\n\n")
 
-        f.write("CREATE TABLE IF NOT EXISTS WikiArt (\n")
-        f.write("    id CHAR(36) PRIMARY KEY,\n")
-        f.write("    image_file VARCHAR(50),\n")
-        f.write("    artist_name VARCHAR(50),\n")
-        f.write("    type VARCHAR(50),\n")
-        f.write("    description TEXT,\n")
-        f.write("    width VARCHAR(8),\n")
-        f.write("    height VARCHAR(8),\n")
-        f.write("    description_generated TEXT,\n")
-        f.write("    INDEX idx_artist_name (artist_name),\n")
-        f.write("    INDEX idx_type (type)\n")
-        f.write(
-            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
-        )
-
         # Write INSERT statements in batches
         batch_size = 100
         total_rows = len(df)
@@ -227,3 +212,4 @@ if __name__ == "__main__":
     download_and_unzip()
     remove_unwanted_files()
     filter_dataset()
+    generate_sql_inserts()

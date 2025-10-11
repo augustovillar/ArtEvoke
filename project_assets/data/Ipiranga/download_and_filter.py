@@ -18,7 +18,7 @@ TOTAL_PAGES = 312
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "pages")
 COMBINED_FILTERED = os.path.join(SCRIPT_DIR, "all_items_filtered.json")
-OUTPUT_SQL = os.path.join(SCRIPT_DIR, "Ipiranga_insert.sql")
+OUTPUT_SQL = os.path.join(SCRIPT_DIR, "B_Ipiranga.sql")
 
 CONCURRENCY = 10
 TIMEOUT = 60
@@ -401,32 +401,6 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
         f.write("-- Ipiranga Dataset SQL Import\n")
         f.write("-- Generated automatically from download_and_filter.py\n")
         f.write(f"-- Total records: {len(filtered_rows)}\n\n")
-
-        f.write("CREATE TABLE IF NOT EXISTS Ipiranga (\n")
-        f.write("    id CHAR(36) PRIMARY KEY,\n")
-        f.write("    external_id CHAR(36),\n")
-        f.write("    image_file VARCHAR(100),\n")
-        f.write("    inventory_code VARCHAR(20),\n")
-        f.write("    title VARCHAR(100),\n")
-        f.write("    description TEXT,\n")
-        f.write("    type VARCHAR(50),\n")
-        f.write("    artist_name VARCHAR(50),\n")
-        f.write("    location VARCHAR(50),\n")
-        f.write("    date DATE,\n")
-        f.write("    period VARCHAR(20),\n")
-        f.write("    technique VARCHAR(50),\n")
-        f.write("    height VARCHAR(8),\n")
-        f.write("    width VARCHAR(8),\n")
-        f.write("    color VARCHAR(20),\n")
-        f.write("    history TEXT,\n")
-        f.write("    collection_alt_name TEXT,\n")
-        f.write("    description_generated TEXT,\n")
-        f.write("    INDEX idx_type (type),\n")
-        f.write("    INDEX idx_inventory_code (inventory_code),\n")
-        f.write("    INDEX idx_title (title)\n")
-        f.write(
-            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n"
-        )
 
         # Write INSERT statements in batches
         batch_size = 100
