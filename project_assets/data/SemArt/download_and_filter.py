@@ -16,18 +16,7 @@ IMG_DIR_OLD = os.path.join(SEM_ART_DIR, "Images")
 IMG_DIR_NEW = os.path.join(SCRIPT_DIR, "Images")
 EXPORT_DIR = os.path.join(SCRIPT_DIR, "semart_info")
 OUTPUT_SQL = os.path.join(SCRIPT_DIR, "B_SemArt.sql")
-
-# semart_to_ipiranga = {
-#     "id": "id",
-#     "image_file": "document",
-#     "description": "description",
-#     "author": "author",
-#     "title": "title",
-#     "technique": "type",
-#     "date": "date",
-#     "school": "location",
-#     "description_generated": "description_generated",
-# }
+OUTPUT_CSV = os.path.join(SCRIPT_DIR, "SemArt.csv")
 
 
 # --- Download and extract dataset ---
@@ -202,10 +191,9 @@ def generate_sql_inserts():
     ]
     df = df[cols]
 
-    # Save updated CSV with id
-    output_csv = os.path.join(EXPORT_DIR, "SemArt15000_with_id.csv")
-    df.to_csv(output_csv, index=False)
-    print(f"Updated CSV saved: {output_csv}")
+    # Save CSV for generateDescriptions.py in root SemArt directory
+    df.to_csv(OUTPUT_CSV, index=False)
+    print(f"CSV with ID saved: {OUTPUT_CSV}")
 
     with open(OUTPUT_SQL, "w", encoding="utf-8") as f:
         # Write table creation statement
@@ -233,14 +221,14 @@ def generate_sql_inserts():
                 title = escape_sql_string(row.get("title", ""))
                 technique = escape_sql_string(row.get("technique", ""))
                 date = escape_sql_string(row.get("date", ""))
-                type = escape_sql_string(row.get("type", ""))
+                type_val = escape_sql_string(row.get("type", ""))
                 art_school = escape_sql_string(row.get("art_school", ""))
                 description_generated = escape_sql_string(
                     row.get("description_generated", "")
                 )
 
                 values.append(
-                    f"    ({id_val}, {image_file}, {description}, {artist_name}, {title}, {technique}, {date}, {type}, {art_school}, {description_generated})"
+                    f"    ({id_val}, {image_file}, {description}, {artist_name}, {title}, {technique}, {date}, {type_val}, {art_school}, {description_generated})"
                 )
 
             f.write(",\n".join(values))

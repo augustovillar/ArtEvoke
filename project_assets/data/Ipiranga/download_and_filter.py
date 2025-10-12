@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, asyncio, aiohttp, aiofiles, unicodedata, uuid, shutil
+import os, sys, json, asyncio, aiohttp, aiofiles, unicodedata, uuid, shutil, csv
 from typing import Any, Dict, List, Union, Optional
 
 # -------------------- Config --------------------
@@ -19,6 +19,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "pages")
 COMBINED_FILTERED = os.path.join(SCRIPT_DIR, "all_items_filtered.json")
 OUTPUT_SQL = os.path.join(SCRIPT_DIR, "B_Ipiranga.sql")
+OUTPUT_CSV = os.path.join(SCRIPT_DIR, "Ipiranga.csv")
 
 CONCURRENCY = 10
 TIMEOUT = 60
@@ -450,6 +451,65 @@ def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
         print(f"Total records: {total_rows}")
 
 
+def generate_csv(raw_items: List[Dict[str, Any]]):
+    """Generate CSV file from filtered items with all columns matching SQL schema"""
+    print("Generating CSV file for Ipiranga...")
+
+    filtered_rows = []
+    filtered_count = 0
+    total_count = 0
+
+    for it in raw_items:
+        total_count += 1
+        row = extract_flat_row(it)
+
+        item_type = row.get("type")
+        if item_type and item_type in SELECTED_TYPES:
+            if row.get("image_file"):
+                filtered_rows.append(row)
+                filtered_count += 1
+
+    print(f"Filtered items for CSV: {filtered_count} out of {total_count} total items")
+
+    if len(filtered_rows) == 0:
+        print("No items to export to CSV!")
+        return
+
+    # Define CSV columns matching the SQL schema
+    csv_columns = [
+        "id",
+        "external_id",
+        "image_file",
+        "inventory_code",
+        "title",
+        "description",
+        "type",
+        "artist_name",
+        "location",
+        "date",
+        "period",
+        "technique",
+        "height",
+        "width",
+        "color",
+        "history",
+        "collection_alt_name",
+        "description_generated",
+    ]
+
+    with open(OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=csv_columns)
+        writer.writeheader()
+
+        for row_dict in filtered_rows:
+            csv_row = {col: row_dict.get(col, "") or "" for col in csv_columns}
+            csv_row["description_generated"] = ""
+            writer.writerow(csv_row)
+
+    print(f"CSV file generated: {OUTPUT_CSV}")
+    print(f"Total records in CSV: {len(filtered_rows)}")
+
+
 async def main():
     # 1) If COMBINED_FILTERED exists, skip downloading; otherwise download all pages and filter them.
     if os.path.exists(COMBINED_FILTERED):
@@ -468,7 +528,11 @@ async def main():
     print("Generating SQL INSERT file with filtering...")
     generate_sql_inserts(all_items)
 
-    # 3) Clean up: delete the pages folder if it exists
+    # 3) Generate CSV file (with same filtering)
+    print("Generating CSV file with filtering...")
+    generate_csv(all_items)
+
+    # 4) Clean up: delete the pages folder if it exists
     if os.path.exists(OUT_DIR):
         print(f"Cleaning up: deleting {OUT_DIR}")
         shutil.rmtree(OUT_DIR)
