@@ -36,7 +36,9 @@ semArtIndexImages = faiss.read_index("/app/data/embeddings/index/semart_index.fa
 with open("/app/data/embeddings/metadata/semart_metadata.pkl", "rb") as f:
     semArtMetadataImages = pickle.load(f)
 
-ipirangaIndexImages = faiss.read_index("/app/data/embeddings/index/ipiranga_index.faiss")
+ipirangaIndexImages = faiss.read_index(
+    "/app/data/embeddings/index/ipiranga_index.faiss"
+)
 with open("/app/data/embeddings/metadata/ipiranga_metadata.pkl", "rb") as f:
     ipirangaMetadataImages = pickle.load(f)
 
@@ -116,7 +118,7 @@ def get_top_k_images_from_text(text, dataset, k=3):
 
 @router.post("/search-images")
 async def search_images(body: dict, db=Depends(get_db)):
-    text = correct_grammer_and_translate(body["story"], body["language"])
+    text = correct_grammer_and_translate(body["story"])
     listArt = get_top_k_images_from_text(text, body["dataset"], k=6)
 
     return {"images": listArt}
@@ -124,7 +126,7 @@ async def search_images(body: dict, db=Depends(get_db)):
 
 @router.post("/select-images-per-section")
 async def select_images_per_section(body: dict, db=Depends(get_db)):
-    story = correct_grammer_and_translate(body["story"], body["language"])
+    story = correct_grammer_and_translate(body["story"])
 
     # Split the Story into Segments
     sections = doTextSegmentation(body["segmentation"], story)

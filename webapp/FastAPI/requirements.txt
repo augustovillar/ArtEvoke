@@ -87,8 +87,6 @@ typing_extensions==4.12.2
 urllib3==2.3.0
 uvicorn==0.34.0
 wcwidth==0.2.13
-language_tool_python==2.9.3
-deep-translator==1.11.4
 sentence-transformers==4.1.0
 pandas==2.2.3
 hf-xet==1.1.2
