@@ -1,10 +1,29 @@
 services:
-  mongo:
-    image: mongo:7.0.5
+  mysql:
+    image: mysql:8.0
+    container_name: local-mysql
+    restart: unless-stopped
     expose:
-      - "27017"  
+      - "3306"
+    env_file:
+      - ./data/db/.env.mysql
+    command: [
+      "mysqld",
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--sql-mode=STRICT_ALL_TABLES",
+      "--innodb_print_all_deadlocks=ON"
+    ]
     volumes:
-      - mongo_data:/data/db
+      - mysql_data:/var/lib/mysql
+      - ./data/db/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./data/db/schemas:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - app_network
 
@@ -12,7 +31,8 @@ services:
     build:
       context: ./FastAPI
     depends_on:
-      - mongo
+      mysql:
+        condition: service_healthy
     env_file:
       - ./FastAPI/.env
     environment:
@@ -62,7 +82,7 @@ services:
       - app_network
 
 volumes:
-  mongo_data:
+  mysql_data:
 
 networks:
   app_network:

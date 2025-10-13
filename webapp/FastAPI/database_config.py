@@ -10,7 +10,7 @@ from orm import init_db
 DEFAULT_DB_CONFIG = {
     "user": "appuser",
     "password": "changeme_app",
-    "host": "localhost",
+    "host": "mysql",
     "port": 3306,
     "database": "appdb",
 }
