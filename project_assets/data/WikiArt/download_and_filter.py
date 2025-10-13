@@ -35,8 +35,10 @@ genres_selected = {
     "Naive_Art_Primitivism",
     "Post_Impressionism",
     "Ukiyo_e",
+    "Art_Nouveau_Modern",
+    "Expressionism",
+    "Fauvism",
 }
-# I would like to add this: Art_nouveau_modern, expressionism, fauvism
 
 
 def download_and_unzip():

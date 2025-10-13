@@ -2,7 +2,7 @@
 ORM models for user-related tables: Patient, Doctor, and PatientDoctor.
 """
 
-from datetime import date, datetime
+from datetime import datetime
 from sqlalchemy import (
     Column,
     String,

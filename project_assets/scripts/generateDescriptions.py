@@ -4,7 +4,6 @@ import torch
 import pandas as pd
 import random
 import multiprocessing as mp
-import sqlite3
 from tqdm import tqdm
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
