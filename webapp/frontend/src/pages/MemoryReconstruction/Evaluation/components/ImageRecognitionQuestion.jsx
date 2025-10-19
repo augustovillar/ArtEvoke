@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { QuestionReadAloudButton } from '../../../../components/ui';
 import styles from './ImageRecognitionQuestion.module.css';
 
 const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAnswer }) => {
@@ -60,6 +61,9 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
             <div className={styles.questionHeader}>
                 <h2>
                     {t('evaluation.imageRecognitionTitle') || 'Pergunta de Reconhecimento'} {sectionNumber}/{totalSections}
+                    <QuestionReadAloudButton 
+                        text={`${t('evaluation.imageRecognitionTitle') || 'Pergunta de Reconhecimento'} ${sectionNumber} de ${totalSections}. ${t('evaluation.imageRecognitionInstruction') || 'Qual das imagens abaixo você selecionou anteriormente para esta seção da história?'} Texto da seção: ${section.sectionText}`}
+                    />
                 </h2>
                 <p className={styles.instruction}>
                     {t('evaluation.imageRecognitionInstruction') || 

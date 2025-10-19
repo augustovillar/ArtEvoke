@@ -65,7 +65,8 @@
     "adjustFontSize": "Adjust Font Size: {{fontSize}}px",
     "sliderExampleText": "This text will scale dynamically based on the font size you select.",
     "stopReading": "Stop Reading",
-    "readAloudButton": "Read Aloud"
+    "readAloudButton": "Read Aloud",
+    "readQuestion": "Read Question"
   },
   "about": {
     "title": "About Us",

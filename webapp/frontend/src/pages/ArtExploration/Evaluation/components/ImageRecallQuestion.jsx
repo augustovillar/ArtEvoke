@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { QuestionReadAloudButton } from '../../../../components/ui';
 import styles from './ImageRecallQuestion.module.css';
 
 // item: { url, name, id? }
@@ -38,7 +39,12 @@ const ImageRecallQuestion = ({ item, itemNumber, totalItems, onAnswer }) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}> 
-        <h2>{(t('evaluation.imageRecallTitle') || 'Pergunta sobre a Imagem')} {itemNumber}/{totalItems}</h2>
+        <h2>
+          {(t('evaluation.imageRecallTitle') || 'Pergunta sobre a Imagem')} {itemNumber}/{totalItems}
+          <QuestionReadAloudButton 
+            text={`${t('evaluation.imageRecallTitle') || 'Pergunta sobre a Imagem'} ${itemNumber} de ${totalItems}. ${t('evaluation.imageRecallInstruction') || 'Qual destas imagens você acabou de selecionar?'}`}
+          />
+        </h2>
         <p className={styles.instruction}>
           {t('evaluation.imageRecallInstruction') || 'Qual destas imagens você acabou de selecionar?'}
         </p>

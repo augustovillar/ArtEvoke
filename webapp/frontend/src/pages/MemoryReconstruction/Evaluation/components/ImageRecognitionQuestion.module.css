@@ -11,6 +11,11 @@
     color: #333;
     font-size: 1.8rem;
     margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .instruction {

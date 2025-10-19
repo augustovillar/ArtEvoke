@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { QuestionReadAloudButton } from '../../../../components/ui';
 import styles from './ObjectiveQuestions.module.css';
 
 const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer }) => {
@@ -166,6 +167,9 @@ const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer
             <div className={styles.questionHeader}>
                 <h2>
                     {t('evaluation.question') || 'Pergunta'} {questionNumber}/{totalQuestions}
+                    <QuestionReadAloudButton 
+                        text={`${t('evaluation.question') || 'Pergunta'} ${questionNumber} de ${totalQuestions}. ${question.text}`}
+                    />
                 </h2>
             </div>
 

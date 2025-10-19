@@ -65,7 +65,8 @@
     "adjustFontSize": "Ajustar Tamanho da Fonte: {{fontSize}}px",
     "sliderExampleText": "Este texto será dimensionado dinamicamente com base no tamanho da fonte selecionado.",
     "stopReading": "Parar Leitura",
-    "readAloudButton": "Ler em Voz Alta"
+    "readAloudButton": "Ler em Voz Alta",
+    "readQuestion": "Ler Pergunta"
   },
   "about": {
     "title": "Sobre Nós",

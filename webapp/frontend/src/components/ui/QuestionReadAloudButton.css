@@ -1,0 +1,59 @@
+.question-read-aloud-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 1rem;
+}
+
+.question-read-aloud-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+}
+
+.question-read-aloud-button.reading {
+    background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.question-read-aloud-button .icon {
+    font-size: 1rem;
+}
+
+.question-read-aloud-button .text {
+    white-space: nowrap;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .question-read-aloud-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+    
+    .question-read-aloud-button .text {
+        display: none;
+    }
+    
+    .question-read-aloud-button .icon {
+        font-size: 1.2rem;
+    }
+}

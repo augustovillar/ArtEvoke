@@ -3,17 +3,16 @@ import { useTranslation } from 'react-i18next';
 
 export const useTextToSpeech = () => {
     const { i18n } = useTranslation();
-    const [isReading, setIsReading] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
     const utteranceRef = useRef(null);
 
-    const readAloud = (textBlocks = []) => {
-        // Stop any global reading first
+    const speak = (text) => {
+        // Stop any ongoing speech
         window.speechSynthesis.cancel();
 
-        const fullText = textBlocks.join('. ');
-        if (!fullText) return;
+        if (!text || text.trim() === '') return;
 
-        const utterance = new SpeechSynthesisUtterance(fullText);
+        const utterance = new SpeechSynthesisUtterance(text.trim());
 
         // Set language dynamically
         const currentLang = i18n.language;
@@ -25,18 +24,33 @@ export const useTextToSpeech = () => {
             utterance.lang = 'en-US'; // Default
         }
 
-        utterance.onend = () => setIsReading(false);
-        utterance.onerror = () => setIsReading(false);
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = () => setIsPlaying(false);
+        utterance.onerror = () => setIsPlaying(false);
 
         utteranceRef.current = utterance;
-        setIsReading(true);
         window.speechSynthesis.speak(utterance);
     };
 
-    const cancel = () => {
+    const stop = () => {
         window.speechSynthesis.cancel();
-        setIsReading(false);
+        setIsPlaying(false);
     };
 
-    return { isReading, readAloud, cancel };
+    // Legacy support
+    const readAloud = (textBlocks = []) => {
+        const fullText = textBlocks.join('. ');
+        speak(fullText);
+    };
+
+    const cancel = stop; // Legacy support
+
+    return { 
+        isPlaying, 
+        isReading: isPlaying, // Legacy support
+        speak, 
+        stop, 
+        readAloud, // Legacy support
+        cancel // Legacy support
+    };
 };
