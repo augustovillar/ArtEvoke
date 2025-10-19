@@ -6,6 +6,11 @@
 **/.DS_Store
 ._*
 
+# Data
+**/data/embeddings/**
+**/data/static/**
+
+
 #Ipiranga
 **/all_items_filtered.json
 **/*.db
@@ -54,3 +59,6 @@ project_assets/scripts/outputs/faiss/?*.pkl
 .gitignore
 
 **/.env
+
+# keep all .gitkeep
+!**/.gitkeep

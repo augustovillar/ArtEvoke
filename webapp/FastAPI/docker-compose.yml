@@ -9,8 +9,11 @@ services:
       - mongo
     env_file:
       - .env
+    environment:
+      - STATIC_DIR=/app/data/static
     volumes:
-      - ./static/archive:/app/static/archive
+      - .:/app
+      - ../data:/app/data  # Mount entire data directory
     networks:
       - app_network
     # device_requests:

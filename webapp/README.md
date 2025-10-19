@@ -18,6 +18,42 @@ This thesis explores how artificial intelligence can support non-drug interventi
 
 ## 📁 Project Structure
 
+```
+webapp/
+├── docker-compose.yml           # Docker configuration
+├── data/                        # ✅ Persistent data (Docker volumes)
+│   ├── static/                  # Static images
+│   │   ├── semart/              # SemArt dataset images
+│   │   ├── wikiart/             # WikiArt dataset images
+│   │   └── museum/              # Museum dataset images
+│   ├── embeddings/              # FAISS indices and metadata
+│   │   ├── *.faiss              # FAISS index files
+│   │   └── *.pkl                # Metadata files
+│   ├── db/                      # Database files
+│   └── uploads/                 # User uploads
+├── FastAPI/                     # Backend code (rebuild without losing data)
+├── frontend/                    # Frontend code (hot reload)
+└── nginx/                       # NGINX configuration
+```
+
+### New Structure Benefits
+
+1. **Rebuild without data loss**: Code can be rebuilt without affecting data
+2. **Persistent volumes**: Data maintained between container restarts
+3. **Clear organization**: Separation between code and data
+4. **Hot reload**: Frontend can be updated quickly
+
+### Docker Volumes
+
+All persistent data is mapped as volumes in docker-compose.yml:
+- `./data:/app/data` - Maps entire data structure to container
+
+### Configuration
+
+- **STATIC_DIR**: Set to `../data/static` in container environment
+- **Database**: SQLite in `../data/db/`
+- **FAISS**: Indices in `../data/embeddings/`
+
 <pre> project-root/ ├── FastAPI/ # Backend service (FastAPI) │ ├── main.py # Entry point for the FastAPI app │ └── new_venv/ # Python virtual environment ├── frontend/ # Frontend service (React) │ ├── src/ # React source files │ └── package.json # Frontend dependencies and scripts ├── nginx/ # NGINX config for production deployment │ └── default.conf # NGINX site configuration ├── docker-compose.yml # Orchestrates frontend, backend, and nginx containers ├── LICENSE # Project license (ISC) ├── README.md # Project documentation ├── package.json # Root-level scripts and config (e.g. for concurrently) </pre>
 
 ---
