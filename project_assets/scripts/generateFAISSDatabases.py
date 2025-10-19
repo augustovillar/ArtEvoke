@@ -1,6 +1,7 @@
 import faiss, os
 import pandas as pd
 import pickle
+import torch
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from concurrent.futures import ThreadPoolExecutor
@@ -14,48 +15,55 @@ PATH_OUTPUT = os.path.join(SCRIPT_DIR, "outputs", "faiss")
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
 OUTPUT_FILES = {
-    # "semart": "output_merged_semart.csv",
-    # "wikiart": "output_merged_wikiart.csv",
+    "semart": "output_merged_semart.csv",
+    "wikiart": "output_merged_wikiart.csv",
     "ipiranga": "output_merged_ipiranga.csv",
 }
 
 COLUMNS = {
     "semart": {
         "desc": "description",
-        "meta": [
-            "IMAGE_FILE",
-            "DESCRIPTION",
-            "AUTHOR",
-            "TITLE",
-            "TECHNIQUE",
-            "DATE",
-            "TYPE",
-            "SCHOOL",
-            "description",
-        ],
+        "meta": ["id", "image_file", "description"],
         "renaming": {
-            "IMAGE_FILE": "file_name",
-            "TITLE": "title",
-            "AUTHOR": "author",
-            "TYPE": "genre",
+            "image_file": "file_name",
         },
     },
     "wikiart": {
         "desc": "description",
-        "meta": ["filename", "artist", "genre", "description"],
-        "renaming": {"filename": "file_name", "artist": "author", "genre": "genre"},
+        "meta": ["id", "image_file", "description"],
+        "renaming": {
+            "image_file": "file_name",
+        },
     },
     "ipiranga": {
         "desc": "description",
-        "meta": ["id", "code", "description"],
-        "renaming": None,
+        "meta": ["id", "inventory_code", "description"],
+        "renaming": {
+            "inventory_code": "code",
+        },
     },
 }
 
 
 print("Loading model...")
-model0 = SentenceTransformer("thenlper/gte-large", device="cuda:0")
-model1 = SentenceTransformer("thenlper/gte-large", device="cuda:1")
+model0 = SentenceTransformer(
+    "Qwen/Qwen3-Embedding-4B",
+    model_kwargs={
+        "attn_implementation": "flash_attention_2",
+        "device_map": "cuda:0",
+        "dtype": torch.float16,
+    },
+    tokenizer_kwargs={"padding_side": "left"},
+)
+model1 = SentenceTransformer(
+    "Qwen/Qwen3-Embedding-4B",
+    model_kwargs={
+        "attn_implementation": "flash_attention_2",
+        "device_map": "cuda:1",
+        "dtype": torch.float16,
+    },
+    tokenizer_kwargs={"padding_side": "left"},
+)
 
 
 def generate_faiss_datasets(df, dataset_name, column_description, column_metadata):

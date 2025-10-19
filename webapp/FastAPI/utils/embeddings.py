@@ -9,7 +9,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the model **once** at startup
 print("Loading embedding model...")
-embedding_model = SentenceTransformer("thenlper/gte-large")
+embedding_model = SentenceTransformer(
+    "Qwen/Qwen3-Embedding-4B",
+    model_kwargs={
+        "attn_implementation": "sdpa",
+        "device_map": device,
+        "dtype": torch.float16,
+    },
+    tokenizer_kwargs={"padding_side": "left"},
+)
 
 # Load FAISS index and metadata once
 print("Loading FAISS index and metadata...")

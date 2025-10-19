@@ -31,16 +31,16 @@ model_name = "Qwen2_5_7B_512"
 
 # Embeddings models names:
 model_names = {
-    # "bge-large-en-v1.5": "BAAI/bge-large-en-v1.5",
-    # "MiniLM-L6-v2": "sentence-transformers/all-MiniLM-L6-v2",
-    # "gte-large": "thenlper/gte-large",
-    # "e5-large-v2": "intfloat/e5-large-v2",
+    "bge-large-en-v1.5": "BAAI/bge-large-en-v1.5",
+    "MiniLM-L6-v2": "sentence-transformers/all-MiniLM-L6-v2",
+    "gte-large": "thenlper/gte-large",
+    "e5-large-v2": "intfloat/e5-large-v2",
     "Qwen3 0.6B": "Qwen/Qwen3-Embedding-0.6B",
     "Qwen3 4B": "Qwen/Qwen3-Embedding-4B",
-    # "ViT-G/14": ("ViT-g-14", "laion2b_s34b_b88k"),
-    # "ViT-H-14-378-quickgelu (DFN)": ("ViT-H-14-378-quickgelu", "dfn5b"),
-    # "ConvNeXt-Large_320px": ('convnext_large_d_320', 'laion2b_s29b_b131k_ft_soup'),
-    # "ConvNeXt-XXLarge": ('convnext_xxlarge', 'laion2b_s34b_b82k_augreg_soup'),
+    "ViT-G/14": ("ViT-g-14", "laion2b_s34b_b88k"),
+    "ViT-H-14-378-quickgelu (DFN)": ("ViT-H-14-378-quickgelu", "dfn5b"),
+    "ConvNeXt-Large_320px": ("convnext_large_d_320", "laion2b_s29b_b131k_ft_soup"),
+    "ConvNeXt-XXLarge": ("convnext_xxlarge", "laion2b_s34b_b82k_augreg_soup"),
 }
 
 print_results_of = {
@@ -187,10 +187,6 @@ def create_faiss(model, generated_embs, image_embs, df, name, image_emb_together
         ) as f:
             pickle.dump(combined_metadata, f)
 
-        print(
-            f"FAISS index created and saved for {name} with images and text together."
-        )
-
     else:
         # Text-only index
         text_embs = generated_embs.astype("float32")
@@ -221,8 +217,6 @@ def create_faiss(model, generated_embs, image_embs, df, name, image_emb_together
                 os.path.join(FAISS_DIR, f"metadata/image_embeddings_{name}.pkl"), "wb"
             ) as f:
                 pickle.dump(image_metadata, f)
-
-            print(f"Image-only FAISS index created and saved for {name}.")
 
 
 def compute_recall(I, k_values, metadata, df, verbose=False):
@@ -387,7 +381,7 @@ def calculate_recall(
                 "test_LMMs/SemArt_sample2000/", "project_assets/data/SemArt/Images/"
             )}"
         )
-        for rank in range(len(combined_I[i])):
+        for rank in range(min(10, len(combined_I[i]))):
             idx = combined_I[i][rank]
             retrieved_item = combined_metadata[idx]
             retrieved_image = retrieved_item["image_file"].replace(
