@@ -54,10 +54,10 @@ metadata_by_dataset = {
 
 filename_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
 
-art_name_columns = {"wikiart": "file_name", "semart": "title", "ipiranga": None}
+art_name_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
 
 
-def get_gte_embedding(text):
+def get_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
     embedding = embedding / np.linalg.norm(
         embedding, axis=1, keepdims=True
@@ -66,7 +66,7 @@ def get_gte_embedding(text):
 
 
 def get_top_k_images_from_text(text, dataset, k=3):
-    query_embedding = get_gte_embedding(text)
+    query_embedding = get_embedding(text)
 
     indexImages = index_by_dataset[dataset]
     metadataImages = metadata_by_dataset[dataset]
