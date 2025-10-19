@@ -219,6 +219,12 @@
     "saveSession": "Save Session",
     "titleArtExploration": "Evaluation - Art Exploration",
     "imageRecallTitle": "Image Question",
-    "imageRecallInstruction": "Which of these images did you just select?"
+    "imageRecallInstruction": "Which of these images did you just select?",
+    "storyWritingTitle": "Write Your Story",
+    "storyWritingInstruction": "Based on the images you selected previously, write a story that connects all of them. Be creative and include details about what you see and feel.",
+    "storyPlaceholder": "Start writing your story here...",
+    "pleaseWriteStory": "Please write a story before continuing.",
+    "continueToQuestions": "Continue to Questions",
+    "characters": "characters"
   }
 }

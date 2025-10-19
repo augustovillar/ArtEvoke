@@ -219,6 +219,12 @@
     "saveSession": "Salvar Sessão",
     "titleArtExploration": "Avaliação - Art Exploration",
     "imageRecallTitle": "Pergunta sobre a Imagem",
-    "imageRecallInstruction": "Qual destas imagens você acabou de selecionar?"
+    "imageRecallInstruction": "Qual destas imagens você acabou de selecionar?",
+    "storyWritingTitle": "Escreva Sua História",
+    "storyWritingInstruction": "Com base nas imagens que você selecionou anteriormente, escreva uma história que conecte todas elas. Seja criativo e inclua detalhes sobre o que você vê e sente.",
+    "storyPlaceholder": "Comece a escrever sua história aqui...",
+    "pleaseWriteStory": "Por favor, escreva uma história antes de continuar.",
+    "continueToQuestions": "Continuar para Perguntas",
+    "characters": "caracteres"
   }
 }

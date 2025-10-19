@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import ImageRecallQuestion from './components/ImageRecallQuestion';
+import { StoryWritingQuestion } from './components';
 // Reuse shared components from Memory Reconstruction evaluation
 import ObjectiveQuestions from '../../MemoryReconstruction/Evaluation/components/ObjectiveQuestions';
 import ProgressBar from '../../MemoryReconstruction/Evaluation/components/ProgressBar';
@@ -15,7 +15,7 @@ const ArtEvaluation = () => {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [evaluationData, setEvaluationData] = useState({
-    imageRecall: [],
+    storyWriting: null,
     objectiveQuestions: []
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -40,7 +40,7 @@ const ArtEvaluation = () => {
     }
   ];
 
-  const totalSteps = (sessionData?.phase1?.selectedImages?.length || 0) + objectiveQuestions.length;
+  const totalSteps = 1 + objectiveQuestions.length; // 1 story writing + objective questions
 
   useEffect(() => {
     if (!sessionData) {
@@ -49,9 +49,9 @@ const ArtEvaluation = () => {
     }
   }, [sessionData, navigate]);
 
-  const handleImageRecallAnswer = (imageId, chosenImageUrl, isCorrect, timeSpent) => {
-    const newAnswer = { imageId, chosenImageUrl, isCorrect, timeSpent };
-    setEvaluationData(prev => ({ ...prev, imageRecall: [...prev.imageRecall, newAnswer] }));
+  const handleStoryWritingAnswer = (questionId, story, timeSpent) => {
+    const storyAnswer = { questionId, story, timeSpent };
+    setEvaluationData(prev => ({ ...prev, storyWriting: storyAnswer }));
     setCurrentStep(prev => prev + 1);
   };
 
@@ -79,24 +79,19 @@ const ArtEvaluation = () => {
   };
 
   const renderCurrentStep = () => {
-    const selected = sessionData?.phase1?.selectedImages || [];
-    if (!selected) { return <div>Carregando...</div>; }
+    if (!sessionData) { return <div>Carregando...</div>; }
 
-    const numImageQuestions = selected.length;
-
-    if (currentStep < numImageQuestions) {
-      const item = selected[currentStep];
+    // Step 1: Story Writing
+    if (currentStep === 0) {
       return (
-        <ImageRecallQuestion
-          item={item}
-          itemNumber={currentStep + 1}
-          totalItems={numImageQuestions}
-          onAnswer={handleImageRecallAnswer}
+        <StoryWritingQuestion
+          onAnswer={handleStoryWritingAnswer}
         />
       );
     }
 
-    const questionIndex = currentStep - numImageQuestions;
+    // Step 2+: Objective Questions
+    const questionIndex = currentStep - 1;
     if (questionIndex < objectiveQuestions.length) {
       return (
         <ObjectiveQuestions
