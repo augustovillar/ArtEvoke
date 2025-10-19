@@ -29,7 +29,7 @@ const ArtExploration = () => {
     // Verifica se está em modo sessão (com interrupção e avaliação)
     // PARA TESTE: deixado como true para sempre mostrar a interrupção
     // FUTURO: quando vier das sessões, trocar por: location.state?.isSessionMode || false
-    const isSessionMode = false;
+    const isSessionMode = true;
 
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();

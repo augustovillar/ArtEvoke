@@ -19,7 +19,7 @@ const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer
 
     const handleSubmit = () => {
         const isValid = (() => {
-            if (question.type === 'text') return true; // texto pode ser vazio (opcional no mock)
+            if (question.type === 'text') return typeof answer === 'string' && answer.trim() !== '';
             if (question.type === 'multi-select') return Array.isArray(answer) && answer.length > 0;
             if (typeof answer === 'string') return answer.trim() !== '';
             return !!answer;
@@ -182,7 +182,7 @@ const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer
                     onClick={handleSubmit}
                     className={styles.submitButton}
                     disabled={(() => {
-                        if (question.type === 'text') return false; // pode enviar em branco
+                        if (question.type === 'text') return !(typeof answer === 'string' && answer.trim() !== '');
                         if (question.type === 'multi-select') return !(Array.isArray(answer) && answer.length > 0);
                         if (typeof answer === 'string') return answer.trim() === '';
                         return !answer;

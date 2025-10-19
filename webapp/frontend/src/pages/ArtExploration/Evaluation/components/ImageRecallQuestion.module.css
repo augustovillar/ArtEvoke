@@ -25,4 +25,19 @@
 .primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff; border: none; padding: .8rem 2rem; border-radius: 999px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
 }
