@@ -18,18 +18,18 @@ const StoryInputForm = ({
 
     return (
         <div className="content-box">
-            <h1>{t('story.writeStoryTitle')}</h1>
+            <h1>{t('memoryReconstruction.writeStoryTitle')}</h1>
             <div className="input-row">
                 <textarea
                     className="story-textbox"
-                    placeholder={t('story.textareaPlaceholder')}
+                    placeholder={t('memoryReconstruction.textareaPlaceholder')}
                     value={storyText}
                     onChange={(e) => onStoryTextChange(e.target.value)}
                 />
                 <div className="select-row">
                     <div className="select-group">
                         <label htmlFor="language-select-id" className="select-label">
-                            {t('story.selectLanguage')}
+                            {t('memoryReconstruction.selectLanguage')}
                         </label>
                         <select
                             id="language-select-id"
@@ -37,17 +37,17 @@ const StoryInputForm = ({
                             value={language}
                             onChange={onLanguageChange}
                         >
-                            <option value="en">{t('story.languages.en')}</option>
-                            <option value="fr">{t('story.languages.fr')}</option>
-                            <option value="nl">{t('story.languages.nl')}</option>
-                            <option value="es">{t('story.languages.es')}</option>
-                            <option value="pt">{t('story.languages.pt')}</option>
-                            <option value="de">{t('story.languages.de')}</option>
+                            <option value="en">{t('memoryReconstruction.languages.en')}</option>
+                            <option value="fr">{t('memoryReconstruction.languages.fr')}</option>
+                            <option value="nl">{t('memoryReconstruction.languages.nl')}</option>
+                            <option value="es">{t('memoryReconstruction.languages.es')}</option>
+                            <option value="pt">{t('memoryReconstruction.languages.pt')}</option>
+                            <option value="de">{t('memoryReconstruction.languages.de')}</option>
                         </select>
                     </div>
                     <div className="select-group">
                         <label htmlFor="dataset-select-id" className="select-label">
-                            {t('story.selectDataset')}
+                            {t('memoryReconstruction.selectDataset')}
                         </label>
                         <select
                             id="dataset-select-id"
@@ -62,7 +62,7 @@ const StoryInputForm = ({
                     </div>
                     <div className="select-group">
                         <label htmlFor="segmentation-select-id" className="select-label">
-                            {t('story.imageSelection')}
+                            {t('memoryReconstruction.imageSelection')}
                         </label>
                         <select
                             id="segmentation-select-id"
@@ -70,8 +70,8 @@ const StoryInputForm = ({
                             value={segmentation}
                             onChange={onSegmentationChange}
                         >
-                            <option value="conservative">{t('story.segmentationOptions.conservative')}</option>
-                            <option value="broader">{t('story.segmentationOptions.broader')}</option>
+                            <option value="conservative">{t('memoryReconstruction.segmentationOptions.conservative')}</option>
+                            <option value="broader">{t('memoryReconstruction.segmentationOptions.broader')}</option>
                         </select>
                     </div>
                 </div>
@@ -82,7 +82,7 @@ const StoryInputForm = ({
                     onClick={() => onSubmit(1)} 
                     disabled={loading || !storyText.trim()}
                 >
-                    {loading ? t('story.searching') : t('story.submitButton')}
+                    {loading ? t('memoryReconstruction.searching') : t('memoryReconstruction.submitButton')}
                 </button>
                 <SpeechInput onChange={onStoryTextChange} initialValue={storyText} />
             </div>

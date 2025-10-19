@@ -5,9 +5,10 @@ const ImageSelectionGrid = ({
     sectionsWithImages,
     selectedImagesPerSection,
     onImageClick,
-    onRequestMoreImages,
-    onSaveClick,
-    numImagesPerSection,
+    onInSession,
+    onOutOfSession,
+    onClearSelection,
+    isSessionMode,
     loading,
     storyText,
     saveMessage
@@ -20,12 +21,12 @@ const ImageSelectionGrid = ({
 
     return (
         <div className="content-box">
-            <h1>{t('story.chooseImagesTitle')}</h1>
+            <h1>{t('memoryReconstruction.chooseImagesTitle')}</h1>
             {sectionsWithImages.map((sectionData, sectionIndex) => (
                 <div key={sectionIndex} className="section-images-container">
                     {sectionData.section && (
                         <p>
-                            <strong>{t('story.sectionLabel')}</strong> {sectionData.section}
+                            <strong>{t('memoryReconstruction.sectionLabel')}</strong> {sectionData.section}
                         </p>
                     )}
                     <div className="images-grid">
@@ -41,7 +42,7 @@ const ImageSelectionGrid = ({
                             >
                                 <img
                                     src={imageItem.url}
-                                    alt={t('story.imageAlt', { 
+                                    alt={t('memoryReconstruction.imageAlt', { 
                                         sectionIndex: sectionIndex + 1, 
                                         imageIndex: imageIndex + 1 
                                     })}
@@ -54,25 +55,40 @@ const ImageSelectionGrid = ({
                 </div>
             ))}
             <div className="buttons-container">
-                {numImagesPerSection === 1 && (
+                {isSessionMode ? (
+                    // Modo Sessão: apenas botão de continuar para interrupção e avaliação
                     <button
-                        className="submit-button"
-                        onClick={onRequestMoreImages}
-                        disabled={loading || !storyText.trim()}
+                        className="submit-button primary-button"
+                        onClick={onInSession}
+                        disabled={
+                            loading || 
+                            Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
+                        }
                     >
-                        {t('story.showMoreImages')}
+                        {t('memoryReconstruction.continueSession') || 'Continuar Sessão'}
                     </button>
+                ) : (
+                    // Modo Livre: botões de salvar e limpar
+                    <>
+                        <button
+                            className="submit-button secondary-button"
+                            onClick={onClearSelection}
+                            disabled={loading || Object.keys(selectedImagesPerSection).length === 0}
+                        >
+                            {t('memoryReconstruction.clearSelection') || 'Limpar Seleção'}
+                        </button>
+                        <button
+                            className="submit-button primary-button"
+                            onClick={onOutOfSession}
+                            disabled={
+                                loading || 
+                                Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
+                            }
+                        >
+                            {t('memoryReconstruction.saveStory') || 'Salvar História'}
+                        </button>
+                    </>
                 )}
-                <button
-                    className="submit-button"
-                    onClick={onSaveClick}
-                    disabled={
-                        loading || 
-                        Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
-                    }
-                >
-                    {t('story.saveStory')}
-                </button>
             </div>
             {saveMessage && <p>{saveMessage}</p>}
         </div>

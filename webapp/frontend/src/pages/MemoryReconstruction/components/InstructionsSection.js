@@ -6,17 +6,17 @@ const InstructionsSection = () => {
 
     return (
         <div className="content-box">
-            <h1>{t('story.pageTitle')}</h1>
+            <h1>{t('memoryReconstruction.pageTitle')}</h1>
             <p>
-                {t('story.description')}
+                {t('memoryReconstruction.description')}
                 <br />
                 <br />
-                {t('story.optionsIntro')}
+                {t('memoryReconstruction.optionsIntro')}
             </p>
             <ol className="instructions-list">
-                <li>{t('story.instructions.language')}</li>
-                <li>{t('story.instructions.dataset')}</li>
-                <li>{t('story.instructions.segmentation')}</li>
+                <li>{t('memoryReconstruction.instructions.language')}</li>
+                <li>{t('memoryReconstruction.instructions.dataset')}</li>
+                <li>{t('memoryReconstruction.instructions.segmentation')}</li>
             </ol>
         </div>
     );

@@ -7,6 +7,7 @@ const InterruptionModal = ({
   isOpen,
   duration,
   translationKey,
+  mode, // 'memory-reconstruction' ou 'art-exploration'
   onComplete
 }) => {
   const { t } = useTranslation('common');

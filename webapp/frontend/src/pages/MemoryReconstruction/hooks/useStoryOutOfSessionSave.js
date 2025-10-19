@@ -1,24 +1,23 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const useStorySave = () => {
+const useStoryOutOfSessionSave = () => {
     const { t } = useTranslation();
     const [saveMessage, setSaveMessage] = useState('');
     const [savedStoryData, setSavedStoryData] = useState(null);
 
-    const saveStory = (
+    const saveOutOfSessionStory = (
         storyText,
         selectedImagesPerSection,
         sectionsWithImages,
         language,
         dataset,
         segmentation,
-        shouldShowInterruption,
-        onInterruptionShow
+        // out-of-session save only
     ) => {
         const token = localStorage.getItem('token');
         if (!token) {
-            setSaveMessage(t('story.messages.loginRequired'));
+            setSaveMessage(t('memoryReconstruction.messages.loginRequired'));
             setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
@@ -28,7 +27,7 @@ const useStorySave = () => {
         );
 
         if (!allSectionsCovered) {
-            setSaveMessage(t('story.messages.selectAllImages'));
+            setSaveMessage(t('memoryReconstruction.messages.selectAllImages'));
             setTimeout(() => setSaveMessage(''), 4000);
             return;
         }
@@ -56,17 +55,13 @@ const useStorySave = () => {
             return response.json();
         })
         .then(data => {
-            setSaveMessage(t('story.messages.savedSuccessfully'));
+            setSaveMessage(t('memoryReconstruction.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
-            
-            if (shouldShowInterruption) {
-                setSavedStoryData(saveData);
-                onInterruptionShow(saveData);
-            }
+            setSavedStoryData(saveData);
         })
         .catch(error => {
             console.error('Error saving:', error);
-            setSaveMessage(t('story.messages.saveFailed'));
+            setSaveMessage(t('memoryReconstruction.messages.saveFailed'));
             setTimeout(() => setSaveMessage(''), 3000);
         });
     };
@@ -74,8 +69,8 @@ const useStorySave = () => {
     return {
         saveMessage,
         savedStoryData,
-        saveStory
+    saveOutOfSessionStory
     };
 };
 
-export default useStorySave;
+export default useStoryOutOfSessionSave;

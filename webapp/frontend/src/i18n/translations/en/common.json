@@ -148,7 +148,7 @@
     "errorOccurred": "An error occurred during signup. Please try again.",
     "loginLink": "Already registered? Login here!"
   },
-  "story": {
+  "memoryReconstruction": {
     "pageTitle": "Memory Reconstruction Instructions",
     "description": "The memory reconstruction tool allows you to input a story or a memory (or part of it). After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story. If you are not satisfied with the given result, you can click on the \"Show 5 images per section\" button to generate even more images.",
     "optionsIntro": "After inputting the text, you are given 3 options to play with.",
@@ -186,11 +186,32 @@
     "imageAlt": "Section {{sectionIndex}} Image {{imageIndex}}",
     "showMoreImages": "Show 5 Images per Section",
     "saveStory": "Save Story",
+    "continueSession": "Continue Session",
+    "clearSelection": "Clear Selection",
     "messages": {
       "loginRequired": "Please log in to save.",
       "selectAllImages": "Please select an image for every section before saving.",
       "savedSuccessfully": "Saved successfully!",
       "saveFailed": "Failed to save."
     }
+  },
+  "evaluation": {
+    "title": "Evaluation - Memory Reconstruction",
+    "progress": "Progress",
+    "imageRecognitionTitle": "Recognition Question",
+    "imageRecognitionInstruction": "Which of the images below did you previously select for this section of the story?",
+    "sectionTextLabel": "Section Text:",
+    "pleaseSelectImage": "Please select an image before continuing.",
+    "pleaseAnswer": "Please answer the question before continuing.",
+    "nextQuestion": "Next Question",
+    "question": "Question",
+    "finish": "Finish",
+    "yes": "Yes",
+    "no": "No",
+    "textPlaceholder": "Type your answer here...",
+    "completed": "Evaluation Complete!",
+    "completedMessage": "Thank you for completing the evaluation. Click the button below to save your session.",
+    "saving": "Saving...",
+    "saveSession": "Save Session"
   }
 }

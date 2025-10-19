@@ -13,7 +13,7 @@ import ImageSelectionGrid from './components/ImageSelectionGrid';
 // Hooks
 import useStorySubmit from './hooks/useStorySubmit';
 import useImageSelection from './hooks/useImageSelection';
-import useStorySave from './hooks/useStorySave';
+import useStoryOutOfSessionSave from './hooks/useStoryOutOfSessionSave';
 
 const MemoryReconstruction = () => {
     const location = useLocation();
@@ -32,7 +32,6 @@ const MemoryReconstruction = () => {
     const { 
         sectionsWithImages, 
         loading, 
-        numImagesPerSection, 
         submitStory 
     } = useStorySubmit();
 
@@ -44,14 +43,13 @@ const MemoryReconstruction = () => {
 
     const { 
         saveMessage, 
-        savedStoryData, 
-        saveStory 
-    } = useStorySave();
+        saveOutOfSessionStory 
+    } = useStoryOutOfSessionSave();
 
-    // Verifica se deve mostrar interrupção 
+    // Verifica se está em modo sessão (com interrupção e avaliação)
     // PARA TESTE: deixado como true para sempre mostrar a interrupção
-    // FUTURO: quando vier das sessões, trocar por: location.state?.fromSession || false
-    const shouldShowInterruption = true;
+    // FUTURO: quando vier das sessões, trocar por: location.state?.isSessionMode || false
+    const isSessionMode = true;
 
     useEffect(() => {
         registerContent(contentRef, [
@@ -62,47 +60,80 @@ const MemoryReconstruction = () => {
         return () => registerContent(null);
     }, [registerContent]);
 
-    const handleSubmit = (k) => {
+    const handleSubmit = () => {
         clearSelection();
-        submitStory(storyText, language, dataset, segmentation, k);
+        // Sempre mostrar 6 imagens por seção
+        submitStory(storyText, language, dataset, segmentation, 6);
     };
 
-    const handleSaveClick = () => {
-        saveStory(
+    // Handler para modo sessão (inSession): salva e vai para interrupção
+    const handleInSession = () => {
+        // No save here; just open the interruption modal. The save will be done in MemoryEvaluation.
+        setShowInterruption(true);
+    };
+
+    // Handler para modo livre (outOfSession): apenas salva
+    const handleOutOfSession = () => {
+        saveOutOfSessionStory(
             storyText,
             selectedImagesPerSection,
             sectionsWithImages,
             language,
             dataset,
-            segmentation,
-            shouldShowInterruption,
-            (storyData) => {
-                setShowInterruption(true);
-            }
+            segmentation
         );
+        alert("História salva com sucesso!");
     };
 
-    const handleRequestMoreImages = () => {
-        handleSubmit(5);
+    // Handler para limpar seleção (modo livre)
+    const handleClearSelection = () => {
+        if (window.confirm("Tem certeza que deseja limpar todas as seleções?")) {
+            clearSelection();
+        }
     };
 
     const handleInterruptionComplete = () => {
         setShowInterruption(false);
-        handleProceedToNextStep(savedStoryData);
+        handleProceedToNextStep();
     };
 
-    const handleProceedToNextStep = (storyData) => {
-        console.log("Prosseguindo para próxima etapa (avaliação futura)...");
-        console.log("Story Data:", storyData);
+    const handleProceedToNextStep = () => {
+        console.log("Prosseguindo para avaliação...");
+        // Dados serão montados a partir do estado atual (não do savedStoryData)
         
-        // Futuro: navigate('/evaluation/memory-reconstruction', { 
-        //     state: { 
-        //         storyData,
-        //         mode: 'memory_reconstruction'
-        //     } 
-        // });
-        
-        alert("Etapa concluída! (Futuramente será redirecionado para avaliação)");
+        // Navegar para página de avaliação com dados da sessão
+        navigate('/memory-reconstruction/evaluation', { 
+            state: { 
+                sessionData: {
+                    userId: 'test-user', // TODO: pegar do contexto de autenticação
+                    timestamp: new Date().toISOString(),
+                    mode: 'session',
+                    phase1: {
+                        story: storyText,
+                        language,
+                        dataset,
+                        segmentation,
+                        sections: sectionsWithImages.map((section, index) => ({
+                            sectionId: index,
+                            sectionText: section.section,
+                            imagesShown: section.images.map(img => ({
+                                url: img.url,
+                                name: img.name
+                            })),
+                            selectedImage: {
+                                url: selectedImagesPerSection[index],
+                                name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name
+                            }
+                        }))
+                    },
+                    interruption: {
+                        task: INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.translationKey,
+                        duration: INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.duration,
+                        completed: true
+                    }
+                }
+            } 
+        });
     };
 
     return (
@@ -127,9 +158,10 @@ const MemoryReconstruction = () => {
                     sectionsWithImages={sectionsWithImages}
                     selectedImagesPerSection={selectedImagesPerSection}
                     onImageClick={selectImage}
-                    onRequestMoreImages={handleRequestMoreImages}
-                    onSaveClick={handleSaveClick}
-                    numImagesPerSection={numImagesPerSection}
+                    onInSession={handleInSession}
+                    onOutOfSession={handleOutOfSession}
+                    onClearSelection={handleClearSelection}
+                    isSessionMode={isSessionMode}
                     loading={loading}
                     storyText={storyText}
                     saveMessage={saveMessage}
@@ -141,6 +173,7 @@ const MemoryReconstruction = () => {
                 isOpen={showInterruption}
                 duration={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.duration}
                 translationKey={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.translationKey}
+                mode="memory-reconstruction"
                 onComplete={handleInterruptionComplete}
             />
         </div>

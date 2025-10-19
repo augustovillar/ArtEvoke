@@ -119,6 +119,7 @@ const ArtExploration = () => {
                 isOpen={showInterruption}
                 duration={INTERRUPTION_CONFIG.ART_EXPLORATION.duration}
                 translationKey={INTERRUPTION_CONFIG.ART_EXPLORATION.translationKey}
+                mode="art-exploration"
                 onComplete={handleInterruptionComplete}
             />
         </div>

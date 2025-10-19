@@ -148,7 +148,7 @@
     "errorOccurred": "Ocorreu um erro durante o cadastro. Tente novamente.",
     "loginLink": "Já é registrado? Faça login aqui!"
   },
-  "story": {
+  "memoryReconstruction": {
     "pageTitle": "Instruções de Reconstrução da Memória",
     "description": "A ferramenta de reconstrução da memória permite que você insira uma história ou uma memória (ou parte dela). Após enviar o texto, nosso modelo de IA irá segmentar o texto e sugerir a melhor pintura correspondente por seção da base de dados selecionada, o que pode ajudá-lo a lembrar de mais detalhes da história. Se não estiver satisfeito com o resultado, pode clicar no botão \"Mostrar 5 imagens por seção\" para gerar ainda mais imagens.",
     "optionsIntro": "Após inserir o texto, você tem 3 opções para explorar.",
@@ -186,11 +186,32 @@
     "imageAlt": "Seção {{sectionIndex}} Imagem {{imageIndex}}",
     "showMoreImages": "Mostrar 5 Imagens por Seção",
     "saveStory": "Salvar História",
+    "continueSession": "Continuar Sessão",
+    "clearSelection": "Limpar Seleção",
     "messages": {
       "loginRequired": "Faça login para salvar.",
       "selectAllImages": "Selecione uma imagem para cada seção antes de salvar.",
       "savedSuccessfully": "Salvo com sucesso!",
       "saveFailed": "Falha ao salvar."
     }
+  },
+  "evaluation": {
+    "title": "Avaliação - Memory Reconstruction",
+    "progress": "Progresso",
+    "imageRecognitionTitle": "Pergunta de Reconhecimento",
+    "imageRecognitionInstruction": "Qual das imagens abaixo você selecionou anteriormente para esta seção da história?",
+    "sectionTextLabel": "Texto da Seção:",
+    "pleaseSelectImage": "Por favor, selecione uma imagem antes de continuar.",
+    "pleaseAnswer": "Por favor, responda a pergunta antes de continuar.",
+    "nextQuestion": "Próxima Pergunta",
+    "question": "Pergunta",
+    "finish": "Finalizar",
+    "yes": "Sim",
+    "no": "Não",
+    "textPlaceholder": "Digite sua resposta aqui...",
+    "completed": "Avaliação Completa!",
+    "completedMessage": "Obrigado por completar a avaliação. Clique no botão abaixo para salvar sua sessão.",
+    "saving": "Salvando...",
+    "saveSession": "Salvar Sessão"
   }
 }

@@ -1,0 +1,45 @@
+.container {
+    width: 100%;
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.text {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.percentage {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.barBackground {
+    width: 100%;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.barFill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+@media (max-width: 768px) {
+    .info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
