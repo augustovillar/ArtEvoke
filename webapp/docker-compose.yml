@@ -41,7 +41,8 @@ services:
     networks:
       - app_network
     volumes:
-      - ./frontend:/app
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
       - /app/node_modules
 
   nginx:
@@ -54,7 +55,7 @@ services:
       - NGINX_CONFIG=nginx-local.conf
     volumes:
       - ./nginx/${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/lib/letsencrypt:/var/lib/letsencrypt
     depends_on:
       - frontend

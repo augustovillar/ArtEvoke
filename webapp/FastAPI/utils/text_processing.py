@@ -28,6 +28,15 @@ def _get_sections(sentences, size, step, ensure_last=False, max_segments=None):
 def doTextSegmentation(mode, text, max_sections):
     sentences = _get_sentences(text)
 
+    # Handle edge case: if text has no sentence-ending punctuation or very few sentences
+    if len(sentences) == 0:
+        # No sentences found, treat entire text as one section
+        return [text.strip()] if text.strip() else []
+
+    if len(sentences) == 1:
+        # Only one sentence, return it as a single section
+        return [text.strip()]
+
     if mode == "conservative":
         size = 3
         step = 2
@@ -39,8 +48,17 @@ def doTextSegmentation(mode, text, max_sections):
     else:
         return [text.strip()]
 
+    # If we have fewer sentences than the required size, return all sentences as one section
+    if len(sentences) < size:
+        return [" ".join(sentences)]
+
     # Check traditional sections
     sections = _get_sections(sentences, size, step, ensure_last)
+
+    # Handle case where no sections were generated
+    if len(sections) == 0:
+        return [" ".join(sentences)]
+
     # ensure max_sections
     if len(sections) > max_sections:
         size = math.ceil(len(sentences) / max_sections)

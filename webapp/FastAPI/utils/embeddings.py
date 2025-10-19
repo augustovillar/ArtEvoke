@@ -10,7 +10,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the model **once** at startup
 print("Loading embedding model...")
-embedding_model = SentenceTransformer("thenlper/gte-large")
+embedding_model = SentenceTransformer(
+    "Qwen/Qwen3-Embedding-4B",
+    model_kwargs={
+        "attn_implementation": "sdpa",
+        "device_map": device,
+        "dtype": torch.float16,
+    },
+    tokenizer_kwargs={"padding_side": "left"},
+)
 
 DATA_DIR = os.getenv("DATA_DIR", "/data") 
 
@@ -53,10 +61,10 @@ metadata_by_dataset = {
 
 filename_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
 
-art_name_columns = {"wikiart": "file_name", "semart": "title", "ipiranga": None}
+art_name_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
 
 
-def get_gte_embedding(text):
+def get_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
     embedding = embedding / np.linalg.norm(
         embedding, axis=1, keepdims=True
@@ -65,7 +73,7 @@ def get_gte_embedding(text):
 
 
 def get_top_k_images_from_text(text, dataset, k=3):
-    query_embedding = get_gte_embedding(text)
+    query_embedding = get_embedding(text)
 
     indexImages = index_by_dataset[dataset]
     metadataImages = metadata_by_dataset[dataset]
