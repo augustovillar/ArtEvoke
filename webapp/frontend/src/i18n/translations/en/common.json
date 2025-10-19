@@ -123,6 +123,9 @@
     "generateStory": "Generate Story from {{count}} Selected Image(s)",
     "generatingStory": "Generating Story...",
     "clearSelections": "Clear All Selections",
+    "continueSession": "Continue Session",
+    "saveStory": "Save Story",
+    "continueToEvaluation": "Continue to Evaluation",
     "aiGeneratedStory": "AI Generated Story",
     "regenerateStory": "Regenerate Story",
     "copyText": "Copy Text",
@@ -212,6 +215,9 @@
     "completed": "Evaluation Complete!",
     "completedMessage": "Thank you for completing the evaluation. Click the button below to save your session.",
     "saving": "Saving...",
-    "saveSession": "Save Session"
+    "saveSession": "Save Session",
+    "titleArtExploration": "Evaluation - Art Exploration",
+    "imageRecallTitle": "Image Question",
+    "imageRecallInstruction": "Which of these images did you just select?"
   }
 }

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const useStorySave = () => {
+export const useStoryOutOfSessionSave = () => {
     const { t } = useTranslation('common');
     const [saveMessage, setSaveMessage] = useState('');
 
-    const saveStory = async (responseText, selectedImages) => {
+    const saveOutOfSessionStory = async (responseText, selectedImages) => {
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -74,6 +74,6 @@ export const useStorySave = () => {
     return {
         saveMessage,
         setSaveMessage,
-        saveStory
+        saveOutOfSessionStory
     };
 };

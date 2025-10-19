@@ -7,7 +7,8 @@ const GeneratedStory = ({
     onCopyToClipboard, 
     onSave, 
     isGenerating, 
-    saveMessage 
+    saveMessage,
+    isSessionMode 
 }) => {
     const { t } = useTranslation('common');
 
@@ -37,7 +38,10 @@ const GeneratedStory = ({
                     className="submit-button" 
                     onClick={onSave}
                 >
-                    {t('artExploration.saveToAccount')}
+                    {isSessionMode 
+                        ? (t('artExploration.continueToEvaluation') || 'Prosseguir para Avaliação')
+                        : t('artExploration.saveToAccount')
+                    }
                 </button>
             </div>
             {saveMessage && <p>{saveMessage}</p>}

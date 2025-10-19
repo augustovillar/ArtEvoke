@@ -8,4 +8,4 @@ export { default as GeneratedStory } from './GeneratedStory';
 export { useImageSearch } from '../hooks/useImageSearch';
 export { useImageSelection } from '../hooks/useImageSelection';
 export { useStoryGeneration } from '../hooks/useStoryGeneration';
-export { useStorySave } from '../hooks/useStorySave';
+export { useStoryOutOfSessionSave } from '../hooks/useStoryOutOfSessionSave';

@@ -12,7 +12,7 @@ import {
     useImageSearch,
     useImageSelection,
     useStoryGeneration,
-    useStorySave
+    useStoryOutOfSessionSave
 } from './components';
 
 const ArtExploration = () => {
@@ -22,19 +22,20 @@ const ArtExploration = () => {
 
     // Interruption states
     const [showInterruption, setShowInterruption] = useState(false);
-    const [savedStoryData, setSavedStoryData] = useState(null);
 
     const location = useLocation();
     const navigate = useNavigate();
 
-    // For testing, always show interruption. FUTURE: use location.state?.fromSession
-    const shouldShowInterruption = true;
+    // Verifica se está em modo sessão (com interrupção e avaliação)
+    // PARA TESTE: deixado como true para sempre mostrar a interrupção
+    // FUTURO: quando vier das sessões, trocar por: location.state?.isSessionMode || false
+    const isSessionMode = false;
 
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
     const { generateLoading, responseText, generateStory, copyToClipboard } = useStoryGeneration();
-    const { saveMessage, saveStory } = useStorySave();
+    const { saveMessage, saveOutOfSessionStory } = useStoryOutOfSessionSave();
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
@@ -57,28 +58,59 @@ const ArtExploration = () => {
         handleGenerateStory();
     };
 
-    const handleSaveClick = async () => {
-        const result = await saveStory(responseText, selectedImages);
-        
-        if (result.success && shouldShowInterruption) {
-            setSavedStoryData(result.data);
-            setShowInterruption(true);
-        } else if (result.success) {
-            handleProceedToNextStep(result.data);
+    // Handler para modo sessão (inSession): vai para interrupção SEM salvar
+    const handleInSession = () => {
+        // No save here; just open the interruption modal. The save will be done in ArtEvaluation.
+        setShowInterruption(true);
+    };
+
+    // Handler para modo livre (outOfSession): apenas salva
+    const handleOutOfSession = async () => {
+        const result = await saveOutOfSessionStory(responseText, selectedImages);
+        if (result.success) {
+            alert('História salva com sucesso!');
+        }
+    };
+
+    // Handler para limpar seleção (modo livre)
+    const handleClearSelections = () => {
+        if (window.confirm("Tem certeza que deseja limpar todas as seleções?")) {
+            clearSelections();
         }
     };
 
     // Função chamada quando a interrupção é completada
     const handleInterruptionComplete = () => {
         setShowInterruption(false);
-        handleProceedToNextStep(savedStoryData);
+        handleProceedToNextStep();
     };
 
-    // Função para prosseguir para próxima etapa (preparado para futuras implementações)
-    const handleProceedToNextStep = (data) => {
-        console.log('Prosseguindo para avaliação (futuro) com:', data);
-        // Futuro: navigate('/evaluation/art-exploration', { state: { data } });
-        alert('Interrupção concluída — futuramente irá para avaliação.');
+    // Função para prosseguir para próxima etapa
+    const handleProceedToNextStep = () => {
+        // Monta dados mínimos de sessão para avaliação
+        const sessionData = {
+            userId: 'test-user', // TODO: integrar com auth
+            timestamp: new Date().toISOString(),
+            mode: 'session',
+            phase1: {
+                query: storyText,
+                language,
+                dataset,
+                generatedStory: responseText,
+                selectedImages: selectedImages.map(img => ({
+                    url: img.url,
+                    name: img.name,
+                    id: img.url
+                }))
+            },
+            interruption: {
+                task: INTERRUPTION_CONFIG.ART_EXPLORATION.translationKey,
+                duration: INTERRUPTION_CONFIG.ART_EXPLORATION.duration,
+                completed: true
+            }
+        };
+
+        navigate('/art-exploration/evaluation', { state: { sessionData } });
     };
 
     return (
@@ -101,7 +133,7 @@ const ArtExploration = () => {
                 selectedImages={selectedImages}
                 onImageToggle={handleImageToggle}
                 onGenerateStory={handleGenerateStory}
-                onClearSelections={clearSelections}
+                onClearSelections={handleClearSelections}
                 isGenerating={generateLoading}
             />
 
@@ -109,9 +141,10 @@ const ArtExploration = () => {
                 responseText={responseText}
                 onRegenerate={handleRegenerateClick}
                 onCopyToClipboard={handleCopyToClipboard}
-                onSave={handleSaveClick}
+                onSave={isSessionMode ? handleInSession : handleOutOfSession}
                 isGenerating={generateLoading}
                 saveMessage={saveMessage}
+                isSessionMode={isSessionMode}
             />
 
             {/* Modal de Interrupção */}

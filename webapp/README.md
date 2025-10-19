@@ -77,7 +77,11 @@ cd VisualCuesApp
 docker-compose up --build
 ```
 
+Com Logs:
 
+```bash
+docker compose up -d --build && docker compose logs -f
+```
 ---
 
 ## License

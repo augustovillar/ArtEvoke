@@ -123,6 +123,9 @@
     "generateStory": "Gerar História de {{count}} Imagem(ns) Selecionada(s)",
     "generatingStory": "Gerando História...",
     "clearSelections": "Limpar Todas as Seleções",
+    "continueSession": "Continuar Sessão",
+    "saveStory": "Salvar História",
+    "continueToEvaluation": "Prosseguir para Avaliação",
     "aiGeneratedStory": "História Gerada por IA",
     "regenerateStory": "Regenerar História",
     "copyText": "Copiar Texto",
@@ -212,6 +215,9 @@
     "completed": "Avaliação Completa!",
     "completedMessage": "Obrigado por completar a avaliação. Clique no botão abaixo para salvar sua sessão.",
     "saving": "Salvando...",
-    "saveSession": "Salvar Sessão"
+    "saveSession": "Salvar Sessão",
+    "titleArtExploration": "Avaliação - Art Exploration",
+    "imageRecallTitle": "Pergunta sobre a Imagem",
+    "imageRecallInstruction": "Qual destas imagens você acabou de selecionar?"
   }
 }
