@@ -26,11 +26,14 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 RUN java -version
 # --- END Java Installation ---
 
-# Copy only requirements first
-COPY requirements.txt .
+# Install UV
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy pyproject.toml first for dependency caching
+COPY pyproject.toml ./
+
+# Install dependencies using UV (creates lockfile if missing)
+RUN uv sync
 
 # Copy the rest of the application
 COPY . .
@@ -38,5 +41,5 @@ COPY . .
 # Expose the backend port
 EXPOSE 5001
 
-# Command to run the FastAPI app with reload
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--reload"]
+# Command to run the FastAPI app with reload using UV
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--reload"]

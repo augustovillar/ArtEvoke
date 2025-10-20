@@ -10,7 +10,8 @@ This thesis explores how artificial intelligence can support non-drug interventi
 
 - 🌐 **Frontend**: React.js with dynamic user interface
 - ⚙️ **Backend**: FastAPI with async support
-- 💾 **Database**: MongoDB
+- � **Package Management**: UV for fast, reliable Python dependency management
+- �💾 **Database**: MongoDB
 - 🐳 **Containerized**: Each component (frontend, backend, nginx) runs in its own Docker container
 - 🌍 **Production-Ready**: Includes an NGINX reverse proxy for deployment
 
@@ -63,6 +64,7 @@ All persistent data is mapped as volumes in docker-compose.yml:
 ### Requirements
 - Docker
 - Docker Compose
+- UV (for local development)
 
 ### 1. Clone the Repository
 
@@ -71,7 +73,26 @@ git clone https://github.com/MarcBejjani/VisualCuesApp.git
 cd VisualCuesApp
 ```
 
-### 2. Run the Application with Docker
+### 2. Backend Development Setup (Optional)
+
+For local backend development without Docker:
+
+```bash
+cd FastAPI
+
+# Install UV if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync dependencies (creates .venv automatically)
+uv sync
+
+# Run FastAPI server (uv run automatically uses the virtual environment)
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 5001
+```
+
+The backend uses UV for fast, reliable dependency management with `pyproject.toml` instead of traditional `requirements.txt`.
+
+### 3. Run the Application with Docker
 
 ```bash
 docker-compose up --build
