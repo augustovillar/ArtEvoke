@@ -25,19 +25,21 @@ const ArtEvaluation = () => {
   const objectiveQuestions = [
     {
       id: 'q1',
-      text: 'Como você descreveria o tema principal das imagens selecionadas?',
-      type: 'text'
+      text: 'Como era o ambiente da história?', 
+      type: 'multiple-choice',
+      options: ['Aberto', 'Fechado', 'Urbano', 'Rural' ]
     },
     {
-      id: 'q2',
-      text: 'As imagens escolhidas evocaram alguma emoção específica?',
-      type: 'yes-no'
+      id: 'q2', 
+      text: 'Que parte do dia era?', 
+      type: 'multiple-choice', 
+      options: ['Manhã', 'Tarde', 'Noite']
     },
     {
-      id: 'q3',
-      text: 'Quais estilos melhor descrevem as imagens escolhidas?',
-      type: 'multi-select',
-      options: ['Realismo', 'Impressionismo', 'Abstrato', 'Expressionismo', 'Surrealismo']
+    id: 'q3', 
+    text: 'Qual emoção foi predominante na história?', 
+    type: 'multiple-choice',
+    options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo']
     }
   ];
 
