@@ -225,6 +225,13 @@
     "storyPlaceholder": "Start writing your story here...",
     "pleaseWriteStory": "Please write a story before continuing.",
     "continueToQuestions": "Continue to Questions",
-    "characters": "characters"
+    "characters": "characters",
+    "chronologyTitle": "Event Order",
+    "chronologyInstruction": "Drag the events to organize them in the correct chronological order:",
+    "eventsToOrder": "Events to order:",
+    "chronologicalOrder": "Chronological Order:",
+    "dropHere": "Drop here",
+    "completeOrder": "Complete the ordering to continue.",
+    "removeEvent": "Remove event"
   }
 }

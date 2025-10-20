@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { StoryWritingQuestion } from './components';
+import { StoryWritingQuestion, ChronologyOrderQuestion } from './components';
 // Reuse shared components from Memory Reconstruction evaluation
 import ObjectiveQuestions from '../../MemoryReconstruction/Evaluation/components/ObjectiveQuestions';
 import ProgressBar from '../../MemoryReconstruction/Evaluation/components/ProgressBar';
@@ -16,6 +16,7 @@ const ArtEvaluation = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [evaluationData, setEvaluationData] = useState({
     storyWriting: null,
+    chronologyOrder: null,
     objectiveQuestions: []
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -40,7 +41,7 @@ const ArtEvaluation = () => {
     }
   ];
 
-  const totalSteps = 1 + objectiveQuestions.length; // 1 story writing + objective questions
+  const totalSteps = 2 + objectiveQuestions.length; // 1 story writing + 1 chronology + objective questions
 
   useEffect(() => {
     if (!sessionData) {
@@ -52,6 +53,12 @@ const ArtEvaluation = () => {
   const handleStoryWritingAnswer = (questionId, story, timeSpent) => {
     const storyAnswer = { questionId, story, timeSpent };
     setEvaluationData(prev => ({ ...prev, storyWriting: storyAnswer }));
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const handleChronologyOrderAnswer = (questionId, answer, timeSpent) => {
+    const chronologyAnswer = { questionId, ...answer, timeSpent };
+    setEvaluationData(prev => ({ ...prev, chronologyOrder: chronologyAnswer }));
     setCurrentStep(prev => prev + 1);
   };
 
@@ -90,8 +97,17 @@ const ArtEvaluation = () => {
       );
     }
 
-    // Step 2+: Objective Questions
-    const questionIndex = currentStep - 1;
+    // Step 2: Chronology Order
+    if (currentStep === 1) {
+      return (
+        <ChronologyOrderQuestion
+          onAnswer={handleChronologyOrderAnswer}
+        />
+      );
+    }
+
+    // Step 3+: Objective Questions
+    const questionIndex = currentStep - 2;
     if (questionIndex < objectiveQuestions.length) {
       return (
         <ObjectiveQuestions
