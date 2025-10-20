@@ -23,7 +23,7 @@ const StoryWritingQuestion = ({ onAnswer }) => {
     };
 
     const questionText = t('evaluation.storyWritingInstruction') || 
-        'Com base nas imagens que você selecionou anteriormente, escreva uma história que conecte todas elas. Seja criativo e inclua detalhes sobre o que você vê e sente.';
+        'Tente recontar a história que você recebeu anteriormente com suas palavras, seja o mais rico possível em detalhes.';
 
     return (
         <div className={styles.container}>

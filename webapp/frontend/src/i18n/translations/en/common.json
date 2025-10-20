@@ -200,7 +200,7 @@
     }
   },
   "evaluation": {
-    "title": "Evaluation - Memory Reconstruction",
+    "title": "Recap - Memory Reconstruction",
     "progress": "Progress",
     "imageRecognitionTitle": "Recognition Question",
     "imageRecognitionInstruction": "Which of the images below did you previously select for this section of the story?",
@@ -213,11 +213,11 @@
     "yes": "Yes",
     "no": "No",
     "textPlaceholder": "Type your answer here...",
-    "completed": "Evaluation Complete!",
-    "completedMessage": "Thank you for completing the evaluation. Click the button below to save your session.",
+    "completed": "Recap Complete!",
+    "completedMessage": "Thank you for completing the Recap. Click the button below to save your session.",
     "saving": "Saving...",
     "saveSession": "Save Session",
-    "titleArtExploration": "Evaluation - Art Exploration",
+    "titleArtExploration": "Recap - Art Exploration",
     "imageRecallTitle": "Image Question",
     "imageRecallInstruction": "Which of these images did you just select?",
     "storyWritingTitle": "Write Your Story",

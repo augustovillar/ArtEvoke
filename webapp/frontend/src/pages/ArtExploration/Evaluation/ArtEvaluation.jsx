@@ -124,8 +124,8 @@ const ArtEvaluation = () => {
     return (
       <div className={styles.completion}>
         <div className={styles.completionCard}>
-          <h2>{t('evaluation.completed') || 'Avaliação Completa!'}</h2>
-          <p>{t('evaluation.completedMessage') || 'Obrigado por completar a avaliação. Clique no botão abaixo para salvar sua sessão.'}</p>
+          <h2>{t('evaluation.completed') || 'Recapitulação Completa!'}</h2>
+          <p>{t('evaluation.completedMessage') || 'Obrigado por completar a recapitulação. Clique no botão abaixo para salvar sua sessão.'}</p>
           <button onClick={handleSaveSession} className={styles.saveButton} disabled={isSaving}>
             {isSaving ? (t('evaluation.saving') || 'Salvando...') : (t('evaluation.saveSession') || 'Salvar Sessão')}
           </button>
@@ -139,7 +139,7 @@ const ArtEvaluation = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>{t('evaluation.titleArtExploration') || 'Avaliação - Art Exploration'}</h1>
+        <h1>{t('evaluation.titleArtExploration') || 'Recapitulação - Art Exploration'}</h1>
         <ProgressBar current={currentStep + 1} total={totalSteps} />
       </div>
       <div className={styles.content}>{renderCurrentStep()}</div>
