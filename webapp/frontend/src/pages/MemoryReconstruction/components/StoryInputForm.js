@@ -38,11 +38,7 @@ const StoryInputForm = ({
                             onChange={onLanguageChange}
                         >
                             <option value="en">{t('memoryReconstruction.languages.en')}</option>
-                            <option value="fr">{t('memoryReconstruction.languages.fr')}</option>
-                            <option value="nl">{t('memoryReconstruction.languages.nl')}</option>
-                            <option value="es">{t('memoryReconstruction.languages.es')}</option>
                             <option value="pt">{t('memoryReconstruction.languages.pt')}</option>
-                            <option value="de">{t('memoryReconstruction.languages.de')}</option>
                         </select>
                     </div>
                     <div className="select-group">
