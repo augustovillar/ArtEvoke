@@ -12,10 +12,10 @@ This thesis explores how artificial intelligence can support non-drug interventi
 
 ## 🚀 Features
 
-### Core Platform
-- 🌐 **Frontend**: React.js with dynamic user interface and internationalization (PT/EN)
-- ⚙️ **Backend**: FastAPI with async support and AI model integration
-- 💾 **Database**: MongoDB for user data and session management
+- 🌐 **Frontend**: React.js with dynamic user interface
+- ⚙️ **Backend**: FastAPI with async support
+- � **Package Management**: UV for fast, reliable Python dependency management
+- �💾 **Database**: MongoDB
 - 🐳 **Containerized**: Each component (frontend, backend, nginx) runs in its own Docker container
 - 🌍 **Production-Ready**: Includes an NGINX reverse proxy for deployment
 
@@ -115,6 +115,7 @@ ArtEvoke/webapp/
 ### Requirements
 - Docker
 - Docker Compose
+- UV (for local development)
 
 ### 1. Clone the Repository
 
@@ -123,7 +124,26 @@ git clone https://github.com/augustovillar/ArtEvoke.git
 cd ArtEvoke/webapp
 ```
 
-### 2. Run the Application with Docker
+### 2. Backend Development Setup (Optional)
+
+For local backend development without Docker:
+
+```bash
+cd FastAPI
+
+# Install UV if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync dependencies (creates .venv automatically)
+uv sync
+
+# Run FastAPI server (uv run automatically uses the virtual environment)
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 5001
+```
+
+The backend uses UV for fast, reliable dependency management with `pyproject.toml` instead of traditional `requirements.txt`.
+
+### 3. Run the Application with Docker
 
 ```bash
 docker-compose up --build
