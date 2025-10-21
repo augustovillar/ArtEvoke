@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from routes import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from orm import get_db, Patient, MemoryReconstruction, ArtExploration
 from utils.types import (
     User,
     UserInDB,
@@ -15,18 +16,16 @@ from utils.auth import (
     get_password_hash,
     create_access_token,
     get_current_user,
-    convert_object_ids,
 )
 from datetime import datetime
-from bson.objectid import ObjectId
 from typing import Dict, List
-from motor.motor_asyncio import AsyncIOMotorDatabase
+import uuid
 
 router = APIRouter()
 
 
 @router.post("/signup")
-async def signup(user: User, db=Depends(get_db)) -> UserInDB:
+async def signup(user: User, db: Session = Depends(get_db)) -> UserInDB:
     print(f"Attempting signup for email: {user.email}")
     existing_user = db.query(Patient).filter(Patient.email == user.email).first()
     print(f"Find one result: {existing_user}")
@@ -61,9 +60,9 @@ async def signup(user: User, db=Depends(get_db)) -> UserInDB:
 
 
 @router.post("/login")
-async def login(user: UserLogin, db=Depends(get_db)) -> LoginResponse:
-    db_user = await db.users.find_one({"username": user.username})
-    if not db_user or not verify_password(user.password, db_user["password"]):
+async def login(user: UserLogin, db: Session = Depends(get_db)) -> LoginResponse:
+    db_user = db.query(Patient).filter(Patient.username == user.username).first()
+    if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid username or password")
 
     access_token = create_access_token(data={"userId": db_user.id})
@@ -88,7 +87,7 @@ async def get_profile(current_user: UserInDB = Depends(get_current_user)) -> Use
 async def save_art_search(
     story_data: SaveStoryRequest,
     current_user: str = Depends(get_current_user),
-    db=Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
         story_text: str = story_data.storyText
@@ -101,19 +100,22 @@ async def save_art_search(
                 status_code=400, detail="No story text or selected images to save."
             )
 
-        db.users.update_one(
-            {"_id": current_user},
-            {
-                "$push": {
-                    "savedArtSearches": {
-                        "_id": ObjectId(),
-                        "text": story_text,
-                        "selectedImagesByDataset": selected_images_by_dataset,
-                        "dateAdded": datetime.utcnow(),
-                    }
-                }
-            },
+        # Create ArtExploration entry
+        art_exploration = ArtExploration(
+            id=str(uuid.uuid4()),
+            patient_id=current_user,
+            story_generated=story_text,
+            dataset="WikiArt",  # Default dataset - you may want to get this from request
+            language="EN",  # Default language - you may want to get this from request
         )
+
+        db.add(art_exploration)
+        db.commit()
+        db.refresh(art_exploration)
+
+        # TODO: Add Images records for selected_images_by_dataset
+        # This would require mapping image IDs to catalog_item IDs
+
         return {"message": "Story saved successfully"}
     except Exception as e:
         print(e)
@@ -125,7 +127,7 @@ async def save_art_search(
 async def save_story_generation(
     story_data: SaveGenerationRequest,
     current_user: str = Depends(get_current_user),
-    db=Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
         image_urls: List[str] = story_data.selectedImages
@@ -138,13 +140,17 @@ async def save_story_generation(
         memory_reconstruction = MemoryReconstruction(
             id=str(uuid.uuid4()),
             patient_id=current_user,
-            reconstruction_date=datetime.utcnow(),
-            original_story=story_text,
-            # TODO: Map selectedImages to proper images relationship and create Sections
+            story=story_text,
+            dataset="WikiArt",  # Default dataset - you may want to get this from request
+            language="EN",  # Default language - you may want to get this from request
+            segmentation_strategy="Conservative",  # Default strategy - you may want to get this from request
         )
 
         db.add(memory_reconstruction)
         db.commit()
+        db.refresh(memory_reconstruction)
+
+        # TODO: Map selectedImages to proper Sections with images relationship
 
         return {"message": "Generation saved successfully"}
     except Exception as e:
@@ -156,23 +162,44 @@ async def save_story_generation(
 @router.get("/retrieve-searches")
 async def retrieve_searches(
     current_user: str = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> RetrieveSearchesResponse:
-    user = await db.users.find_one(
-        {"_id": ObjectId(current_user)},
-        {"savedArtSearches": 1, "savedStoryGenerations": 1, "_id": 1},
+    # Get user's art explorations (saved searches)
+    art_explorations = (
+        db.query(ArtExploration).filter(ArtExploration.patient_id == current_user).all()
     )
 
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+    # Get user's memory reconstructions (saved generations)
+    memory_reconstructions = (
+        db.query(MemoryReconstruction)
+        .filter(MemoryReconstruction.patient_id == current_user)
+        .all()
+    )
 
-    cleaned_user = convert_object_ids(user)
+    # Convert to expected format
+    saved_art_searches = [
+        {
+            "_id": art_exp.id,
+            "text": art_exp.story_generated,
+            "selectedImagesByDataset": {},  # TODO: populate from Images relationship
+            "dateAdded": art_exp.created_at,
+        }
+        for art_exp in art_explorations
+    ]
+
+    saved_story_generations = [
+        {
+            "_id": memory_rec.id,
+            "generatedStory": memory_rec.story,
+            "selectedImages": [],  # TODO: populate from Sections relationship
+            "dateAdded": memory_rec.created_at,
+        }
+        for memory_rec in memory_reconstructions
+    ]
 
     return {
-        "savedArtSearches": cleaned_user.get("savedArtSearches", []),
-        "savedStoryGenerations": cleaned_user.get("savedStoryGenerations", []),
+        "savedArtSearches": saved_art_searches,
+        "savedStoryGenerations": saved_story_generations,
     }
 
 
@@ -180,7 +207,7 @@ async def retrieve_searches(
 async def delete_story_generation(
     generation_id: str,
     current_user: str = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
         memory_reconstruction = (
@@ -210,7 +237,7 @@ async def delete_story_generation(
 async def delete_art_search(
     search_id: str,
     current_user: str = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
         art_exploration = (

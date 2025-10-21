@@ -10,14 +10,15 @@ dependencies = [
     "python-dotenv==1.0.1",
     "python-multipart==0.0.20",
     
-    # Database
-    "motor==3.7.0",
-    "pymongo==4.11.2",
+    # Database - SQLAlchemy & MySQL
+    "sqlalchemy==2.0.36",
+    "pymysql==1.1.1",
+    "alembic==1.14.0",
     
     # Authentication & Security
-    "passlib==1.7.4",
+    "passlib[bcrypt]==1.7.4",
     "python-jose==3.4.0",
-    "bcrypt==4.3.0",
+    "bcrypt==4.0.1",
     "cryptography==44.0.2",
     
     # ML & AI Models
@@ -25,11 +26,10 @@ dependencies = [
     "sentence-transformers==4.1.0",
     
     # Vector Search
-    "faiss-gpu-cu12==1.12.0",
+    "qdrant-client==1.15.1",
     
     # Data Processing
     "pandas==2.2.3",
-    "numpy==1.26.4",
     "openai==1.58.1",
     
     # Utilities
@@ -39,11 +39,10 @@ dependencies = [
     "bitsandbytes==0.45.4",
     
     # NLP & Translation
-    "language_tool_python==2.9.3",
     "deep-translator==1.11.4",
     
     # Pydantic for validation
-    "pydantic==2.10.6",
+    "pydantic==2.10.6"
 ]
 
 [tool.uv]

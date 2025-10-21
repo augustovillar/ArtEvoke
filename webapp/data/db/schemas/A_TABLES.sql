@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS CatalogItem (
   semart_id    CHAR(36) NULL,
 
   /* armazenado diretamente (e indexável sem stress) */
-  source ENUM('Ipiranga','WikiArt','SemArt') NOT NULL,
+  source ENUM('ipiranga','wikiart','semart') NOT NULL,
 
   CONSTRAINT pk_catalogitem PRIMARY KEY (id),
   CONSTRAINT fk_ci_ipiranga FOREIGN KEY (ipiranga_id) REFERENCES Ipiranga(id) ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS ArtExploration (
   id              CHAR(36)    NOT NULL,
   patient_id      CHAR(36)    NOT NULL,
   story_generated TEXT        NOT NULL,
-  dataset         ENUM('WikiArt','SemArt','Ipiranga') NOT NULL,
+  dataset         ENUM('ipiranga', 'wikiart','semart') NOT NULL,
   language        ENUM('EN','PT') NOT NULL,
   created_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_art_exploration PRIMARY KEY (id),
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS MemoryReconstruction (
     id                    CHAR(36)   NOT NULL,
     patient_id            CHAR(36)   NOT NULL,
     story                 TEXT NOT NULL,
-    dataset               ENUM('WikiArt', 'SemArt', 'Ipiranga') NOT NULL,   
+    dataset               ENUM('ipiranga', 'wikiart', 'semart') NOT NULL,   
     language              ENUM('EN','PT') NOT NULL,
     segmentation_strategy ENUM('Conservative','Broader') NOT NULL,
     created_at            TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,

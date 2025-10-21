@@ -12,7 +12,7 @@ SELECT
     id,           
     NULL,         
     NULL,         
-    'Ipiranga'    
+    'ipiranga'    
 FROM Ipiranga
 ON DUPLICATE KEY UPDATE 
     ipiranga_id = VALUES(ipiranga_id),
@@ -25,7 +25,7 @@ SELECT
     NULL,       
     id,         
     NULL,       
-    'WikiArt'   
+    'wikiart'   
 FROM WikiArt
 ON DUPLICATE KEY UPDATE 
     wikiart_id = VALUES(wikiart_id),
@@ -38,7 +38,7 @@ SELECT
     NULL,       
     NULL,       
     id,         
-    'SemArt'    
+    'semart'    
 FROM SemArt
 ON DUPLICATE KEY UPDATE 
     semart_id = VALUES(semart_id),
@@ -61,14 +61,14 @@ UNION ALL
 SELECT 
     'Ipiranga Items' as metric,
     COUNT(*) as count
-FROM CatalogItem WHERE source = 'Ipiranga'
+FROM CatalogItem WHERE source = 'ipiranga'
 UNION ALL
 SELECT 
     'WikiArt Items' as metric,
     COUNT(*) as count
-FROM CatalogItem WHERE source = 'WikiArt'
+FROM CatalogItem WHERE source = 'wikiart'
 UNION ALL
 SELECT 
     'SemArt Items' as metric,
     COUNT(*) as count
-FROM CatalogItem WHERE source = 'SemArt';
+FROM CatalogItem WHERE source = 'semart';

@@ -15,7 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import Base
-
+from utils.types import Dataset
 
 class ArtExploration(Base):
     """ArtExploration table - stores art exploration sessions."""
@@ -40,7 +40,7 @@ class ArtExploration(Base):
     )
     story_generated = Column(Text, nullable=False)
     dataset = Column(
-        Enum("WikiArt", "SemArt", "Ipiranga", name="art_exploration_dataset"),
+        Enum(Dataset, name="art_exploration_dataset"),
         nullable=False,
     )
     language = Column(Enum("EN", "PT", name="art_exploration_language"), nullable=False)

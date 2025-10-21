@@ -20,15 +20,20 @@ app.add_middleware(
 )
 
 STATIC_DIR = os.getenv("STATIC_DIR", "../data/static")
-# app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Only mount static directories if they exist
+wikiart_dir = os.path.join(STATIC_DIR, "wikiart")
+semart_dir = os.path.join(STATIC_DIR, "semart")
+
 app.mount(
     "/art-images/wikiart",
-    StaticFiles(directory=os.path.join(STATIC_DIR, "wikiart")),
+    StaticFiles(directory=wikiart_dir),
     name="wikiart_images",
 )
+
 app.mount(
-    "/art-images/semart",
-    StaticFiles(directory=os.path.join(STATIC_DIR, "semart")),
+    "/art-images/semart", 
+    StaticFiles(directory=semart_dir),
     name="semart_images",
 )
 

@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Date, DateTime, Text, ForeignKey, Enum, Index
 from sqlalchemy.orm import relationship
 from .base import Base
+from utils.types import Dataset
 
 
 class SemArt(Base):
@@ -139,7 +140,7 @@ class CatalogItem(Base):
         nullable=True,
     )
     source = Column(
-        Enum("Ipiranga", "WikiArt", "SemArt", name="catalog_source"), nullable=False
+        Enum(Dataset, name="catalog_source"), nullable=False
     )
 
     # Relationships

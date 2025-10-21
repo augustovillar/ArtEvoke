@@ -16,7 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import Base
-
+from utils.types import Dataset
 
 class MemoryReconstruction(Base):
     """MemoryReconstruction table - stores memory reconstruction sessions."""
@@ -36,7 +36,7 @@ class MemoryReconstruction(Base):
     )
     story = Column(Text, nullable=False)
     dataset = Column(
-        Enum("WikiArt", "SemArt", "Ipiranga", name="memory_reconstruction_dataset"),
+        Enum(Dataset, name="memory_reconstruction_dataset"),
         nullable=False,
     )
     language = Column(

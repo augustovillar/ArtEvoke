@@ -64,10 +64,21 @@ const Search = () => {
                 const imageUrl = item.image_url; 
                 const imageName = item.art_name;
 
-                const imageDataset = typeof item === 'object' && item.dataset 
-                                    ? item.dataset.toLowerCase()
-                                    : dataset;
-                return { url: imageUrl, name: imageName, dataset: imageDataset };
+                const imageDataset = item.source || dataset;
+                return { 
+                    url: imageUrl, 
+                    name: imageName, 
+                    dataset: imageDataset,
+                    // Add new rich metadata
+                    id: item.id,
+                    title: item.title,
+                    artist: item.artist,
+                    year: item.year,
+                    description: item.description,
+                    technique: item.technique,
+                    width: item.width,
+                    height: item.height
+                };
             });
             setImages(newImages); // Update only the currently displayed images
         })
