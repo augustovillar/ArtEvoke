@@ -25,6 +25,20 @@
     "delete": "Delete",
     "edit": "Edit"
   },
+  "interruption": {
+    "artExploration": {
+      "title": "Story Generated Successfully!",
+      "message": "Please wait a moment before proceeding to the evaluation.",
+      "buttonText": "Continue to Evaluation",
+      "waitText": "Wait {{seconds}}s..."
+    },
+    "memoryReconstruction": {
+      "title": "Visualization Complete!",
+      "message": "Take a moment to reflect on the images you have seen.",
+      "buttonText": "Start Evaluation",
+      "waitText": "Wait {{seconds}}s..."
+    }
+  },
   "footer": {
     "rights": "All rights reserved",
     "contact": "Contact",
@@ -51,7 +65,8 @@
     "adjustFontSize": "Adjust Font Size: {{fontSize}}px",
     "sliderExampleText": "This text will scale dynamically based on the font size you select.",
     "stopReading": "Stop Reading",
-    "readAloudButton": "Read Aloud"
+    "readAloudButton": "Read Aloud",
+    "readQuestion": "Read Question"
   },
   "about": {
     "title": "About Us",
@@ -91,7 +106,7 @@
     "storyImageAlt": "Story Image {{number}}",
     "datasetImageAlt": "{{dataset}} Image {{number}}"
   },
-  "search": {
+  "artExploration": {
     "title": "Art Exploration Instructions",
     "description1": "The art exploration tool allows you to search for art pieces by typing in some keywords. Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.",
     "description2": "Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.",
@@ -109,6 +124,9 @@
     "generateStory": "Generate Story from {{count}} Selected Image(s)",
     "generatingStory": "Generating Story...",
     "clearSelections": "Clear All Selections",
+    "continueSession": "Continue Session",
+    "saveStory": "Save Story",
+    "continueToEvaluation": "Continue to Evaluation",
     "aiGeneratedStory": "AI Generated Story",
     "regenerateStory": "Regenerate Story",
     "copyText": "Copy Text",
@@ -134,7 +152,7 @@
     "errorOccurred": "An error occurred during signup. Please try again.",
     "loginLink": "Already registered? Login here!"
   },
-  "story": {
+  "memoryReconstruction": {
     "pageTitle": "Memory Reconstruction Instructions",
     "description": "The memory reconstruction tool allows you to input a story or a memory (or part of it). After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story. If you are not satisfied with the given result, you can click on the \"Show 5 images per section\" button to generate even more images.",
     "optionsIntro": "After inputting the text, you are given 3 options to play with.",
@@ -172,11 +190,48 @@
     "imageAlt": "Section {{sectionIndex}} Image {{imageIndex}}",
     "showMoreImages": "Show 5 Images per Section",
     "saveStory": "Save Story",
+    "continueSession": "Continue Session",
+    "clearSelection": "Clear Selection",
     "messages": {
       "loginRequired": "Please log in to save.",
       "selectAllImages": "Please select an image for every section before saving.",
       "savedSuccessfully": "Saved successfully!",
       "saveFailed": "Failed to save."
     }
+  },
+  "evaluation": {
+    "title": "Recap - Memory Reconstruction",
+    "progress": "Progress",
+    "imageRecognitionTitle": "Recognition Question",
+    "imageRecognitionInstruction": "Which of the images below did you previously select for this section of the story?",
+    "sectionTextLabel": "Section Text:",
+    "pleaseSelectImage": "Please select an image before continuing.",
+    "pleaseAnswer": "Please answer the question before continuing.",
+    "nextQuestion": "Next Question",
+    "question": "Question",
+    "finish": "Finish",
+    "yes": "Yes",
+    "no": "No",
+    "textPlaceholder": "Type your answer here...",
+    "completed": "Recap Complete!",
+    "completedMessage": "Thank you for completing the Recap. Click the button below to save your session.",
+    "saving": "Saving...",
+    "saveSession": "Save Session",
+    "titleArtExploration": "Recap - Art Exploration",
+    "imageRecallTitle": "Image Question",
+    "imageRecallInstruction": "Which of these images did you just select?",
+    "storyWritingTitle": "Write Your Story",
+    "storyWritingInstruction": "Based on the images you selected previously, write a story that connects all of them. Be creative and include details about what you see and feel.",
+    "storyPlaceholder": "Start writing your story here...",
+    "pleaseWriteStory": "Please write a story before continuing.",
+    "continueToQuestions": "Continue to Questions",
+    "characters": "characters",
+    "chronologyTitle": "Event Order",
+    "chronologyInstruction": "Drag the events to organize them in the correct chronological order:",
+    "eventsToOrder": "Events to order:",
+    "chronologicalOrder": "Chronological Order:",
+    "dropHere": "Drop here",
+    "completeOrder": "Complete the ordering to continue.",
+    "removeEvent": "Remove event"
   }
 }

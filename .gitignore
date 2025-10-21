@@ -70,3 +70,6 @@ webapp/data/**
 project_assets/tests/embeddings/translations/**
 
 project_assets/tests/embeddings/**
+
+# Ignore specific internal instructions file
+/.github/instructions/intructions.instructions.md

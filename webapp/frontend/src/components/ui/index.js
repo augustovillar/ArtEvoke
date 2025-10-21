@@ -2,3 +2,4 @@
 export { default as AccessibilityPanel } from './AccessibilityPanel';
 export { default as FontSizeAdjuster } from './FontSizeAdjuster';
 export { default as ReadAloudButton } from './ReadAloudButton';
+export { default as QuestionReadAloudButton } from './QuestionReadAloudButton';
