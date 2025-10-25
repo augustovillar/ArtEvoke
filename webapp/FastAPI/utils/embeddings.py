@@ -1,7 +1,7 @@
 import numpy as np
 from orm import CatalogItem
-from .types import Dataset
-from ..clients import get_embedding_client, get_database_client, get_qdrant_client
+from utils.types import Dataset
+from clients import get_embedding_client, get_database_client, get_qdrant_client
 
 # Initialize clients
 embedding_model = get_embedding_client()

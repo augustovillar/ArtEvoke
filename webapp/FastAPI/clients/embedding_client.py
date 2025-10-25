@@ -5,6 +5,13 @@ from sentence_transformers import SentenceTransformer
 _embedding_model = None
 device = None
 
+def get_device():
+    """Get the device being used for embeddings (cuda or cpu)"""
+    global device
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return device
+
 def get_embedding_client():
     global _embedding_model, device
     
