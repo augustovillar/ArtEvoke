@@ -82,3 +82,5 @@ SemArt.zip
 
 **/.env.mysql
 **/my.cnf
+# Ignore specific internal instructions file
+/.github/instructions/intructions.instructions.md

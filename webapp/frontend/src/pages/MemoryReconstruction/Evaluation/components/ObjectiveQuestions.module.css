@@ -1,0 +1,261 @@
+.container {
+    padding: 2rem 0;
+}
+
+.questionHeader {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.questionHeader h2 {
+    color: #333;
+    font-size: 1.8rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.questionText {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #667eea;
+}
+
+.questionText p {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+.answerSection {
+    margin-bottom: 2rem;
+    min-height: 200px;
+}
+
+/* Options-based Questions (multiple-choice / multi-select) */
+.optionsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.optionItem {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.optionItem:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.optionItem:has(input:checked) {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.checkboxInput,
+.radioInput {
+    margin-right: 0.75rem;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.optionLabelText {
+    font-size: 1rem;
+    color: #333;
+}
+
+/* Scale Questions */
+.scaleContainer {
+    padding: 1rem 0;
+}
+
+.scaleOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.scaleOption {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.scaleOption:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.scaleOption:has(input:checked) {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.radioInput {
+    margin-right: 1rem;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.scaleLabel {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.scaleNumber {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.scaleLabelText {
+    color: #333;
+    font-size: 1rem;
+}
+
+/* Yes/No Questions */
+.yesNoContainer {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.yesNoOption {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 3rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    min-width: 150px;
+    justify-content: center;
+}
+
+.yesNoOption:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.yesNoOption:has(input:checked) {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.yesNoOption .radioInput {
+    margin-right: 0.75rem;
+}
+
+.optionLabel {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Text Questions */
+.textContainer {
+    padding: 1rem 0;
+}
+
+.textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.textarea::placeholder {
+    color: #999;
+}
+
+/* Button */
+.buttonContainer {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.submitButton {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submitButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.submitButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .yesNoContainer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .yesNoOption {
+        padding: 1rem 2rem;
+    }
+
+    .questionHeader h2 {
+        font-size: 1.4rem;
+    }
+
+    .questionText p {
+        font-size: 1rem;
+    }
+}
