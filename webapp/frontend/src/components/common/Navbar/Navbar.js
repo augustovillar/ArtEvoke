@@ -79,10 +79,10 @@ const Navbar = () => {
                             {t('navbar.account')}
                         </button>
                         <div className="dropdown-content">
-                            <Link to="/signup" onClick={toggleDropdown}>
+                            <Link to="/auth/role-selection" onClick={toggleDropdown}>
                                 {t('navbar.signUp')}
                             </Link>
-                            <Link to="/login" onClick={toggleDropdown}>
+                            <Link to="/auth/role-selection" onClick={toggleDropdown}>
                                 {t('navbar.login')}
                             </Link>
                         </div>

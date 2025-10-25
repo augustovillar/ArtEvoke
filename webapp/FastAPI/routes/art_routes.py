@@ -4,7 +4,7 @@ from utils.text_processing import doTextSegmentation
 from utils.embeddings import (
     get_top_k_images_from_text,
 )
-from utils.types import (
+from api_types.art import (
     SearchImagesRequestDTO,
     SelectImagesPerSectionRequestDTO,
     GenerateStoryRequestDTO,
@@ -56,7 +56,7 @@ async def select_images_per_section(
 @router.post("/generate-story")
 async def generate_story(body: GenerateStoryRequestDTO, db=Depends(get_db)) -> GenerateStoryResponse:
     from orm import CatalogItem, SemArt, WikiArt, Ipiranga
-    from utils.types import Dataset
+    from api_types.art import Dataset
     
     data = body.selectedImagesByDataset
     art_descriptions = []

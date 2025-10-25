@@ -1,15 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from orm import get_db, Patient, MemoryReconstruction, ArtExploration
-from utils.types import (
+from api_types.user import (
     User,
     UserInDB,
     UserLogin,
     LoginResponse,
-    SaveStoryRequest,
-    SaveGenerationRequest,
+
     MessageResponse,
     RetrieveSearchesResponse,
+)
+from api_types.art import (
+    SaveStoryRequest,
+    SaveGenerationRequest,
 )
 from utils.auth import (
     verify_password,

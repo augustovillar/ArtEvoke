@@ -81,6 +81,7 @@ services:
       - ./FastAPI/.env
     environment:
       - STATIC_DIR=/app/data/static
+      - DISABLE_EMBEDDING_MODEL=true
     volumes:
       - ./FastAPI:/app
       - ./data:/app/data 

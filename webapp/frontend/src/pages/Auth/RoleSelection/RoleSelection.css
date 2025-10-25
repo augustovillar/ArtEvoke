@@ -1,0 +1,111 @@
+.role-selection-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 20px;
+}
+
+.role-selection-box {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.role-selection-box h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+}
+
+.role-selection-box p {
+    color: #7f8c8d;
+    margin-bottom: 40px;
+    font-size: 1.1rem;
+}
+
+.role-buttons {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+    justify-content: center;
+}
+
+.role-button {
+    display: block;
+    padding: 30px 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    border: 2px solid transparent;
+}
+
+.role-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.doctor-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.doctor-button:hover {
+    border-color: #667eea;
+}
+
+.patient-button {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.patient-button:hover {
+    border-color: #f093fb;
+}
+
+.role-button h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.8rem;
+}
+
+.role-button p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.login-link {
+    border-top: 1px solid #ecf0f1;
+    padding-top: 20px;
+}
+
+.login-link p {
+    margin: 0 0 10px 0;
+    color: #7f8c8d;
+}
+
+.login-link a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .role-buttons {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .role-button {
+        min-width: auto;
+    }
+}

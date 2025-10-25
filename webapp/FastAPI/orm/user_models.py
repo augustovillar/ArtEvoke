@@ -13,6 +13,7 @@ from sqlalchemy import (
     ForeignKey,
     Text,
     CheckConstraint,
+    Enum,
 )
 from sqlalchemy.orm import relationship
 from .base import Base
@@ -35,19 +36,21 @@ class Patient(Base):
     )
 
     id = Column(String(36), primary_key=True)
-    username = Column(String(50), nullable=False, unique=True)
+    username = Column(String(50), nullable=True, unique=True)
     email = Column(String(100), nullable=False, unique=True)
-    password = Column(String(255), nullable=False)
+    password = Column(String(255), nullable=True)
     name = Column(String(100), nullable=False)
-    date_of_birth = Column(Date, nullable=False)
-    education_level = Column(String(50), nullable=False)
-    occupation = Column(String(100), nullable=False)
+    date_of_birth = Column(Date, nullable=True)
+    education_level = Column(String(50), nullable=True)
+    occupation = Column(String(100), nullable=True)
     diseases = Column(Text, nullable=True)
     medications = Column(Text, nullable=True)
     visual_impairment = Column(Boolean, nullable=False, default=False)
     hearing_impairment = Column(Boolean, nullable=False, default=False)
     household_income = Column(DECIMAL(10, 2), nullable=True)
     ethnicity = Column(String(50), nullable=True)
+    status = Column(Enum('pending', 'active'), nullable=False, default='pending')
+    code = Column(String(4), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
