@@ -34,7 +34,17 @@ const useStorySubmit = () => {
                 const enrichedImages = sectionData.images.map(imageItem => {
                     return {
                         url: imageItem.image_url,
-                        name: imageItem.art_name
+                        name: imageItem.art_name,
+                        // Add rich metadata for better story context
+                        id: imageItem.id,
+                        source: imageItem.source,
+                        title: imageItem.title,
+                        artist: imageItem.artist,
+                        year: imageItem.year,
+                        description: imageItem.description,
+                        technique: imageItem.technique,
+                        width: imageItem.width,
+                        height: imageItem.height
                     };
                 });
                 return {

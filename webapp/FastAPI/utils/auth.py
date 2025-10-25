@@ -2,9 +2,10 @@ from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status, Request, Depends
-from routes import get_db
-from bson.objectid import ObjectId
+from sqlalchemy.orm import Session
+from orm import get_db, Patient
 import os
+import hashlib
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = str(os.getenv("JWT_SECRET"))
@@ -13,11 +14,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    # Use SHA-256 first to handle long passwords, then bcrypt
+    sha256_password = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+    return pwd_context.verify(sha256_password, hashed_password)
 
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    # Use SHA-256 first to handle long passwords, then bcrypt
+    sha256_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+    return pwd_context.hash(sha256_password)
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -31,7 +36,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-async def get_current_user(request: Request, db=Depends(get_db)) -> str:
+async def get_current_user(request: Request, db: Session = Depends(get_db)) -> str:
     token = (
         request.headers.get("Authorization").split(" ")[1]
         if request.headers.get("Authorization")
@@ -44,26 +49,15 @@ async def get_current_user(request: Request, db=Depends(get_db)) -> str:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("userId")
-        user = await db.users.find_one({"_id": ObjectId(user_id)})
+        user = db.query(Patient).filter(Patient.id == user_id).first()
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
 
-        return user["_id"]
+        return user.id
     except Exception as e:
         print(f"Token verification failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token"
         )
-
-
-def convert_object_ids(obj):
-    if isinstance(obj, dict):
-        return {k: convert_object_ids(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_object_ids(item) for item in obj]
-    elif isinstance(obj, ObjectId):
-        return str(obj)
-    else:
-        return obj

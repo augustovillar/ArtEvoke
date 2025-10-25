@@ -1,8 +1,4 @@
-import database
-
-
-def get_db():
-    return database.db
+from orm import get_db
 
 
 def correct_grammer_and_translate(text, src_language):

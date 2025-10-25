@@ -78,6 +78,24 @@ class SelectImagesRVRequestDTO(BaseModel):
 class ImageItem(BaseModel):
     image_url: str
     art_name: str
+    id: str  # catalog_item_id
+    source: str  # dataset source
+    title: Optional[str] = None
+    artist: Optional[str] = None
+    year: Optional[str] = None
+    width: Optional[str] = None
+    height: Optional[str] = None
+    description: Optional[str] = None
+    technique: Optional[str] = None
+    type: Optional[str] = None
+    # SemArt specific
+    art_school: Optional[str] = None
+    # Ipiranga specific
+    inventory_code: Optional[str] = None
+    location: Optional[str] = None
+    period: Optional[str] = None
+    color: Optional[str] = None
+    history: Optional[str] = None
 
 
 class SearchImagesResponse(BaseModel):

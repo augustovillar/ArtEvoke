@@ -1,10 +1,71 @@
 services:
-  mongo:
-    image: mongo:7.0.5
-    expose:
-      - "27017"  
+  mysql:
+    image: mysql:8.0
+    container_name: local-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./data/db/.env.mysql
+    command: [
+      "mysqld",
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--sql-mode=STRICT_ALL_TABLES",
+      "--innodb_print_all_deadlocks=ON"
+    ]
     volumes:
-      - mongo_data:/data/db
+      - mysql_data:/var/lib/mysql
+      - ./data/db/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./data/db/schemas:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      start_period: 120s
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    networks:
+      - app_network
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: artevoke_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+      - ./data/vector_db:/qdrant/snapshots
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    command: >
+      sh -c '
+        echo "Starting Qdrant with automatic snapshot restoration..."
+        
+        # Build snapshot arguments dynamically
+        SNAPSHOT_ARGS=""
+        for snapshot in /qdrant/snapshots/*.snapshot; do
+          if [ -f "$$snapshot" ]; then
+            collection_name=$$(basename "$$snapshot" .snapshot)
+            echo "Found snapshot: $$snapshot -> collection: $$collection_name"
+            SNAPSHOT_ARGS="$$SNAPSHOT_ARGS --snapshot $$snapshot:$$collection_name"
+          fi
+        done
+        
+        echo "Snapshot arguments: $$SNAPSHOT_ARGS"
+        
+        # Start Qdrant with snapshot restoration
+        if [ -n "$$SNAPSHOT_ARGS" ]; then
+          echo "Starting Qdrant with snapshots..."
+          exec /qdrant/qdrant $$SNAPSHOT_ARGS
+        else
+          echo "No snapshots found, starting Qdrant normally..."
+          exec /qdrant/qdrant
+        fi
+      '
     networks:
       - app_network
 
@@ -12,7 +73,10 @@ services:
     build:
       context: ./FastAPI
     depends_on:
-      - mongo
+      mysql:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
     env_file:
       - ./FastAPI/.env
     environment:
@@ -20,7 +84,8 @@ services:
       - DATA_DIR=/data
     volumes:
       - ./FastAPI:/app
-      - ./data:/data  # Mount entire data directory to /data to avoid overlay on /app
+      - ./data:/app/data 
+      - ~/.cache/huggingface:/root/.cache/huggingface  # Cache all Hugging Face models
     networks:
       - app_network
     deploy:
@@ -62,9 +127,25 @@ services:
       - backend
     networks:
       - app_network
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: local-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_USER=appuser
+      - PMA_PASSWORD=changeme_app
+    depends_on:
+      - mysql
+    networks:
+      - app_network
 
 volumes:
-  mongo_data:
+  mysql_data:
+  qdrant_data:
 
 networks:
   app_network:

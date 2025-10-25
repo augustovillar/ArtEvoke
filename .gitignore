@@ -21,14 +21,14 @@
 # SemArt
 **/SemArt/Images
 **/semart_info
+SemArt.csv
 
-# Museum
-**/fabritius_export.json.xz
-**/input_data_museum.json
 
 # WikiArt
-**/WikiArt.csv
+WikiArt.csv
 **/WikiArt/Images
+
+Ipiranga.csv
 
 
 # Environments
@@ -71,5 +71,16 @@ project_assets/tests/embeddings/translations/**
 
 project_assets/tests/embeddings/**
 
+# Ignore for now all .sql
+B_Ipiranga.sql
+B_SemArt.sql
+B_WikiArt.sql
+C_Ipiranga.sql
+C_SemArt.sql
+C_WikiArt.sql
+SemArt.zip
+
+**/.env.mysql
+**/my.cnf
 # Ignore specific internal instructions file
 /.github/instructions/intructions.instructions.md

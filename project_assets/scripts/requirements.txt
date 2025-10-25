@@ -9,3 +9,4 @@ kagglehub
 qwen_vl_utils
 torchvision
 accelerate
+qdrant-client

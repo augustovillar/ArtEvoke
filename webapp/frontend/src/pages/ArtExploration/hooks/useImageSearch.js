@@ -32,7 +32,20 @@ export const useImageSearch = () => {
                 const imageDataset = typeof item === 'object' && item.dataset 
                                     ? item.dataset.toLowerCase()
                                     : dataset;
-                return { url: imageUrl, name: imageName, dataset: imageDataset };
+                return {  
+                    url: imageUrl, 
+                    name: imageName, 
+                    dataset: imageDataset,
+                    // Add new rich metadata
+                    id: item.id,
+                    title: item.title,
+                    artist: item.artist,
+                    year: item.year,
+                    description: item.description,
+                    technique: item.technique,
+                    width: item.width,
+                    height: item.height
+                };
             });
             
             setImages(newImages);

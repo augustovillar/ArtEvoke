@@ -4,11 +4,9 @@ import torch
 import pandas as pd
 import random
 import multiprocessing as mp
-import sqlite3
 from tqdm import tqdm
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
-import json
 
 random.seed(42)
 
@@ -19,6 +17,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(SCRIPT_DIR, "..", "data")
 
 DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "outputs", "descriptions")
+
+SQL_OUTPUT_PATH = os.path.join(SCRIPT_DIR, "outputs", "sql_inserts")
 
 MUESUEM_DATA_PATH = "/DATA/public/siamese/dataset_mrbab/art-foto"
 
@@ -75,24 +75,17 @@ def build_prompt(dataset, info):
 
 def load_data(dataset):
     if dataset == "semart":
-        path = os.path.join(DATA_PATH, "SemArt", "semart_info", "SemArt15000.csv")
+        path = os.path.join(DATA_PATH, "SemArt", "SemArt.csv")
         df = pd.read_csv(path)
         return df.to_dict(orient="records")
     elif dataset == "wikiart":
-        path = os.path.join(DATA_PATH, "WikiArt", "WikiArt15000.csv")
+        path = os.path.join(DATA_PATH, "WikiArt", "WikiArt.csv")
         df = pd.read_csv(path)
-        df = df.sample(frac=1, random_state=42).reset_index(drop=True)
         return df.to_dict(orient="records")
     elif dataset == "ipiranga":
-        path = os.path.join(DATA_PATH, "Ipiranga", "ipiranga.db")
-        conn = sqlite3.connect(path)
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM ipiranga_entries")
-        rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
-        data = [dict(zip(columns, row)) for row in rows]
-        conn.close()
-        return data
+        path = os.path.join(DATA_PATH, "Ipiranga", "Ipiranga.csv")
+        df = pd.read_csv(path)
+        return df.to_dict(orient="records")
     else:
         raise ValueError("Unknown dataset")
 
@@ -103,22 +96,21 @@ WIKI_PATH = os.path.join(DATA_PATH, "WikiArt", "Images")
 
 def get_image_path(dataset, row):
     if dataset == "semart":
-        return os.path.join(SEMART_PATH, row.get("IMAGE_FILE", ""))
+        return os.path.join(SEMART_PATH, row.get("image_file", ""))
     elif dataset == "wikiart":
-        return os.path.join(WIKI_PATH, row.get("filename", ""))
+        return os.path.join(WIKI_PATH, row.get("image_file", ""))
     elif dataset == "ipiranga":
-        doc = row.get("document", "")
-        if doc:
+        image_file = row.get("image_file", "")
+        if image_file:
             return (
-                "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items" + doc
+                "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items"
+                + image_file
             )
         return ""
     return ""
 
 
 def getValidInformationFromDb(row, exclude_cols=None) -> str:
-    if exclude_cols is None:
-        exclude_cols = {"id", "externalid", "url", "document"}
     info_parts = []
     for col, val in row.items():
         if (
@@ -133,14 +125,125 @@ def getValidInformationFromDb(row, exclude_cols=None) -> str:
 
 def get_info(dataset, row) -> str:
     if dataset == "semart":
-        return row.get("DESCRIPTION", "")
+        # Include all fields except id, image_file, and description_generated
+        return getValidInformationFromDb(
+            row,
+            [
+                "id",
+                "image_file",
+                "description_generated",
+            ],
+        )
     elif dataset == "wikiart":
-        return row.get("description", "")
+        # Include all fields except id, image_file, and description_generated
+        return getValidInformationFromDb(
+            row,
+            [
+                "id",
+                "image_file",
+                "description_generated",
+                "width",
+                "height",
+            ],
+        )
     elif dataset == "ipiranga":
         return getValidInformationFromDb(
-            row, ["id", "externalid", "url", "document", "code", "height", "width"]
+            row,
+            [
+                "id",
+                "external_id",
+                "image_file",
+                "inventory_code",
+                "height",
+                "width",
+                "description_generated",
+            ],
         )
     return ""
+
+
+def escape_sql_string(value):
+    """Escape single quotes and backslashes for SQL UPDATE statements"""
+    if value is None or (isinstance(value, str) and value.strip() == ""):
+        return "NULL"
+    if pd.isna(value):
+        return "NULL"
+
+    value = str(value)
+    # Replace backslashes first, then single quotes
+    value = value.replace("\\", "\\\\").replace("'", "''")
+    # Remove newlines and normalize whitespace
+    value = " ".join(value.split())
+    return f"'{value}'"
+
+
+def generate_update_sql(dataset, merged_csv):
+    """Generate SQL UPDATE file for a specific dataset after descriptions are generated"""
+
+    if not os.path.exists(merged_csv):
+        print(f"❌ Merged CSV not found: {merged_csv}")
+        return False
+
+    df = pd.read_csv(merged_csv)
+
+    if "id" not in df.columns or "description" not in df.columns:
+        print("❌ CSV file missing required columns (id, description)")
+        return False
+
+    df_valid = df[df["description"].notna() & (df["description"] != "")]
+    df_valid = df_valid[~df_valid["description"].str.startswith("Error:", na=False)]
+    df_valid = df_valid[df_valid["description"] != "Image not found"]
+
+    valid_rows = len(df_valid)
+
+    if valid_rows == 0:
+        print(f"❌ No valid descriptions found for {dataset}")
+        return False
+
+    table_name_map = {"ipiranga": "Ipiranga", "wikiart": "WikiArt", "semart": "SemArt"}
+
+    table_name = table_name_map.get(dataset.lower())
+    if not table_name:
+        print(f"❌ Unknown dataset: {dataset}")
+        return False
+
+    output_sql = os.path.join(SQL_OUTPUT_PATH, f"C_{table_name}.sql")
+
+    os.makedirs(SQL_OUTPUT_PATH, exist_ok=True)
+
+    # Generate SQL UPDATE statements
+    with open(output_sql, "w", encoding="utf-8") as f:
+        batch_size = 100
+        total_batches = (valid_rows + batch_size - 1) // batch_size
+
+        for batch_num in range(total_batches):
+            start_idx = batch_num * batch_size
+            end_idx = min(start_idx + batch_size, valid_rows)
+            batch = df_valid.iloc[start_idx:end_idx]
+
+            f.write(f"-- Batch {batch_num + 1}/{total_batches}\n")
+
+            for idx, row in batch.iterrows():
+                row_id = str(row["id"])
+                description = escape_sql_string(row["description"])
+
+                f.write(
+                    f"UPDATE {table_name} SET description_generated = {description} "
+                    f"WHERE id = '{row_id}';\n"
+                )
+
+            f.write("\n")
+
+        # Add verification query at the end
+        f.write("-- Verification: Check how many descriptions were updated\n")
+        f.write(
+            f"SELECT COUNT(*) as updated_count FROM {table_name} WHERE description_generated IS NOT NULL;\n"
+        )
+
+    print(f"✅ SQL file generated: {output_sql}")
+    print(f"   Total UPDATE statements: {valid_rows}")
+
+    return True
 
 
 def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
@@ -160,7 +263,7 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
         MODEL_NAME, dtype=torch.bfloat16, device_map={"": f"cuda:{gpu_id}"}
     )
-    processor = AutoProcessor.from_pretrained(MODEL_NAME)
+    processor = AutoProcessor.from_pretrained(MODEL_NAME, use_fast=True)
 
     for idx, row in tqdm(
         df_saved.iterrows(), total=len(df_saved), desc=f"GPU {gpu_id}", position=gpu_id
@@ -210,19 +313,38 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
                 description = output_text.strip()
 
             df_saved.at[idx, desc_col] = description.replace("\n", " ")
+
+            # Save intermediate results with relevant columns only
             if dataset == "ipiranga":
-                df_saved = df_saved[["id", "code", desc_col]]
-            df_saved.to_csv(output_file, index=False)
+                df_temp = df_saved[["id", "inventory_code", desc_col]]
+            elif dataset == "semart":
+                df_temp = df_saved[["id", "image_file", desc_col]]
+            elif dataset == "wikiart":
+                df_temp = df_saved[["id", "image_file", desc_col]]
+            else:
+                df_temp = df_saved
+            df_temp.to_csv(output_file, index=False)
 
         except Exception as e:
             df_saved.at[idx, desc_col] = f"Error: {str(e)}"
-            df_saved.to_csv(output_file, index=False)
+            if dataset == "ipiranga":
+                df_temp = df_saved[["id", "inventory_code", desc_col]]
+            elif dataset == "semart":
+                df_temp = df_saved[["id", "image_file", desc_col]]
+            elif dataset == "wikiart":
+                df_temp = df_saved[["id", "image_file", desc_col]]
+            else:
+                df_temp = df_saved
+            df_temp.to_csv(output_file, index=False)
             continue
 
-    # For ipiranga, keep only id, code, and description column
+    # Save final results with relevant columns only
     if dataset == "ipiranga":
-        df_saved = df_saved[["id", "code", desc_col]]
-    # Save final state
+        df_saved = df_saved[["id", "inventory_code", desc_col]]
+    elif dataset == "semart":
+        df_saved = df_saved[["id", "image_file", desc_col]]
+    elif dataset == "wikiart":
+        df_saved = df_saved[["id", "image_file", desc_col]]
     df_saved.to_csv(output_file, index=False)
 
 
@@ -266,3 +388,6 @@ if __name__ == "__main__":
     merged_df = pd.concat([df0, df1], ignore_index=True)
     merged_df.to_csv(output_merged, index=False)
     print(f"✅ Merged output saved to {output_merged}")
+
+    # Generate SQL UPDATE file
+    generate_update_sql(dataset, output_merged)
