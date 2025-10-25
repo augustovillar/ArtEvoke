@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, sqlite3, asyncio, aiohttp, aiofiles, unicodedata, uuid, shutil
+import os, sys, json, asyncio, aiohttp, aiofiles, unicodedata, uuid, shutil, csv
 from typing import Any, Dict, List, Union, Optional
 
 # -------------------- Config --------------------
@@ -18,7 +18,8 @@ TOTAL_PAGES = 312
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "pages")
 COMBINED_FILTERED = os.path.join(SCRIPT_DIR, "all_items_filtered.json")
-DB_PATH = os.path.join(SCRIPT_DIR, "ipiranga.db")
+OUTPUT_SQL = os.path.join(SCRIPT_DIR, "B_Ipiranga.sql")
+OUTPUT_CSV = os.path.join(SCRIPT_DIR, "Ipiranga.csv")
 
 CONCURRENCY = 10
 TIMEOUT = 60
@@ -66,30 +67,47 @@ TOPLEVEL_FIELDS = ["externalId", "url", "document"]
 
 # Original Portuguese field names to English column names mapping
 FIELD_MAPPING = {
-    "codigo": "code",
+    "codigo": "inventory_code",
     "titulo": "title",
     "descricao": "description",
     "denominacao": "type",
-    "autoria": "author",
+    "autoria": "artist_name",
     "orig_prod": "location",
-    "seculo": "century",
     "fase": "phase",
-    "decada": "decade",
     "data": "date",
     "periodo-2": "period",
     "tecnica": "technique",
-    "altura_sm": "height_sm",
-    "larg_sm": "width_sm",
     "altura-em-cm": "height",
     "largura-em-cm": "width",
     "cor-2": "color",
     "historico": "history",
-    "ref_acervo": "collection_ref",
-    "biblio": "bibliography",
-    "colecao-2": "collection_alt",
+    "colecao-2": "collection_alt_name",
 }
 
 DATA_SUBFIELDS = list(FIELD_MAPPING.values())
+
+IPIRANGA_RENAME = {
+    "id": "id",
+    "external_id": "external_id",
+    "document": "image_file",
+    "code": "inventory_code",
+    "title": "title",
+    "description": "description",
+    "type": "type",
+    "author": "artist_name",
+    "location": "location",
+    "date": "date",
+    "period": "period",
+    "technique": "technique",
+    "height": "height",
+    "width": "width",
+    "color": "color",
+    "history": "history",
+    "collection_alt": "collection_alt_name",
+    "description_generated": "description_generated",
+}
+
+COLUMN_RENAME = IPIRANGA_RENAME.copy()
 
 
 def to_col_name(key: str) -> str:
@@ -108,7 +126,11 @@ def to_col_name(key: str) -> str:
 COL_TOPLEVEL = [to_col_name(k) for k in TOPLEVEL_FIELDS]
 COL_DATA = [to_col_name(k) for k in DATA_SUBFIELDS]
 
-FLAT_COLUMNS = ["id"] + COL_TOPLEVEL + COL_DATA  # keep 'id' first, then externalId
+FLAT_COLUMNS = (
+    ["id"]
+    + [COLUMN_RENAME.get(c, c) for c in COL_TOPLEVEL]
+    + [COLUMN_RENAME.get(c, c) for c in COL_DATA]
+)  # keep 'id' first, then externalId
 
 
 # -------------------- Normalization --------------------
@@ -251,37 +273,6 @@ async def write_json(path: str, data: Any):
         await f.write(json.dumps(data, ensure_ascii=False))
 
 
-def ensure_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        cur = conn.cursor()
-        # Only flat table with explicit columns (all TEXT)
-        cols_sql = ", ".join([f'"{c}" TEXT' for c in FLAT_COLUMNS])
-        cur.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS ipiranga_entries(
-                {cols_sql},
-                PRIMARY KEY(id)
-            )
-        """
-        )
-        # optional indexes
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_ipiranga_entries_title ON ipiranga_entries(title)"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_ipiranga_entries_code ON ipiranga_entries(code)"
-        )
-        conn.commit()
-        # pragmas
-        cur.execute("PRAGMA journal_mode=WAL;")
-        cur.execute("PRAGMA synchronous=NORMAL;")
-        conn.commit()
-    finally:
-        conn.close()
-
-
 # -------------------- Scalar coercion --------------------
 PREFERRED_KEYS = ("value", "title", "name", "label")
 
@@ -324,7 +315,7 @@ def _coerce_scalar(value: Any) -> Optional[str]:
 def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
     row: Dict[str, Optional[str]] = {c: None for c in FLAT_COLUMNS}
 
-    row["id"] = str(uuid.uuid4())
+    # row["id"] = str(uuid.uuid4())  # Remove random UUID
 
     # externalId: original id if present
     ext_id = None
@@ -332,12 +323,12 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
         if candidate_key in item and isinstance(item[candidate_key], (str, int)):
             ext_id = str(item[candidate_key])
             break
-    row["externalid"] = ext_id
+    row["external_id"] = ext_id
 
     # top-level fields (skip externalId)
     for orig, col in zip(TOPLEVEL_FIELDS[1:], COL_TOPLEVEL[1:]):
         val = _coerce_scalar(item.get(orig))
-        if orig == "url" and isinstance(val, str):
+        if orig == "image_file" and isinstance(val, str):
             base_url = "https://acervoonline.mp.usp.br/"
             if val.startswith(base_url):
                 val = val[len(base_url) :]
@@ -348,7 +339,12 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
             if val.startswith(doc_base):
                 val = val[len(doc_base) :]
             val = val[:]
-        row[col] = val
+        new_col = COLUMN_RENAME.get(col, col)
+
+        row[new_col] = val
+
+    if row["image_file"]:
+        row["id"] = str(uuid.uuid5(uuid.NAMESPACE_DNS, row["image_file"]))
 
     data_obj = item.get("data")
     if isinstance(data_obj, dict):
@@ -363,43 +359,155 @@ def extract_flat_row(item: Dict[str, Any]) -> Dict[str, Optional[str]]:
     return row
 
 
-def upsert_items_sqlite(raw_items: List[Dict[str, Any]]):
-    ensure_db()
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        cur = conn.cursor()
-        cur.execute("BEGIN")
+def escape_sql_string(value):
+    """Escape single quotes and backslashes for SQL INSERT statements"""
+    if value is None or value == "":
+        return "NULL"
+    value = str(value)
+    value = value.replace("\\", "\\\\").replace("'", "''")
+    return f"'{value}'"
 
-        # Insert/Upsert only flat rows
-        cols = FLAT_COLUMNS
-        placeholders = ", ".join(["?"] * len(cols))
-        col_list_sql = ", ".join([f'"{c}"' for c in cols])
-        insert_flat = (
-            f"INSERT INTO ipiranga_entries({col_list_sql}) VALUES({placeholders}) ON CONFLICT(id) DO UPDATE SET "
-            + ", ".join([f'"{c}"=excluded."{c}"' for c in cols])
-        )
 
-        filtered_count = 0
-        total_count = 0
+def generate_sql_inserts(raw_items: List[Dict[str, Any]]):
+    """Generate SQL INSERT statements directly from filtered items"""
+    print("Generating SQL INSERT statements for Ipiranga...")
 
-        for it in raw_items:
-            total_count += 1
-            row = extract_flat_row(it)
+    # Filter and extract rows
+    filtered_rows = []
+    filtered_count = 0
+    total_count = 0
 
-            # Filter by selected types - only save items with selected types
-            item_type = row.get("type")
-            if item_type and item_type in SELECTED_TYPES:
-                # Also check that document field exists (has image)
-                if row.get("document"):
-                    cur.execute(insert_flat, [row[c] for c in cols])
-                    filtered_count += 1
+    for it in raw_items:
+        total_count += 1
+        row = extract_flat_row(it)
 
-        conn.commit()
+        # Filter by selected types - only save items with selected types
+        item_type = row.get("type")
+        if item_type and item_type in SELECTED_TYPES:
+            # Also check that document field exists (has image)
+            if row.get("image_file"):
+                filtered_rows.append(row)
+                filtered_count += 1
+
+    print(
+        f"Filtered items: {filtered_count} out of {total_count} total items will be saved to SQL"
+    )
+
+    if len(filtered_rows) == 0:
+        print("No items to export!")
+        return
+
+    with open(OUTPUT_SQL, "w", encoding="utf-8") as f:
+        # Write table creation statement matching your schema
+        f.write("-- Ipiranga Dataset SQL Import\n")
+        f.write("-- Generated automatically from download_and_filter.py\n")
+        f.write(f"-- Total records: {len(filtered_rows)}\n\n")
+
+        # Write INSERT statements in batches
+        batch_size = 100
+        total_rows = len(filtered_rows)
+
+        for i in range(0, total_rows, batch_size):
+            batch = filtered_rows[i : i + batch_size]
+
+            f.write(
+                "INSERT INTO Ipiranga (id, external_id, image_file, inventory_code, title, description, type, artist_name, location, date, period, technique, height, width, color, history, collection_alt_name, description_generated) VALUES\n"
+            )
+
+            values = []
+            for row_dict in batch:
+                # Map fields to match schema
+                id_val = escape_sql_string(row_dict.get("id"))
+                external_id = escape_sql_string(row_dict.get("external_id"))
+                image_file = escape_sql_string(row_dict.get("image_file"))
+                inventory_code = escape_sql_string(row_dict.get("inventory_code"))
+                title = escape_sql_string(row_dict.get("title"))
+                description = escape_sql_string(row_dict.get("description"))
+                type_val = escape_sql_string(row_dict.get("type"))
+                artist_name = escape_sql_string(row_dict.get("artist_name"))
+                location = escape_sql_string(row_dict.get("location"))
+                date_val = escape_sql_string(row_dict.get("date"))
+                period = escape_sql_string(row_dict.get("period"))
+                technique = escape_sql_string(row_dict.get("technique"))
+                height = escape_sql_string(row_dict.get("height"))
+                width = escape_sql_string(row_dict.get("width"))
+                color = escape_sql_string(row_dict.get("color"))
+                history = escape_sql_string(row_dict.get("history"))
+                collection_alt_name = escape_sql_string(
+                    row_dict.get("collection_alt_name")
+                )
+                description_generated = "NULL"
+
+                values.append(
+                    f"    ({id_val}, {external_id}, {image_file}, {inventory_code}, {title}, {description}, {type_val}, {artist_name}, {location}, {date_val}, {period}, {technique}, {height}, {width}, {color}, {history}, {collection_alt_name}, {description_generated})"
+                )
+            f.write(",\n".join(values))
+            f.write(";\n\n")
+
+        print(f"SQL file generated: {OUTPUT_SQL}")
         print(
-            f"Filtered items: {filtered_count} out of {total_count} total items saved to database"
+            f"Total INSERT statements: {(total_rows + batch_size - 1) // batch_size} batches"
         )
-    finally:
-        conn.close()
+        print(f"Total records: {total_rows}")
+
+
+def generate_csv(raw_items: List[Dict[str, Any]]):
+    """Generate CSV file from filtered items with all columns matching SQL schema"""
+    print("Generating CSV file for Ipiranga...")
+
+    filtered_rows = []
+    filtered_count = 0
+    total_count = 0
+
+    for it in raw_items:
+        total_count += 1
+        row = extract_flat_row(it)
+
+        item_type = row.get("type")
+        if item_type and item_type in SELECTED_TYPES:
+            if row.get("image_file"):
+                filtered_rows.append(row)
+                filtered_count += 1
+
+    print(f"Filtered items for CSV: {filtered_count} out of {total_count} total items")
+
+    if len(filtered_rows) == 0:
+        print("No items to export to CSV!")
+        return
+
+    # Define CSV columns matching the SQL schema
+    csv_columns = [
+        "id",
+        "external_id",
+        "image_file",
+        "inventory_code",
+        "title",
+        "description",
+        "type",
+        "artist_name",
+        "location",
+        "date",
+        "period",
+        "technique",
+        "height",
+        "width",
+        "color",
+        "history",
+        "collection_alt_name",
+        "description_generated",
+    ]
+
+    with open(OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=csv_columns)
+        writer.writeheader()
+
+        for row_dict in filtered_rows:
+            csv_row = {col: row_dict.get(col, "") or "" for col in csv_columns}
+            csv_row["description_generated"] = ""
+            writer.writerow(csv_row)
+
+    print(f"CSV file generated: {OUTPUT_CSV}")
+    print(f"Total records in CSV: {len(filtered_rows)}")
 
 
 async def main():
@@ -416,14 +524,15 @@ async def main():
         await write_json(COMBINED_FILTERED, all_items)
         print(f"Combined saved to {COMBINED_FILTERED} with {len(all_items)} items")
 
-    # 2) Write to SQLite: only selected types with images
-    print("Writing to SQLite (filtering by selected types)...")
-    upsert_items_sqlite(all_items)
-    print(
-        f"SQLite ready at {DB_PATH} (table: 'ipiranga_entries' with selected types only)."
-    )
+    # 2) Generate SQL INSERT statements directly (with filtering)
+    print("Generating SQL INSERT file with filtering...")
+    generate_sql_inserts(all_items)
 
-    # 3) Clean up: delete the pages folder if it exists
+    # 3) Generate CSV file (with same filtering)
+    print("Generating CSV file with filtering...")
+    generate_csv(all_items)
+
+    # 4) Clean up: delete the pages folder if it exists
     if os.path.exists(OUT_DIR):
         print(f"Cleaning up: deleting {OUT_DIR}")
         shutil.rmtree(OUT_DIR)

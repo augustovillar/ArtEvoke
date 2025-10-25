@@ -1,36 +1,42 @@
-import os
-import logging
-from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.errors import ConnectionFailure
+"""
+Database configuration and initialization for ArtEvoke application.
+This module handles MySQL database connection using SQLAlchemy ORM.
+"""
 
-MONGO_URI = os.getenv("MONGODB_URI")
-DATABASE_NAME = "VisualCues"
+import logging
+from database_config import setup_database, get_connection_info
+from orm import create_all_tables
 
 logging.basicConfig(level=logging.INFO)
 
-client = None
-db = None
+engine = None
 
-async def connect_to_mongo():
-    global client, db
+
+async def connect_to_mysql():
+    """Initialize MySQL database connection and create tables."""
+    global engine
     try:
-        client = AsyncIOMotorClient(MONGO_URI)
-        db = client.get_database(DATABASE_NAME)
-        await client.server_info() #forces a connection to happen.
-        logging.info("Connected to MongoDB")
-    except ConnectionFailure as e:
-        logging.error(f"Could not connect to MongoDB: {e}")
-        client = None
-        db = None
-    except ValueError as e:
-        logging.error(f"Invalid MONGO_URI: {e}")
-        client = None
-        db = None
+        engine = setup_database(echo=False)
+        logging.info("Connected to MySQL")
 
-async def disconnect_from_mongo():
-    global client
-    if client:
-        client.close()
-        client = None
-        db = None
-        logging.info("Disconnected from MongoDB")
+        # Create all tables if they don't exist
+        create_all_tables()
+        logging.info("Database tables ready")
+
+        # Log connection info
+        info = get_connection_info()
+        logging.info(f"Database: {info['database']} at {info['host']}:{info['port']}")
+
+    except Exception as e:
+        logging.error(f"Could not connect to MySQL: {e}")
+        engine = None
+        raise
+
+
+async def disconnect_from_mysql():
+    """Close MySQL database connection."""
+    global engine
+    if engine:
+        engine.dispose()
+        engine = None
+        logging.info("Disconnected from MySQL")

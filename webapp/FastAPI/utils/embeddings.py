@@ -1,67 +1,20 @@
-import os
-import faiss
-import pickle
-import torch
 import numpy as np
-from sentence_transformers import SentenceTransformer
-import sqlite3
+from orm import CatalogItem
+from utils.types import Dataset
+from clients import get_embedding_client, get_database_client, get_qdrant_client
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Initialize clients
+embedding_model = get_embedding_client()
+SessionLocal = get_database_client()
+qdrant_client = get_qdrant_client()
 
-# Load the model **once** at startup
-print("Loading embedding model...")
-embedding_model = SentenceTransformer(
-    "Qwen/Qwen3-Embedding-4B",
-    model_kwargs={
-        "attn_implementation": "sdpa",
-        "device_map": device,
-        "dtype": torch.float16,
-    },
-    tokenizer_kwargs={"padding_side": "left"},
-)
 
-DATA_DIR = os.getenv("DATA_DIR", "/data") 
+# Available datasets/collections
+available_datasets = [Dataset.wikiart, Dataset.semart, Dataset.ipiranga]
 
-wiki_index_path = os.path.join(DATA_DIR, "embeddings", "index", "wikiart_index.faiss")
-wiki_meta_path = os.path.join(DATA_DIR, "embeddings", "metadata", "wikiart_metadata.pkl")
-semart_index_path = os.path.join(DATA_DIR, "embeddings", "index", "semart_index.faiss")
-semart_meta_path = os.path.join(DATA_DIR, "embeddings", "metadata", "semart_metadata.pkl")
-ipiranga_index_path = os.path.join(DATA_DIR, "embeddings", "index", "ipiranga_index.faiss")
-ipiranga_meta_path = os.path.join(DATA_DIR, "embeddings", "metadata", "ipiranga_metadata.pkl")
+filename_columns = {Dataset.wikiart: "file_name", Dataset.semart: "file_name", Dataset.ipiranga: None}
 
-wikiIndexImages = faiss.read_index(wiki_index_path)
-with open(wiki_meta_path, "rb") as f:
-    wikiMetadataImages = pickle.load(f)
-
-semArtIndexImages = faiss.read_index(semart_index_path)
-with open(semart_meta_path, "rb") as f:
-    semArtMetadataImages = pickle.load(f)
-
-ipirangaIndexImages = faiss.read_index(ipiranga_index_path)
-with open(ipiranga_meta_path, "rb") as f:
-    ipirangaMetadataImages = pickle.load(f)
-
-print("FAISS index and metadata loaded successfully!")
-
-# Connect to ipiranga database
-ipiranga_db_path = os.path.join(DATA_DIR, "db", "ipiranga.db")
-ipiranga_conn = sqlite3.connect(ipiranga_db_path)
-
-index_by_dataset = {
-    "wikiart": wikiIndexImages,
-    "semart": semArtIndexImages,
-    "ipiranga": ipirangaIndexImages,
-}
-
-metadata_by_dataset = {
-    "wikiart": wikiMetadataImages,
-    "semart": semArtMetadataImages,
-    "ipiranga": ipirangaMetadataImages,
-}
-
-filename_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
-
-art_name_columns = {"wikiart": "file_name", "semart": "file_name", "ipiranga": None}
+art_name_columns = {Dataset.wikiart: "file_name", Dataset.semart: "file_name", Dataset.ipiranga: None}
 
 
 def get_embedding(text):
@@ -72,45 +25,138 @@ def get_embedding(text):
     return embedding.astype("float32")
 
 
-def get_top_k_images_from_text(text, dataset, k=3):
+def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
+    """
+    Search for top k similar images using Qdrant vector database and return CatalogItem information
+    """
+    if dataset not in available_datasets:
+        raise ValueError(f"Dataset {dataset} not available. Available: {available_datasets}")
+    
+    # Get query embedding
     query_embedding = get_embedding(text)
-
-    indexImages = index_by_dataset[dataset]
-    metadataImages = metadata_by_dataset[dataset]
-    filename = filename_columns[dataset]
-    name = art_name_columns[dataset]
-
-    _, indices = indexImages.search(query_embedding, k)
-    images = []
-    for idx in indices[0]:
-        if dataset == "ipiranga":
-            # Query the database for ipiranga
-            cursor = ipiranga_conn.cursor()
-            cursor.execute(
-                "SELECT document, title FROM ipiranga_entries LIMIT 1 OFFSET ?",
-                (int(idx),),
-            )
-            row = cursor.fetchone()
-            if row:
-                image_url = (
-                    "https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items"
-                    + row[0]
-                )
-                image_name = row[1]
-                url = image_url  # Use full URL for ipiranga
-            else:
-                continue
-        else:
-            if idx < len(metadataImages):
-                image_url = metadataImages.iloc[idx][filename]
-                image_name = metadataImages.iloc[idx][name]
-                url = f"/art-images/{dataset}/{image_url}"
-            else:
-                continue
-        images.append(
-            {
-                "image_url": url,
-                "art_name": image_name,
-            }
+    
+    # Get collection name for Qdrant
+    collection_name = dataset.value
+    
+    # Search in Qdrant with error handling
+    try:
+        search_results = qdrant_client.search(
+            collection_name=collection_name,
+            query_vector=query_embedding[0].tolist(),  # Convert numpy array to list
+            limit=k,
+            with_payload=True
         )
-    return images
+    except Exception as e:
+        print(f"❌ Error searching Qdrant collection {collection_name}: {e}")
+        return []
+    
+    db = SessionLocal()
+    try:
+        images = []
+        for result in search_results:
+            
+            payload = result.payload
+            
+            # Get the artwork ID from the payload
+            artwork_id = payload.get('id')
+            if not artwork_id:
+                continue
+            # Query CatalogItem based on dataset and artwork ID
+            catalog_item = None
+            if dataset == Dataset.semart:
+                catalog_item = db.query(CatalogItem).filter(
+                    CatalogItem.semart_id == artwork_id,
+                    CatalogItem.source == Dataset.semart
+                ).first()
+            elif dataset == Dataset.wikiart:
+                catalog_item = db.query(CatalogItem).filter(
+                    CatalogItem.wikiart_id == artwork_id,
+                    CatalogItem.source == Dataset.wikiart
+                ).first()
+                print(catalog_item)
+            elif dataset == Dataset.ipiranga:
+                catalog_item = db.query(CatalogItem).filter(
+                    CatalogItem.ipiranga_id == artwork_id,
+                    CatalogItem.source == Dataset.ipiranga
+                ).first()
+            
+            if not catalog_item:
+                continue
+            print("passou")
+            # Get the specific artwork data based on source
+            artwork_data = None
+            image_url = None
+            art_name = None
+            
+            if catalog_item.source == Dataset.semart:
+                artwork_data = catalog_item.semart
+                image_url = f"/art-images/semart/{artwork_data.image_file}"
+                art_name = artwork_data.title or "Untitled"
+            elif catalog_item.source == Dataset.wikiart:
+                artwork_data = catalog_item.wikiart
+                image_url = f"/art-images/wikiart/{artwork_data.image_file}"
+                art_name = artwork_data.artist_name or "Unknown Artist"
+            elif catalog_item.source == Dataset.ipiranga:
+                artwork_data = catalog_item.ipiranga
+                image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{artwork_data.image_file}"
+                art_name = artwork_data.title or "Untitled"
+            
+            if image_url and art_name:
+                # Build comprehensive artwork info
+                artwork_info = {
+                    "image_url": image_url,
+                    "art_name": art_name,
+                    "id": catalog_item.id,
+                    "source": catalog_item.source.value,  # Convert enum to string
+                    "title": None,
+                    "artist": None,
+                    "year": None,
+                    "width": None,
+                    "height": None,
+                    "description": None,
+                    "technique": None
+                }
+                
+                # Add source-specific metadata
+                if artwork_data:
+                    if catalog_item.source == Dataset.semart:
+                        artwork_info.update({
+                            "title": artwork_data.title,
+                            "artist": artwork_data.artist_name,
+                            "year": artwork_data.date,
+                            "description": artwork_data.description,
+                            "technique": artwork_data.technique,
+                            "type": artwork_data.type,
+                            "art_school": artwork_data.art_school
+                        })
+                    elif catalog_item.source == Dataset.wikiart:
+                        artwork_info.update({
+                            "artist": artwork_data.artist_name,
+                            "width": artwork_data.width,
+                            "height": artwork_data.height,
+                            "description": artwork_data.description,
+                            "type": artwork_data.type,
+                            "year": artwork_data.description.split("-")[-1],
+                            "title": artwork_data.description.replace("-", " ")
+                        })
+                    elif catalog_item.source == Dataset.ipiranga:
+                        artwork_info.update({
+                            "title": artwork_data.title,
+                            "artist": artwork_data.artist_name,
+                            "year": artwork_data.date,
+                            "width": artwork_data.width,
+                            "height": artwork_data.height,
+                            "description": artwork_data.description,
+                            "technique": artwork_data.technique,
+                            "inventory_code": artwork_data.inventory_code,
+                            "location": artwork_data.location,
+                            "period": artwork_data.period,
+                            "color": artwork_data.color,
+                            "history": artwork_data.history
+                        })
+                
+                images.append(artwork_info)
+        return images
+        
+    finally:
+        db.close()
