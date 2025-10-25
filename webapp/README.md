@@ -155,6 +155,20 @@ Com Logs:
 docker compose up -d --build && docker compose logs -f
 ```
 
+## To stop the application 
+
+```bash
+docker-compose down
+```
+
+Removing volumes
+
+```bash
+docker-compose down -v
+```
+
+
+
 ### 3. Access the Application
 
 Once running, you can access:
