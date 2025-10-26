@@ -1,0 +1,206 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts';
+import './CreatePatient.css';
+
+const CreatePatient = () => {
+    const { t } = useTranslation('common');
+    const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
+
+    const [formData, setFormData] = useState({
+        name: '',
+        email: ''
+    });
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.name.trim()) {
+            newErrors.name = t('patients.create.validation.nameRequired');
+        }
+
+        if (!formData.email.trim()) {
+            newErrors.email = t('patients.create.validation.emailRequired');
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = t('patients.create.validation.emailInvalid');
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        setLoading(true);
+        setErrors({});
+
+        try {
+            if (!isLoggedIn) {
+                setErrors({ submit: 'Authentication required. Please log in again.' });
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setErrors({ submit: 'Authentication token not found. Please log in again.' });
+                return;
+            }
+
+            const payload = {
+                name: formData.name.trim(),
+                email: formData.email.trim()
+            };
+
+            const response = await fetch('/api/doctors/patients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                setSuccess(true);
+                setTimeout(() => {
+                    navigate('/patients');
+                }, 2000);
+            } else {
+                const errorData = await response.json();
+                // Handle different error response formats
+                let errorMessage = t('patients.create.error');
+                if (typeof errorData.detail === 'string') {
+                    errorMessage = errorData.detail;
+                } else if (Array.isArray(errorData.detail)) {
+                    // Handle Pydantic validation errors (array of error objects)
+                    errorMessage = errorData.detail.map(err => {
+                        if (typeof err === 'string') return err;
+                        return err.msg || 'Validation error';
+                    }).join(', ');
+                } else if (errorData.detail && typeof errorData.detail === 'object') {
+                    // Handle single error object
+                    errorMessage = errorData.detail.msg || errorData.detail.message || errorData.message || errorMessage;
+                }
+                setErrors({ submit: errorMessage });
+            }
+        } catch (error) {
+            console.error('Error creating patient:', error);
+            setErrors({ submit: t('patients.create.error') });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancel = () => {
+        navigate('/patients');
+    };
+
+    if (success) {
+        return (
+            <div className="create-patient-container">
+                <div className="success-message">
+                    <h2>{t('patients.create.success')}</h2>
+                    <p>{t('patients.create.successMessage', 'The patient has been created and will receive an email with instructions to complete their profile.')}</p>
+                    <button onClick={() => navigate('/patients')} className="back-btn">
+                        {t('common.back', 'Back to Patients')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="create-patient-container">
+            <div className="create-patient-form">
+                <h1>{t('patients.create.title')}</h1>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="name">
+                            {t('patients.create.name')} *
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            placeholder={t('patients.create.namePlaceholder')}
+                            className={errors.name ? 'error' : ''}
+                            disabled={loading}
+                        />
+                        {errors.name && <span className="error-message">{errors.name}</span>}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="email">
+                            {t('patients.create.email')} *
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder={t('patients.create.emailPlaceholder')}
+                            className={errors.email ? 'error' : ''}
+                            disabled={loading}
+                        />
+                        {errors.email && <span className="error-message">{errors.email}</span>}
+                    </div>
+
+                    {errors.submit && (
+                        <div className="error-message submit-error">
+                            {typeof errors.submit === 'string' ? errors.submit : 'An error occurred while creating the patient.'}
+                        </div>
+                    )}
+
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="cancel-btn"
+                            disabled={loading}
+                        >
+                            {t('patients.create.cancel')}
+                        </button>
+                        <button
+                            type="submit"
+                            className="submit-btn"
+                            disabled={loading}
+                        >
+                            {loading ? t('common.loading', 'Creating...') : t('patients.create.submit')}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default CreatePatient;

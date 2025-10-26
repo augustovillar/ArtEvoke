@@ -3,39 +3,45 @@ import React from 'react';
 import './i18n';
 import { Routes, Route } from 'react-router-dom';
 import { Navbar, Footer } from './components/common';
-import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
+import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
 import MemoryEvaluation from './pages/MemoryReconstruction/Evaluation';
 import ArtEvaluation from './pages/ArtExploration/Evaluation';
 import './styles/App.css';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { ReadAloudProvider } from './contexts/ReadAloudContext';
+import { ThemeProvider } from './contexts';
+import { ReadAloudProvider } from './contexts';
+import { AuthProvider } from './contexts';
 
 function App() {
     return (
         <ThemeProvider>
             <ReadAloudProvider>
-                <div id="app-container">
-                    <Navbar />
-                    <div className="content-wrapper">
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path='/story' element={<MemoryReconstruction />} />
-                            <Route path='/memory-reconstruction/evaluation' element={<MemoryEvaluation />} />
-                            <Route path="/artsearch" element={<ArtExploration />} />
-                            <Route path="/art-exploration/evaluation" element={<ArtEvaluation />} />
-                            <Route path="/signup" element={<SignUp />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/auth/role-selection" element={<RoleSelection />} />
-                            <Route path="/auth/doctor-signup" element={<DoctorSignUp />} />
-                            <Route path="/auth/doctor-login" element={<DoctorLogin />} />
-                            <Route path="/auth/patient-complete" element={<PatientComplete />} />
-                            <Route path="/auth/patient-login" element={<PatientLogin />} />
-                        </Routes>
+                <AuthProvider>
+                    <div id="app-container">
+                        <Navbar />
+                        <div className="content-wrapper">
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/about" element={<About />} />
+                                <Route path='/story' element={<MemoryReconstruction />} />
+                                <Route path='/memory-reconstruction/evaluation' element={<MemoryEvaluation />} />
+                                <Route path="/artsearch" element={<ArtExploration />} />
+                                <Route path="/art-exploration/evaluation" element={<ArtEvaluation />} />
+                                <Route path="/signup" element={<SignUp />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/profile" element={<Profile />} />
+                                <Route path="/patients" element={<Patients />} />
+                                <Route path="/patients/create" element={<CreatePatient />} />
+                                <Route path="/auth/role-selection" element={<RoleSelection mode="signup" />} />
+                                <Route path="/auth/login-role-selection" element={<RoleSelection mode="login" />} />
+                                <Route path="/auth/doctor-signup" element={<DoctorSignUp />} />
+                                <Route path="/auth/doctor-login" element={<DoctorLogin />} />
+                                <Route path="/auth/patient-complete" element={<PatientComplete />} />
+                                <Route path="/auth/patient-login" element={<PatientLogin />} />
+                            </Routes>
+                        </div>
+                        <Footer />
                     </div>
-                    <Footer />
-                </div>
+                </AuthProvider>
             </ReadAloudProvider>
         </ThemeProvider>
     );

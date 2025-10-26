@@ -3,10 +3,21 @@ from typing import Optional
 from .user import MessageResponse
 
 
+class PatientInDB(BaseModel):
+    _id: str
+    email: str
+    name: str
+
+
+class PatientLoginResponse(BaseModel):
+    message: str
+    token: str
+    user: PatientInDB
+
+
 class CreatePatientRequest(BaseModel):
     name: str
     email: str
-    doctor_id: str
 
 
 class CreatePatientResponse(BaseModel):
@@ -17,7 +28,6 @@ class CreatePatientResponse(BaseModel):
 class CompletePatientRequest(BaseModel):
     email: str
     code: str
-    username: str
     password: str
     date_of_birth: str  # YYYY-MM-DD
     education_level: str

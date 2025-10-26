@@ -39,10 +39,9 @@ async def signup(user: User, db: Session = Depends(get_db)) -> UserInDB:
     # Create new patient with required fields
     new_patient = Patient(
         id=str(uuid.uuid4()),
-        username=user.username,
         email=user.email,
         password=hashed_password,
-        name=user.username,
+        name="",  # Use email as name for now
         date_of_birth=datetime(2000, 1, 1).date(),
         education_level="Not specified",
         occupation="Not specified",
@@ -54,7 +53,6 @@ async def signup(user: User, db: Session = Depends(get_db)) -> UserInDB:
 
     return UserInDB(
         _id=new_patient.id,
-        username=new_patient.username,
         email=new_patient.email,
         password=new_patient.password,
         savedArtSearches=[],
@@ -64,14 +62,13 @@ async def signup(user: User, db: Session = Depends(get_db)) -> UserInDB:
 
 @router.post("/login")
 async def login(user: UserLogin, db: Session = Depends(get_db)) -> LoginResponse:
-    db_user = db.query(Patient).filter(Patient.username == user.username).first()
+    db_user = db.query(Patient).filter(Patient.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Invalid username or password")
+        raise HTTPException(status_code=400, detail="Invalid email or password")
 
     access_token = create_access_token(data={"userId": db_user.id})
     user_return = UserInDB(
         _id=db_user.id,
-        username=db_user.username,
         email=db_user.email,
         password=db_user.password,
         savedArtSearches=[],

@@ -8,7 +8,6 @@ const PatientComplete = () => {
     const [formData, setFormData] = useState({
         email: '',
         code: '',
-        username: '',
         password: '',
         date_of_birth: '',
         education_level: '',
@@ -109,29 +108,16 @@ const PatientComplete = () => {
                     {/* Account info */}
                     <div className="section">
                         <h3>{t('patientComplete.accountInfo', 'Account Information')}</h3>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label htmlFor="username">{t('patientComplete.username', 'Username')}</label>
-                                <input
-                                    type="text"
-                                    id="username"
-                                    name="username"
-                                    value={formData.username}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="password">{t('patientComplete.password', 'Password')}</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
+                        <div className="form-group">
+                            <label htmlFor="password">{t('patientComplete.password', 'Password')}</label>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                     </div>
 

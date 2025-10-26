@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../../contexts';
 import './DoctorLogin.css';
 
 const DoctorLogin = () => {
     const { t } = useTranslation('common');
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -22,17 +24,15 @@ const DoctorLogin = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ email, password }),
             });
 
             if (response.ok) {
                 const responseData = await response.json();
                 console.log('Doctor login successful:', responseData);
 
-                // Store the token and user info
-                localStorage.setItem('token', responseData.token);
-                localStorage.setItem('user', JSON.stringify(responseData.user));
-                localStorage.setItem('userType', 'doctor');
+                // Use auth context to login
+                login(responseData.token, responseData.user, 'doctor');
 
                 // Redirect to doctor dashboard or profile
                 navigate('/profile');
@@ -55,13 +55,13 @@ const DoctorLogin = () => {
                 <h1>{t('doctorLogin.title', 'Doctor Login')}</h1>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="username">{t('doctorLogin.username', 'Username')}</label>
+                        <label htmlFor="email">{t('doctorLogin.email', 'Email')}</label>
                         <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -84,7 +84,7 @@ const DoctorLogin = () => {
                 {error && <div className="error-message">{error}</div>}
 
                 <div className="links">
-                    <button onClick={() => navigate('/auth/role-selection')} className="back-button">
+                    <button onClick={() => navigate('/auth/login-role-selection')} className="back-button">
                         {t('doctorLogin.back', 'Back')}
                     </button>
                     <button onClick={() => navigate('/auth/doctor-signup')} className="signup-link">

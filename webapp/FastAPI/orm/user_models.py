@@ -36,7 +36,6 @@ class Patient(Base):
     )
 
     id = Column(String(36), primary_key=True)
-    username = Column(String(50), nullable=True, unique=True)
     email = Column(String(100), nullable=False, unique=True)
     password = Column(String(255), nullable=True)
     name = Column(String(100), nullable=False)
@@ -64,7 +63,7 @@ class Patient(Base):
     sessions = relationship("Session", back_populates="patient")
 
     def __repr__(self):
-        return f"<Patient(id={self.id}, username={self.username}, name={self.name})>"
+        return f"<Patient(id={self.id}, email={self.email}, name={self.name})>"
 
 
 class Doctor(Base):
@@ -78,7 +77,6 @@ class Doctor(Base):
     }
 
     id = Column(String(36), primary_key=True)
-    username = Column(String(50), nullable=False, unique=True)
     email = Column(String(100), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     name = Column(String(100), nullable=False)
@@ -93,7 +91,7 @@ class Doctor(Base):
     sessions = relationship("Session", back_populates="doctor")
 
     def __repr__(self):
-        return f"<Doctor(id={self.id}, username={self.username}, name={self.name})>"
+        return f"<Doctor(id={self.id}, email={self.email}, name={self.name})>"
 
 
 class PatientDoctor(Base):

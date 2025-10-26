@@ -18,7 +18,6 @@ class SavedStoryGeneration(BaseModel):
 
 
 class User(BaseModel):
-    username: str
     email: str
     password: str
 
@@ -30,7 +29,6 @@ class UserInDB(User):
 
 
 class Doctor(BaseModel):
-    username: str
     email: str
     password: str
     name: str
@@ -50,12 +48,12 @@ class Token(BaseModel):
 
 
 class UserLogin(BaseModel):
-    username: str
+    email: str
     password: str
 
 
 class DoctorLogin(BaseModel):
-    username: str
+    email: str
     password: str
 
 

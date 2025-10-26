@@ -6,7 +6,6 @@ import './DoctorSignUp.css';
 const DoctorSignUp = () => {
     const { t } = useTranslation('common');
     const [formData, setFormData] = useState({
-        username: '',
         email: '',
         password: '',
         name: '',
@@ -63,17 +62,6 @@ const DoctorSignUp = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="form-row">
                         <div className="form-group">
-                            <label htmlFor="username">{t('doctorSignup.username', 'Username')}</label>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
                             <label htmlFor="name">{t('doctorSignup.name', 'Full Name')}</label>
                             <input
                                 type="text"
@@ -84,18 +72,17 @@ const DoctorSignUp = () => {
                                 required
                             />
                         </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="email">{t('doctorSignup.email', 'Email')}</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                        />
+                        <div className="form-group">
+                            <label htmlFor="email">{t('doctorSignup.email', 'Email')}</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div className="form-row">

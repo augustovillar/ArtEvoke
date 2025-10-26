@@ -4,7 +4,7 @@
     align-items: center;
     min-height: 80vh;
     padding: 20px;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background-color: #f8f9fa;
 }
 
 .patient-login-box {

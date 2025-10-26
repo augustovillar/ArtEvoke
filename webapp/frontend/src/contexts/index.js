@@ -1,3 +1,4 @@
 // Re-export all contexts
-export { default as ThemeContext, ThemeProvider } from './ThemeContext';
-export { default as ReadAloudContext, ReadAloudProvider, useReadAloud } from './ReadAloudContext';
+export { ThemeProvider, useTheme } from './ThemeContext';
+export { ReadAloudProvider, useReadAloud } from './ReadAloudContext';
+export { AuthProvider, useAuth } from './AuthContext';

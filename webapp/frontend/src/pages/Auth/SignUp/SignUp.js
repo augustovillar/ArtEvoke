@@ -5,7 +5,6 @@ import './SignUp.css';
 
 const SignUp = () => {
     const { t } = useTranslation();
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -26,7 +25,7 @@ const SignUp = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, email, password }),
+                body: JSON.stringify({ email, password }),
             });
 
             if (response.ok) {
@@ -48,16 +47,6 @@ const SignUp = () => {
         <div className='box'>
             <h1>{t('signup.title')}</h1>
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="username">{t('signup.username')}</label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                </div>
                 <div>
                     <label htmlFor="email">{t('signup.email')}</label>
                     <input
