@@ -1,0 +1,46 @@
+.timerContainer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.progressRing {
+  transform: rotate(-90deg);
+}
+
+.progressRingCircleBg {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 10;
+}
+
+.progressRingCircle {
+  fill: none;
+  stroke: #667eea;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 534;
+  stroke-dashoffset: 534;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}
+
+.progressRingCircle.complete {
+  stroke: #48bb78;
+  stroke-dashoffset: 0;
+}
+
+.timeDisplay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.timeText {
+  font-size: 48px;
+  font-weight: 700;
+  color: #2d3748;
+  font-family: 'Courier New', monospace;
+}

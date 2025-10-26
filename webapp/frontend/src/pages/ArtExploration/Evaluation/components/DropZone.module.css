@@ -1,0 +1,166 @@
+.dropZone {
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.dropZone.dropTarget {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    border-style: solid;
+    transform: scale(1.02);
+}
+
+.dropZone.filled {
+    border-color: #28a745;
+    border-style: solid;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.positionNumber {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.dropContent {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+}
+
+.dropPlaceholder {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+    padding: 0.5rem;
+}
+
+.placedEvent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+}
+
+.eventText {
+    color: #333;
+    font-weight: 500;
+    flex: 1;
+}
+
+.removeButton {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+    margin-left: 0.5rem;
+}
+
+.removeButton:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.dropZone.filled .positionNumber {
+    background: #28a745;
+}
+
+/* Animations */
+@keyframes dropSuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.dropZone.filled {
+    animation: dropSuccess 0.3s ease;
+}
+
+/* Touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .dropZone {
+        min-height: 70px;
+        padding: 1rem;
+    }
+    
+    .positionNumber {
+        width: 36px;
+        height: 36px;
+        margin-right: 1rem;
+    }
+    
+    .removeButton {
+        width: 28px;
+        height: 28px;
+        font-size: 1.4rem;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .dropZone {
+        border-width: 3px;
+        border-color: #000;
+    }
+    
+    .dropZone.dropTarget {
+        border-color: #0066cc;
+    }
+    
+    .dropZone.filled {
+        border-color: #008000;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .dropZone {
+        transition: none;
+    }
+    
+    .dropZone.dropTarget {
+        transform: none;
+    }
+    
+    .dropZone.filled {
+        animation: none;
+    }
+    
+    .removeButton {
+        transition: none;
+    }
+    
+    .removeButton:hover {
+        transform: none;
+    }
+}

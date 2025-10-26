@@ -1,0 +1,97 @@
+.eventItem {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    cursor: grab;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.eventItem:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.eventItem:active {
+    cursor: grabbing;
+}
+
+.eventItem.dragging {
+    opacity: 0.5;
+    transform: scale(1.05);
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.dragHandle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 0.75rem;
+    color: #999;
+    font-size: 0.8rem;
+    cursor: grab;
+}
+
+.dragIcon {
+    writing-mode: vertical-lr;
+    letter-spacing: -2px;
+}
+
+.eventText {
+    flex: 1;
+    color: #333;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Touch devices support */
+@media (hover: none) and (pointer: coarse) {
+    .eventItem {
+        padding: 1rem;
+        font-size: 1.05rem;
+    }
+    
+    .eventItem:hover {
+        transform: none;
+    }
+    
+    .dragHandle {
+        width: 28px;
+        height: 28px;
+        margin-right: 1rem;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .eventItem {
+        border-width: 3px;
+        border-color: #000;
+    }
+    
+    .eventItem:hover {
+        border-color: #0066cc;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .eventItem {
+        transition: none;
+    }
+    
+    .eventItem:hover {
+        transform: none;
+    }
+    
+    .eventItem.dragging {
+        transform: none;
+    }
+}

@@ -25,6 +25,20 @@
     "delete": "Excluir",
     "edit": "Editar"
   },
+  "interruption": {
+    "artExploration": {
+      "title": "História Gerada com Sucesso!",
+      "message": "Por favor, aguarde um momento antes de prosseguir para a avaliação.",
+      "buttonText": "Continuar para Avaliação",
+      "waitText": "Aguarde {{seconds}}s..."
+    },
+    "memoryReconstruction": {
+      "title": "Visualização Concluída!",
+      "message": "Reserve um momento para refletir sobre as imagens que você viu.",
+      "buttonText": "Iniciar Avaliação",
+      "waitText": "Aguarde {{seconds}}s..."
+    }
+  },
   "footer": {
     "rights": "Todos os direitos reservados",
     "contact": "Contato",
@@ -51,7 +65,8 @@
     "adjustFontSize": "Ajustar Tamanho da Fonte: {{fontSize}}px",
     "sliderExampleText": "Este texto será dimensionado dinamicamente com base no tamanho da fonte selecionado.",
     "stopReading": "Parar Leitura",
-    "readAloudButton": "Ler em Voz Alta"
+    "readAloudButton": "Ler em Voz Alta",
+    "readQuestion": "Ler Pergunta"
   },
   "about": {
     "title": "Sobre Nós",
@@ -91,7 +106,7 @@
     "storyImageAlt": "Imagem da História {{number}}",
     "datasetImageAlt": "Imagem {{dataset}} {{number}}"
   },
-  "search": {
+  "artExploration": {
     "title": "Instruções de Exploração de Arte",
     "description1": "A ferramenta de exploração de arte permite buscar peças de arte digitando algumas palavras-chave. Nosso modelo de IA retornará algumas pinturas do nosso banco de dados, e você pode então selecionar a que achar mais interessante, e o modelo gerará uma história baseada nela.",
     "description2": "Finalmente, se a história gerada não for do seu agrado, você pode escolher regenerar uma nova história, ou recomeçar.",
@@ -109,6 +124,9 @@
     "generateStory": "Gerar História de {{count}} Imagem(ns) Selecionada(s)",
     "generatingStory": "Gerando História...",
     "clearSelections": "Limpar Todas as Seleções",
+    "continueSession": "Continuar Sessão",
+    "saveStory": "Salvar História",
+    "continueToEvaluation": "Prosseguir para Avaliação",
     "aiGeneratedStory": "História Gerada por IA",
     "regenerateStory": "Regenerar História",
     "copyText": "Copiar Texto",
@@ -134,7 +152,7 @@
     "errorOccurred": "Ocorreu um erro durante o cadastro. Tente novamente.",
     "loginLink": "Já é registrado? Faça login aqui!"
   },
-  "story": {
+  "memoryReconstruction": {
     "pageTitle": "Instruções de Reconstrução da Memória",
     "description": "A ferramenta de reconstrução da memória permite que você insira uma história ou uma memória (ou parte dela). Após enviar o texto, nosso modelo de IA irá segmentar o texto e sugerir a melhor pintura correspondente por seção da base de dados selecionada, o que pode ajudá-lo a lembrar de mais detalhes da história. Se não estiver satisfeito com o resultado, pode clicar no botão \"Mostrar 5 imagens por seção\" para gerar ainda mais imagens.",
     "optionsIntro": "Após inserir o texto, você tem 3 opções para explorar.",
@@ -172,11 +190,48 @@
     "imageAlt": "Seção {{sectionIndex}} Imagem {{imageIndex}}",
     "showMoreImages": "Mostrar 5 Imagens por Seção",
     "saveStory": "Salvar História",
+    "continueSession": "Continuar Sessão",
+    "clearSelection": "Limpar Seleção",
     "messages": {
       "loginRequired": "Faça login para salvar.",
       "selectAllImages": "Selecione uma imagem para cada seção antes de salvar.",
       "savedSuccessfully": "Salvo com sucesso!",
       "saveFailed": "Falha ao salvar."
     }
+  },
+  "evaluation": {
+    "title": "Recapitulação - Memory Reconstruction",
+    "progress": "Progresso",
+    "imageRecognitionTitle": "Pergunta de Reconhecimento",
+    "imageRecognitionInstruction": "Qual das imagens abaixo você selecionou anteriormente para esta seção da história?",
+    "sectionTextLabel": "Texto da Seção:",
+    "pleaseSelectImage": "Por favor, selecione uma imagem antes de continuar.",
+    "pleaseAnswer": "Por favor, responda a pergunta antes de continuar.",
+    "nextQuestion": "Próxima Pergunta",
+    "question": "Pergunta",
+    "finish": "Finalizar",
+    "yes": "Sim",
+    "no": "Não",
+    "textPlaceholder": "Digite sua resposta aqui...",
+    "completed": "Recapitulação Completa!",
+    "completedMessage": "Obrigado por completar a recapitulação. Clique no botão abaixo para salvar sua sessão.",
+    "saving": "Salvando...",
+    "saveSession": "Salvar Sessão",
+    "titleArtExploration": "Recapitulação - Art Exploration",
+    "imageRecallTitle": "Pergunta sobre a Imagem",
+    "imageRecallInstruction": "Qual destas imagens você acabou de selecionar?",
+    "storyWritingTitle": "Escreva Sua História",
+    "storyWritingInstruction": "Tente recontar a história que você recebeu anteriormente com suas palavras, seja o mais rico possível em detalhes.",
+    "storyPlaceholder": "Comece a escrever sua história aqui...",
+    "pleaseWriteStory": "Por favor, escreva uma história antes de continuar.",
+    "continueToQuestions": "Continuar para Perguntas",
+    "characters": "caracteres",
+    "chronologyTitle": "Ordem dos Eventos",
+    "chronologyInstruction": "Arraste os eventos para organizá-los na ordem cronológica correta:",
+    "eventsToOrder": "Eventos para ordenar:",
+    "chronologicalOrder": "Ordem Cronológica:",
+    "dropHere": "Solte aqui",
+    "completeOrder": "Complete a ordenação para continuar.",
+    "removeEvent": "Remover evento"
   }
 }

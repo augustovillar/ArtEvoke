@@ -41,6 +41,8 @@ def search_similar_vectors(text: str, dataset: Dataset, k: int = 3) -> list:
     if dataset not in AVAILABLE_DATASETS:
         raise ValueError(f"Dataset {dataset} not available. Available: {AVAILABLE_DATASETS}")
     
+    # Lazy import to avoid circular dependency
+    from utils.embeddings import get_embedding
     query_embedding = get_embedding(text)
     
     collection_name = dataset.value
