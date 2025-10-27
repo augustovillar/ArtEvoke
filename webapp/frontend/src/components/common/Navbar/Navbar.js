@@ -1,35 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
 import logo from '../../../assets/images/logepl.jpg';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts';
+import { useAuth } from '../../../contexts';
 import AccessibilityPanel from '../../ui/AccessibilityPanel';
 import LanguageSelector from '../../../components/languageSelector/languageSelector';
 
 const Navbar = () => {
     const { t } = useTranslation('common');
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
 
     const { toggleTheme } = useTheme();
-
-    // Check if user is logged in from localStorage on mount  
-    useEffect(() => {
-        const token = localStorage.getItem('token'); // Check if token exists
-        if (token) {
-            setIsLoggedIn(true); // Set user as logged in
-        }
-    }, []);
+    const { isLoggedIn, userType, logout } = useAuth();
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Remove token from localStorage
-        setIsLoggedIn(false); // Update the state to logged out
+        logout();
     };
 
     const handleOpenPanel = () => {
@@ -51,8 +43,15 @@ const Navbar = () => {
         
             <div className="nav-links">
                 <Link to="/">{t('navbar.home')}</Link>
-                <Link to="/story">{t('navbar.memoryReconstruction')}</Link>
-                <Link to="/artsearch">{t('navbar.artExploration')}</Link>
+                {userType !== 'doctor' && (
+                    <>
+                        <Link to="/story">{t('navbar.memoryReconstruction')}</Link>
+                        <Link to="/artsearch">{t('navbar.artExploration')}</Link>
+                    </>
+                )}
+                {userType === 'doctor' && (
+                    <Link to="/patients">{t('navbar.patients', 'Patients')}</Link>
+                )}
                 <Link to="/about">{t('navbar.about')}</Link>
 
                 {/* Language Selector */}
@@ -79,11 +78,11 @@ const Navbar = () => {
                             {t('navbar.account')}
                         </button>
                         <div className="dropdown-content">
-                            <Link to="/signup" onClick={toggleDropdown}>
+                            <Link to="/auth/role-selection" onClick={toggleDropdown}>
                                 {t('navbar.signUp')}
                             </Link>
-                            <Link to="/login" onClick={toggleDropdown}>
-                                {t('navbar.login')}
+                            <Link to="/auth/login-role-selection" onClick={toggleDropdown}>
+                                {t('navbar.signIn')}
                             </Link>
                         </div>
                     </div>

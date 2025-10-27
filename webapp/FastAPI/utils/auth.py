@@ -3,7 +3,7 @@ from jose import jwt
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status, Request, Depends
 from sqlalchemy.orm import Session
-from orm import get_db, Patient
+from orm import get_db, Patient, Doctor
 import os
 import hashlib
 
@@ -56,6 +56,33 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> s
             )
 
         return user.id
+    except Exception as e:
+        print(f"Token verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token"
+        )
+
+
+async def get_current_doctor(request: Request, db: Session = Depends(get_db)) -> str:
+    token = (
+        request.headers.get("Authorization").split(" ")[1]
+        if request.headers.get("Authorization")
+        else None
+    )
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="No token provided"
+        )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        doctor_id = payload.get("doctorId")
+        doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
+        if not doctor:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Doctor not found"
+            )
+
+        return doctor.id
     except Exception as e:
         print(f"Token verification failed: {e}")
         raise HTTPException(

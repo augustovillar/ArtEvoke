@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient
 import time
-from utils.types import Dataset
+from api_types.art import Dataset
 
 # Global variables
 _qdrant_client = None
@@ -17,11 +17,16 @@ def get_qdrant_client():
             try:
                 print(f"Attempting to connect to Qdrant at qdrant:6333 (attempt {attempt + 1})")
                 _qdrant_client = QdrantClient(host="qdrant", port=6333)
+                print("✅ Connected to Qdrant successfully")
+                break  # Success, exit the loop
             except Exception as e:
                 print(f"❌ Failed to connect to qdrant:6333 (attempt {attempt + 1}): {e}")
-                time.sleep(1)
-        
-        raise ConnectionError("Failed to connect to Qdrant after 3 attempts")
+                if attempt < 2:  # Don't sleep on the last attempt
+                    time.sleep(1)
+        else:
+            # Loop completed without breaking (all attempts failed)
+            raise ConnectionError("Failed to connect to Qdrant after 3 attempts")
+    
     return _qdrant_client
 
 def get_available_collections():
@@ -31,6 +36,8 @@ def get_available_collections():
 
 
 def search_similar_vectors(text: str, dataset: Dataset, k: int = 3) -> list:
+    from utils.embeddings import get_embedding
+    
     if dataset not in AVAILABLE_DATASETS:
         raise ValueError(f"Dataset {dataset} not available. Available: {AVAILABLE_DATASETS}")
     
@@ -40,7 +47,7 @@ def search_similar_vectors(text: str, dataset: Dataset, k: int = 3) -> list:
     
     collection_name = dataset.value
     
-    if collection_name not in available_collections:
+    if collection_name not in get_available_collections():
         raise ValueError(f"Collection {collection_name} not found in Qdrant")
     
     try:

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts';
 import './Profile.css';
 
 const Profile = () => {
     const { t } = useTranslation('common');
-    const [username, setUsername] = useState('');
+    const { user, userType } = useAuth();
     const [savedArtSearches, setSavedArtSearches] = useState([]);
     const [savedStoryGenerations, setSavedStoryGenerations] = useState([]);
     const [expandedItem, setExpandedItem] = useState(null);
@@ -13,10 +14,10 @@ const Profile = () => {
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     const fetchUserProfile = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!user || userType !== 'patient') return;
 
         try {
+            const token = localStorage.getItem('token');
             const response = await fetch(`/api/retrieve-searches`, {
                 method: 'GET',
                 headers: {
@@ -38,14 +39,10 @@ const Profile = () => {
     };
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const user = JSON.parse(storedUser);
-            setUsername(user.username);
+        if (user && userType === 'patient') {
+            fetchUserProfile();
         }
-
-        fetchUserProfile();
-    }, []);
+    }, [user, userType]);
 
     const handleItemClick = (item) => {
         setExpandedItem(item);
@@ -109,51 +106,53 @@ const Profile = () => {
     return (
         <div>
             <div className="content-box">
-                <h1>{t('profile.welcomeTitle', { username })}</h1>
+                <h1>{t('profile.welcomeTitle', { email: user?.email || 'User' })}</h1>
                 <p>{t('profile.welcomeDescription')}</p>
             </div>
 
-            <div className="content-box">
-                <h1>{t('profile.storyHistoryTitle')}</h1>
-                <div className="story-list">
-                    {savedStoryGenerations.length > 0 ? (
-                        savedStoryGenerations.map((story, index) => (
-                            <div
-                                key={story._id || index}
-                                className="story-box"
-                                onClick={() => handleItemClick(story)}
-                            >
-                                <h3><strong>{t('profile.date')}</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
-                                <p>{story.text.substring(0, 50)}...</p>
-                            </div>
-                        ))
-                    ) : (
-                        <p>{t('profile.noStoriesYet')}</p>
-                    )}
-                </div>
-            </div>
+            {userType === 'patient' ? (
+                <>
+                    <div className="content-box">
+                        <h1>{t('profile.storyHistoryTitle')}</h1>
+                        <div className="story-list">
+                            {savedStoryGenerations.length > 0 ? (
+                                savedStoryGenerations.map((story, index) => (
+                                    <div
+                                        key={story._id || index}
+                                        className="story-box"
+                                        onClick={() => handleItemClick(story)}
+                                    >
+                                        <h3><strong>{t('profile.date')}</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
+                                        <p>{story.text.substring(0, 50)}...</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>{t('profile.noStoriesYet')}</p>
+                            )}
+                        </div>
+                    </div>
 
-            <div className="content-box">
-                <h1>{t('profile.artHistoryTitle')}</h1>
-                <div className="story-list">
-                    {savedArtSearches.length > 0 ? (
-                        savedArtSearches.map((search, index) => (
-                            <div
-                                key={search._id || index}
-                                className="story-box"
-                                onClick={() => handleItemClick(search)}
-                            >
-                                <h3><strong>{t('profile.date')}</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
-                                <p>{search.text.substring(0, 50)}...</p>
-                            </div>
-                        ))
-                    ) : (
-                        <p>{t('profile.noSearchesYet')}</p>
-                    )}
-                </div>
-            </div>
-
-            {expandedItem && (
+                    <div className="content-box">
+                        <h1>{t('profile.artHistoryTitle')}</h1>
+                        <div className="story-list">
+                            {savedArtSearches.length > 0 ? (
+                                savedArtSearches.map((search, index) => (
+                                    <div
+                                        key={search._id || index}
+                                        className="story-box"
+                                        onClick={() => handleItemClick(search)}
+                                    >
+                                        <h3><strong>{t('profile.date')}</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
+                                        <p>{search.text.substring(0, 50)}...</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>{t('profile.noSearchesYet')}</p>
+                            )}
+                        </div>
+                    </div>
+                </>
+            ) : null}            {expandedItem && (
                 <div className="modal-history">
                     <div className="modal-history-content">
                         <span className="history-close-button" onClick={closeModal}>&times;</span>

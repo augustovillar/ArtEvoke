@@ -5,11 +5,9 @@ import './Login.css';
 
 const Login = () => {
     const { t } = useTranslation('common');
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
@@ -20,7 +18,7 @@ const Login = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ email, password }),
             });
     
             if (response.ok) {
@@ -51,13 +49,13 @@ const Login = () => {
             <h1>{t('login.title')}</h1>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label htmlFor="username">{t('login.username')}</label>
+                    <label htmlFor="email">{t('login.email', 'Email')}</label>
                     <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>

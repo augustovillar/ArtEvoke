@@ -16,7 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import Base
-from utils.types import Dataset
+from api_types.art import Dataset
 
 class MemoryReconstruction(Base):
     """MemoryReconstruction table - stores memory reconstruction sessions."""

@@ -5,23 +5,23 @@
 /*  ===================== */
 CREATE TABLE IF NOT EXISTS Patient (
     id                CHAR(36)      NOT NULL,
-    username          VARCHAR(50)   NOT NULL,
     email             VARCHAR(100)  NOT NULL,
-    password          VARCHAR(255)  NOT NULL,
+    password          VARCHAR(255)  NULL,
     name              VARCHAR(100) NOT NULL,
-    date_of_birth     DATE NOT NULL,
-    education_level   VARCHAR(50) NOT NULL,
-    occupation        VARCHAR(100) NOT NULL,
+    date_of_birth     DATE NULL,
+    education_level   VARCHAR(50) NULL,
+    occupation        VARCHAR(100) NULL,
     diseases          TEXT,
     medications       TEXT,
     visual_impairment BOOLEAN       NOT NULL DEFAULT FALSE,
     hearing_impairment BOOLEAN      NOT NULL DEFAULT FALSE,
     household_income  DECIMAL(10,2)          CHECK (household_income IS NULL OR household_income >= 0),
     ethnicity         VARCHAR(50),
+    status            ENUM('pending','active') NOT NULL DEFAULT 'pending',
+    code              CHAR(4)       NULL,
     created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_patient PRIMARY KEY (id),
-    CONSTRAINT uq_patient_email UNIQUE (email),
-    CONSTRAINT uq_patient_username UNIQUE (username)
+    CONSTRAINT uq_patient_email UNIQUE (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*  ===================== */
@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS Patient (
 /*  ===================== */
 CREATE TABLE IF NOT EXISTS Doctor (
     id               CHAR(36)      NOT NULL,
-    username         VARCHAR(50)   NOT NULL,
     email            VARCHAR(100)  NOT NULL,
     password         VARCHAR(255)  NOT NULL,
     name             VARCHAR(100) NOT NULL,
@@ -37,8 +36,7 @@ CREATE TABLE IF NOT EXISTS Doctor (
     specialization   VARCHAR(100) NOT NULL,
     created_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_doctor PRIMARY KEY (id),
-    CONSTRAINT uq_doctor_email UNIQUE (email),
-    CONSTRAINT uq_doctor_username UNIQUE (username)
+    CONSTRAINT uq_doctor_email UNIQUE (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*  ========================================= */

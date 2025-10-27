@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Date, DateTime, Text, ForeignKey, Enum, Index
 from sqlalchemy.orm import relationship
 from .base import Base
-from utils.types import Dataset
+from api_types.art import Dataset
 
 
 class SemArt(Base):

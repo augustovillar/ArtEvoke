@@ -1,12 +1,30 @@
 import numpy as np
 from orm import CatalogItem
-from utils.types import Dataset
-from clients import get_embedding_client, get_database_client, get_qdrant_client
+from api_types.art import Dataset
+from clients import get_embedding_client, get_database_client, get_qdrant_client, encode_text
 
-# Initialize clients
-embedding_model = get_embedding_client()
-SessionLocal = get_database_client()
-qdrant_client = get_qdrant_client()
+# Lazy client initialization
+_embedding_model = None
+_SessionLocal = None
+_qdrant_client = None
+
+def _get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        _embedding_model = get_embedding_client()
+    return _embedding_model
+
+def _get_session_local():
+    global _SessionLocal
+    if _SessionLocal is None:
+        _SessionLocal = get_database_client()
+    return _SessionLocal
+
+def _get_qdrant_client():
+    global _qdrant_client
+    if _qdrant_client is None:
+        _qdrant_client = get_qdrant_client()
+    return _qdrant_client
 
 
 # Available datasets/collections
@@ -18,7 +36,7 @@ art_name_columns = {Dataset.wikiart: "file_name", Dataset.semart: "file_name", D
 
 
 def get_embedding(text):
-    embedding = embedding_model.encode([text], convert_to_numpy=True)
+    embedding = encode_text([text], convert_to_numpy=True)
     embedding = embedding / np.linalg.norm(
         embedding, axis=1, keepdims=True
     )  # Normalize
@@ -40,7 +58,7 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
     
     # Search in Qdrant with error handling
     try:
-        search_results = qdrant_client.search(
+        search_results = _get_qdrant_client().search(
             collection_name=collection_name,
             query_vector=query_embedding[0].tolist(),  # Convert numpy array to list
             limit=k,
@@ -50,7 +68,7 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
         print(f"❌ Error searching Qdrant collection {collection_name}: {e}")
         return []
     
-    db = SessionLocal()
+    db = _get_session_local()()
     try:
         images = []
         for result in search_results:

@@ -1,86 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from orm import get_db, Patient, MemoryReconstruction, ArtExploration
-from utils.types import (
-    User,
-    UserInDB,
-    UserLogin,
-    LoginResponse,
-    SaveStoryRequest,
-    SaveGenerationRequest,
+from api_types.user import (
     MessageResponse,
     RetrieveSearchesResponse,
 )
+from api_types.art import (
+    SaveStoryRequest,
+    SaveGenerationRequest,
+)
 from utils.auth import (
-    verify_password,
-    get_password_hash,
-    create_access_token,
     get_current_user,
 )
-from datetime import datetime
 from typing import Dict, List
 import uuid
 
 router = APIRouter()
-
-
-@router.post("/signup")
-async def signup(user: User, db: Session = Depends(get_db)) -> UserInDB:
-    print(f"Attempting signup for email: {user.email}")
-    existing_user = db.query(Patient).filter(Patient.email == user.email).first()
-    print(f"Find one result: {existing_user}")
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    hashed_password = get_password_hash(user.password)
-
-    # Create new patient with required fields
-    new_patient = Patient(
-        id=str(uuid.uuid4()),
-        username=user.username,
-        email=user.email,
-        password=hashed_password,
-        name=user.username,
-        date_of_birth=datetime(2000, 1, 1).date(),
-        education_level="Not specified",
-        occupation="Not specified",
-    )
-
-    db.add(new_patient)
-    db.commit()
-    db.refresh(new_patient)
-
-    return UserInDB(
-        _id=new_patient.id,
-        username=new_patient.username,
-        email=new_patient.email,
-        password=new_patient.password,
-        savedArtSearches=[],
-        savedStoryGenerations=[],
-    )
-
-
-@router.post("/login")
-async def login(user: UserLogin, db: Session = Depends(get_db)) -> LoginResponse:
-    db_user = db.query(Patient).filter(Patient.username == user.username).first()
-    if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Invalid username or password")
-
-    access_token = create_access_token(data={"userId": db_user.id})
-    user_return = UserInDB(
-        _id=db_user.id,
-        username=db_user.username,
-        email=db_user.email,
-        password=db_user.password,
-        savedArtSearches=[],
-        savedStoryGenerations=[],
-    )
-
-    return {"message": "Login successful", "token": access_token, "user": user_return}
-
-
-@router.get("/profile")
-async def get_profile(current_user: UserInDB = Depends(get_current_user)) -> UserInDB:
-    return current_user
 
 
 @router.post("/save-story")
