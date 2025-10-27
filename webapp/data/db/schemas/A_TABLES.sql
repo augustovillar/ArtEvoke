@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS ArtExploration (
   patient_id      CHAR(36)    NOT NULL,
   story_generated TEXT        NOT NULL,
   dataset         ENUM('ipiranga', 'wikiart','semart') NOT NULL,
-  language        ENUM('EN','PT') NOT NULL,
+  language        ENUM('en','pt') NOT NULL,
   created_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_art_exploration PRIMARY KEY (id),
   CONSTRAINT fk_artexp_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
@@ -173,8 +173,8 @@ CREATE TABLE IF NOT EXISTS MemoryReconstruction (
     patient_id            CHAR(36)   NOT NULL,
     story                 TEXT NOT NULL,
     dataset               ENUM('ipiranga', 'wikiart', 'semart') NOT NULL,   
-    language              ENUM('EN','PT') NOT NULL,
-    segmentation_strategy ENUM('Conservative','Broader') NOT NULL,
+    language              ENUM('en','pt') NOT NULL,
+    segmentation_strategy ENUM('conservative','broader') NOT NULL,
     created_at            TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_memrec PRIMARY KEY (id),
     CONSTRAINT fk_memrec_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)

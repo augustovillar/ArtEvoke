@@ -2,11 +2,10 @@
 ORM models for art catalog tables: SemArt, Ipiranga, WikiArt, and CatalogItem.
 """
 
-from datetime import datetime
-from sqlalchemy import Column, String, Date, DateTime, Text, ForeignKey, Enum, Index
+from sqlalchemy import Column, String, Text, ForeignKey, Enum, Index
 from sqlalchemy.orm import relationship
 from .base import Base
-from api_types.art import Dataset
+from api_types.common import Dataset
 
 
 class SemArt(Base):

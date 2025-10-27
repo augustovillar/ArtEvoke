@@ -56,17 +56,29 @@ const ImageSelectionGrid = ({
             ))}
             <div className="buttons-container">
                 {isSessionMode ? (
-                    // Modo Sessão: apenas botão de continuar para interrupção e avaliação
-                    <button
-                        className="submit-button primary-button"
-                        onClick={onInSession}
-                        disabled={
-                            loading || 
-                            Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
-                        }
-                    >
-                        {t('memoryReconstruction.continueSession') || 'Continuar Sessão'}
-                    </button>
+                    // Modo Sessão: botão de continuar para interrupção e avaliação + botão de salvar
+                    <>
+                        <button
+                            className="submit-button secondary-button"
+                            onClick={onOutOfSession}
+                            disabled={
+                                loading || 
+                                Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
+                            }
+                        >
+                            {t('memoryReconstruction.saveStory') || 'Salvar História'}
+                        </button>
+                        <button
+                            className="submit-button primary-button"
+                            onClick={onInSession}
+                            disabled={
+                                loading || 
+                                Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
+                            }
+                        >
+                            {t('memoryReconstruction.continueSession') || 'Continuar Sessão'}
+                        </button>
+                    </>
                 ) : (
                     // Modo Livre: botões de salvar e limpar
                     <>
@@ -90,7 +102,6 @@ const ImageSelectionGrid = ({
                     </>
                 )}
             </div>
-            {saveMessage && <p>{saveMessage}</p>}
         </div>
     );
 };

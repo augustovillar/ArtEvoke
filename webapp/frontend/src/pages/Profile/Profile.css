@@ -23,9 +23,32 @@
     background-color: #e0e0e0;
 }
 
-.story-box p {
-    margin: 0; /* Remove default paragraph margins */
-    word-wrap: break-word; /* Break long words */
+.story-box.expanded {
+    white-space: normal;
+    min-width: 400px;
+    max-width: 600px;
+}
+
+.expanded-content {
+    margin-top: 10px;
+}
+
+.memory-section {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.section-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.modal-history-image.favorite {
+    border: 3px solid gold;
 }
 
 /* Modal */
@@ -46,10 +69,14 @@
     background-color: white;
     padding: 20px;
     border-radius: 8px;
-    max-width: 80%; /* Adjust as needed */
-    max-height: 80%;
+    width: 80vw; /* 80% of viewport width */
+    height: 80vh; /* 80% of viewport height */
+    max-width: 1200px; /* Maximum width */
+    max-height: 800px; /* Maximum height */
     overflow-y: auto; /* Allow scrolling if content is too long */
     position: relative; /* For close button positioning */
+    display: flex;
+    flex-direction: column;
 }
 
 .history-close-button {
@@ -94,6 +121,78 @@
     background-color: #c82333;
 }
 
+.delete-message {
+    margin-left: 15px;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.memory-section-modal {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.section-header {
+    background-color: #f8f9fa;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.2s ease;
+}
+
+.section-header h5 {
+    flex: 1;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.section-header:hover {
+    background-color: #e9ecef;
+}
+
+.expand-arrow {
+    font-size: 18px;
+    color: #666;
+    transition: transform 0.2s ease;
+}
+
+.section-content {
+    padding: 15px;
+}
+
+.section-images-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.modal-sections-content {
+    padding-right: 5px; /* Space for scrollbar */
+}
+
+.modal-sections-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-sections-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.modal-sections-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.modal-sections-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
 .doctor-actions {
     display: flex;
     gap: 15px;
@@ -113,4 +212,60 @@
 
 .action-button:hover {
     background-color: #0056b3;
+}
+
+.modal-actions {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Image Popup Modal Styles */
+.image-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.image-popup-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.image-popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    z-index: 1001;
+}
+
+.image-popup-close:hover {
+    color: #000;
+}
+
+.image-popup-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    display: block;
 }

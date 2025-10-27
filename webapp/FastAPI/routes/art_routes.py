@@ -1,20 +1,27 @@
-from fastapi import APIRouter, Depends
-from routes import get_db, correct_grammer_and_translate
+from fastapi import APIRouter, Depends, HTTPException, Request
+from routes import get_db
 from utils.text_processing import doTextSegmentation
 from utils.embeddings import (
     get_top_k_images_from_text,
 )
-from api_types.art import (
+from api_types.common import (
     SearchImagesRequestDTO,
     SelectImagesPerSectionRequestDTO,
     GenerateStoryRequestDTO,
-    SelectImagesRVRequestDTO,
     SearchImagesResponse,
     SelectImagesResponse,
     GenerateStoryResponse,
+    Dataset,
 )
 from clients import get_maritaca_client
 import logging
+from sqlalchemy.orm import Session, joinedload
+from orm import CatalogItem, Ipiranga, WikiArt, SemArt
+from utils.auth import get_current_user
+
+
+def correct_grammer_and_translate(text, src_language):
+    return text
 
 
 router = APIRouter()
@@ -56,27 +63,12 @@ async def select_images_per_section(
 @router.post("/generate-story")
 async def generate_story(body: GenerateStoryRequestDTO, db=Depends(get_db)) -> GenerateStoryResponse:
     from orm import CatalogItem, SemArt, WikiArt, Ipiranga
-    from api_types.art import Dataset
+    from webapp.FastAPI.api_types.common import Dataset
     
     data = body.selectedImagesByDataset
     art_descriptions = []
 
     for dataset_name, catalog_item_ids in data.items():
-        # Convert string to Dataset enum
-        try:
-            if dataset_name == "semart":
-                dataset = Dataset.semart
-            elif dataset_name == "wikiart":
-                dataset = Dataset.wikiart
-            elif dataset_name == "ipiranga":
-                dataset = Dataset.ipiranga
-            else:
-                print(f"[Warning] Unknown dataset: {dataset_name}")
-                continue
-        except:
-            print(f"[Warning] Invalid dataset: {dataset_name}")
-            continue
-
         # Get descriptions from catalog items
         for catalog_item_id in catalog_item_ids:
             try:
@@ -130,21 +122,47 @@ async def generate_story(body: GenerateStoryRequestDTO, db=Depends(get_db)) -> G
     return {"text": story}
 
 
-@router.post("/select-images-rv")
-async def select_images_rv(
-    body: SelectImagesRVRequestDTO, db=Depends(get_db)
-) -> SelectImagesResponse:
-    # Split the Story into Segments
-    sections = doTextSegmentation("conservative", body.story, max_sections=5)
-    results = []
-
-    # select only the sections with the index in the body.section list
-    for section in sections[body.sections]:
-        section_images = get_top_k_images_from_text(
-            section,
-            body.dataset.value,
-            k=6,
+@router.post("/images")
+async def get_images(
+    request: Request,
+    ids: dict,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Check if user is authenticated
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    ids_list = ids.get("ids", [])
+    if not ids_list:
+        return {"urls": {}}
+    
+    base_url = str(request.base_url).rstrip('/')
+    
+    # Query the CatalogItems with joins to get image_file from related tables
+    catalog_items = (
+        db.query(CatalogItem)
+        .options(
+            joinedload(CatalogItem.ipiranga),
+            joinedload(CatalogItem.wikiart),
+            joinedload(CatalogItem.semart),
         )
-        results.append({"section": section, "images": section_images})
+        .filter(CatalogItem.id.in_(ids_list))
+        .all()
+    )
+    
+    urls = {}
+    for item in catalog_items:
+        image_url = None
+        if item.source == Dataset.semart and item.semart:
+            image_url = f"{base_url}/art-images/semart/{item.semart.image_file}"
+        elif item.source == Dataset.wikiart and item.wikiart:
+            image_url = f"{base_url}/art-images/wikiart/{item.wikiart.image_file}"
+        elif item.source == Dataset.ipiranga and item.ipiranga:
+            image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{item.ipiranga.image_file}"
+        
+        if image_url:
+            urls[str(item.id)] = image_url
+    
+    return {"urls": urls}
 
-    return {"sections": results}

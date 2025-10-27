@@ -33,14 +33,24 @@ const useStoryOutOfSessionSave = () => {
         }
 
         const saveData = {
-            generatedStory: storyText,
-            selectedImages: Object.values(selectedImagesPerSection),
-            language: language,
+            story: storyText,
             dataset: dataset,
-            segmentation: segmentation,
+            language: language,
+            segmentation_strategy: segmentation,
+            sections: sectionsWithImages.map((sectionData, index) => ({
+                section_content: sectionData.section,
+                image1_id: sectionData.images[0]?.id || null,
+                image2_id: sectionData.images[1]?.id || null,
+                image3_id: sectionData.images[2]?.id || null,
+                image4_id: sectionData.images[3]?.id || null,
+                image5_id: sectionData.images[4]?.id || null,
+                image6_id: sectionData.images[5]?.id || null,
+                fav_image_id: selectedImagesPerSection[index] ? 
+                    sectionData.images.find(img => img.url === selectedImagesPerSection[index])?.id || null : null
+            }))
         };
 
-        fetch(`/api/save-generation`, {
+        fetch(`/api/memory/save`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -69,7 +79,7 @@ const useStoryOutOfSessionSave = () => {
     return {
         saveMessage,
         savedStoryData,
-    saveOutOfSessionStory
+        saveOutOfSessionStory
     };
 };
 
