@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18n';
 import { useAuth } from '../../contexts';
 import { useReadAloud } from '../../contexts/ReadAloudContext';
 import './Home.css';
@@ -73,46 +73,21 @@ const Home = () => {
                                 <div className="expanded-section">
                                     <h3>{t('home.example')}</h3>
                                     <div className="example-content">
-                                        <div className="example-story">
-                                            <p className="example-text">
-                                                {t('home.memoryExampleStory')}
-                                            </p>
+                                        <div className="example-images">
+                                            {/* Placeholder para imagens de exemplo */}
+                                            <div className="example-image-placeholder">
+                                                <span>{t('home.exampleImage')} 1</span>
+                                            </div>
+                                            <div className="example-image-placeholder">
+                                                <span>{t('home.exampleImage')} 2</span>
+                                            </div>
+                                            <div className="example-image-placeholder">
+                                                <span>{t('home.exampleImage')} 3</span>
+                                            </div>
                                         </div>
                                         <p className="example-description">
                                             {t('home.memoryExampleDesc')}
                                         </p>
-                                        <div className="example-sections">
-                                            <div className="example-section-item">
-                                                <h4>{t('home.section')} 1</h4>
-                                                <p className="section-text">{t('home.memorySection1')}</p>
-                                                <div className="example-images">
-                                                    <div className="example-image-placeholder selected">
-                                                        <span>{t('home.selectedImage')}</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 2</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 3</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="example-section-item">
-                                                <h4>{t('home.section')} 2</h4>
-                                                <p className="section-text">{t('home.memorySection2')}</p>
-                                                <div className="example-images">
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 1</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder selected">
-                                                        <span>{t('home.selectedImage')}</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 3</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -163,37 +138,26 @@ const Home = () => {
                                 <div className="expanded-section">
                                     <h3>{t('home.example')}</h3>
                                     <div className="example-content">
-                                        <div className="keywords-section">
-                                            <h4>{t('home.keywordsEntered')}</h4>
-                                            <div className="keywords-list">
-                                                <span className="keyword-tag">{t('home.keyword1')}</span>
-                                                <span className="keyword-tag">{t('home.keyword2')}</span>
-                                                <span className="keyword-tag">{t('home.keyword3')}</span>
-                                            </div>
-                                        </div>
-                                        <p className="example-description">
-                                            {t('home.artSearchDesc')}
-                                        </p>
-                                        <div className="example-images">
-                                            {/* Placeholder para imagens selecionadas */}
-                                            <div className="example-image-placeholder selected">
-                                                <span>{t('home.selectedImage')} 1</span>
-                                            </div>
-                                            <div className="example-image-placeholder selected">
-                                                <span>{t('home.selectedImage')} 2</span>
-                                            </div>
-                                            <div className="example-image-placeholder selected">
-                                                <span>{t('home.selectedImage')} 3</span>
-                                            </div>
-                                        </div>
-                                        <p className="example-description">
-                                            {t('home.artGenerationDesc')}
-                                        </p>
                                         <div className="example-story">
                                             <p className="example-text">
                                                 {t('home.artExampleStory')}
                                             </p>
                                         </div>
+                                        <div className="example-images">
+                                            {/* Placeholder para imagens de exemplo */}
+                                            <div className="example-image-placeholder">
+                                                <span>{t('home.exampleImage')} 1</span>
+                                            </div>
+                                            <div className="example-image-placeholder">
+                                                <span>{t('home.exampleImage')} 2</span>
+                                            </div>
+                                            <div className="example-image-placeholder">
+                                                <span>{t('home.exampleImage')} 3</span>
+                                            </div>
+                                        </div>
+                                        <p className="example-description">
+                                            {t('home.artExampleDesc')}
+                                        </p>
                                     </div>
                                 </div>
 
