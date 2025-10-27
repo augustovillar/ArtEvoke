@@ -47,8 +47,8 @@ def encode_text(texts, convert_to_numpy=True):
         
         # Use a fixed seed for consistent "random" embeddings
         np.random.seed(42)
-        # Assuming 1024-dimensional embeddings (common for Qwen models)
-        embeddings = np.random.rand(len(texts), 1024).astype(np.float32)
+        # Assuming 2560-dimensional embeddings (common for Qwen models)
+        embeddings = np.random.rand(len(texts), 2560).astype(np.float32)
         
         if convert_to_numpy:
             return embeddings
