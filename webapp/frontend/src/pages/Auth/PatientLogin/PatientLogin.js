@@ -39,11 +39,11 @@ const PatientLogin = () => {
             } else {
                 const errorData = await response.json();
                 console.error('Patient login failed:', errorData);
-                setError(errorData.detail || 'Login failed');
+                setError(errorData.detail || t('patientLogin.errorGeneral', 'Login failed'));
             }
         } catch (error) {
             console.error('Error during patient login:', error);
-            setError('An error occurred during login');
+            setError(t('patientLogin.errorOccurred', 'An error occurred during login'));
         } finally {
             setLoading(false);
         }

@@ -45,11 +45,11 @@ const DoctorSignUp = () => {
             } else {
                 const errorData = await response.json();
                 console.error('Doctor signup failed:', errorData);
-                setError(errorData.detail || 'Registration failed');
+                setError(errorData.detail || t('doctorSignup.errorGeneral', 'Registration failed'));
             }
         } catch (error) {
             console.error('Error during doctor signup:', error);
-            setError('An error occurred during registration');
+            setError(t('doctorSignup.errorOccurred', 'An error occurred during registration'));
         } finally {
             setLoading(false);
         }

@@ -56,11 +56,11 @@ const PatientComplete = () => {
             } else {
                 const errorData = await response.json();
                 console.error('Patient completion failed:', errorData);
-                setError(errorData.detail || 'Profile completion failed');
+                setError(errorData.detail || t('patientComplete.errorGeneral', 'Profile completion failed'));
             }
         } catch (error) {
             console.error('Error during patient completion:', error);
-            setError('An error occurred during profile completion');
+            setError(t('patientComplete.errorOccurred', 'An error occurred during profile completion'));
         } finally {
             setLoading(false);
         }
@@ -86,7 +86,7 @@ const PatientComplete = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    placeholder="Email provided by doctor"
+                                    placeholder={t('patientComplete.emailPlaceholder', 'Email provided by doctor')}
                                 />
                             </div>
                             <div className="form-group">
@@ -98,7 +98,7 @@ const PatientComplete = () => {
                                     value={formData.code}
                                     onChange={handleChange}
                                     required
-                                    placeholder="4-digit code from doctor"
+                                    placeholder={t('patientComplete.codePlaceholder', '4-digit code from doctor')}
                                     maxLength="4"
                                 />
                             </div>
@@ -146,12 +146,12 @@ const PatientComplete = () => {
                                     required
                                 >
                                     <option value="">{t('patientComplete.select', 'Select...')}</option>
-                                    <option value="Elementary">Elementary</option>
-                                    <option value="High School">High School</option>
-                                    <option value="Bachelor">Bachelor's Degree</option>
-                                    <option value="Master">Master's Degree</option>
-                                    <option value="PhD">PhD</option>
-                                    <option value="Other">Other</option>
+                                    <option value="Elementary">{t('patientComplete.educationElementary', 'Elementary')}</option>
+                                    <option value="High School">{t('patientComplete.educationHighSchool', 'High School')}</option>
+                                    <option value="Bachelor">{t('patientComplete.educationBachelor', "Bachelor's Degree")}</option>
+                                    <option value="Master">{t('patientComplete.educationMaster', "Master's Degree")}</option>
+                                    <option value="PhD">{t('patientComplete.educationPhD', 'PhD')}</option>
+                                    <option value="Other">{t('patientComplete.educationOther', 'Other')}</option>
                                 </select>
                             </div>
                         </div>
@@ -204,7 +204,7 @@ const PatientComplete = () => {
                                 value={formData.diseases}
                                 onChange={handleChange}
                                 rows="3"
-                                placeholder="List any medical conditions..."
+                                placeholder={t('patientComplete.diseasesPlaceholder', 'List any medical conditions...')}
                             />
                         </div>
 
@@ -216,7 +216,7 @@ const PatientComplete = () => {
                                 value={formData.medications}
                                 onChange={handleChange}
                                 rows="3"
-                                placeholder="List current medications..."
+                                placeholder={t('patientComplete.medicationsPlaceholder', 'List current medications...')}
                             />
                         </div>
 
