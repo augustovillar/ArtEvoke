@@ -1,6 +1,7 @@
 // src/ArtExploration.js
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './ArtExploration.css';
 import InterruptionModal from '../../components/interruptionModal';
 import { INTERRUPTION_CONFIG } from '../../config/interruption.config';
@@ -25,6 +26,7 @@ const ArtExploration = () => {
 
     const location = useLocation();
     const navigate = useNavigate();
+    const { t } = useTranslation('common');
 
     // Verifica se está em modo sessão (com interrupção e avaliação)
     // PARA TESTE: deixado como true para sempre mostrar a interrupção
@@ -34,8 +36,8 @@ const ArtExploration = () => {
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
-    const { generateLoading, responseText, generateStory, copyToClipboard } = useStoryGeneration();
-    const { saveMessage, saveOutOfSessionStory } = useStoryOutOfSessionSave();
+    const { generateLoading, responseText, generateStory } = useStoryGeneration();
+    const { saveMessage, isSaving, hasSaved, saveOutOfSessionStory, resetSaveState } = useStoryOutOfSessionSave();
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
@@ -44,13 +46,8 @@ const ArtExploration = () => {
 
     // Handle story generation from selected images
     const handleGenerateStory = () => {
+        resetSaveState(); // Reset save state when generating new story
         generateStory(selectedImages);
-    };
-
-    // Copy generated story text to clipboard
-    const handleCopyToClipboard = async () => {
-        const result = await copyToClipboard();
-        // Message is handled inside the hook
     };
 
     // Regenerate the story
@@ -58,23 +55,26 @@ const ArtExploration = () => {
         handleGenerateStory();
     };
 
-    // Handler para modo sessão (inSession): vai para interrupção SEM salvar
-    const handleInSession = () => {
-        // No save here; just open the interruption modal. The save will be done in ArtEvaluation.
+    // Handler para modo sessão (inSession): salva E vai para interrupção
+    const handleInSession = async () => {
+        // Save before proceeding to interruption
+        await saveOutOfSessionStory(responseText, selectedImages, dataset, language);
         setShowInterruption(true);
     };
 
     // Handler para modo livre (outOfSession): apenas salva
     const handleOutOfSession = async () => {
-        const result = await saveOutOfSessionStory(responseText, selectedImages);
-        if (result.success) {
-            alert('História salva com sucesso!');
-        }
+        await saveOutOfSessionStory(responseText, selectedImages, dataset, language);
+    };
+
+    // Handler para salvar diretamente (sempre disponível)
+    const handleDirectSave = async () => {
+        await saveOutOfSessionStory(responseText, selectedImages, dataset, language);
     };
 
     // Handler para limpar seleção (modo livre)
     const handleClearSelections = () => {
-        if (window.confirm("Tem certeza que deseja limpar todas as seleções?")) {
+        if (window.confirm(t('artExploration.confirmClearSelections'))) {
             clearSelections();
         }
     };
@@ -140,9 +140,11 @@ const ArtExploration = () => {
             <GeneratedStory
                 responseText={responseText}
                 onRegenerate={handleRegenerateClick}
-                onCopyToClipboard={handleCopyToClipboard}
                 onSave={isSessionMode ? handleInSession : handleOutOfSession}
+                onDirectSave={handleDirectSave}
                 isGenerating={generateLoading}
+                isSaving={isSaving}
+                hasSaved={hasSaved}
                 saveMessage={saveMessage}
                 isSessionMode={isSessionMode}
             />

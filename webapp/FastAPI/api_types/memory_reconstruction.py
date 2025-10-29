@@ -43,3 +43,4 @@ class RetrieveMemoryReconstructionsResponseDTO(BaseModel):
     memory_reconstructions: List[MemoryReconstructionResponse]
     total_count: int
     has_more: bool
+

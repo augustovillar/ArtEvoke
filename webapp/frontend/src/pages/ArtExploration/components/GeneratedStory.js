@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 const GeneratedStory = ({ 
     responseText, 
     onRegenerate, 
-    onCopyToClipboard, 
     onSave, 
-    isGenerating, 
+    isGenerating,
+    isSaving,
+    hasSaved,
     saveMessage,
-    isSessionMode 
+    isSessionMode,
+    onDirectSave 
 }) => {
     const { t } = useTranslation('common');
 
@@ -30,21 +32,22 @@ const GeneratedStory = ({
                 </button>
                 <button 
                     className="submit-button" 
-                    onClick={onCopyToClipboard}
+                    onClick={onDirectSave}
+                    disabled={isSaving || hasSaved}
                 >
-                    {t('artExploration.copyText')}
+                    {isSaving ? <span className="loading-spinner">◐</span> : t('common.save')}
                 </button>
                 <button 
                     className="submit-button" 
                     onClick={onSave}
+                    disabled={isSessionMode ? isSaving : (isSaving || hasSaved)}
                 >
                     {isSessionMode 
-                        ? (t('artExploration.continueToEvaluation') || 'Prosseguir para Avaliação')
-                        : t('artExploration.saveToAccount')
+                        ? (isSaving ? <span className="loading-spinner">◐</span> : t('artExploration.continueToEvaluation'))
+                        : (isSaving ? <span className="loading-spinner">◐</span> : t('common.save'))
                     }
                 </button>
             </div>
-            {saveMessage && <p>{saveMessage}</p>}
         </div>
     );
 };

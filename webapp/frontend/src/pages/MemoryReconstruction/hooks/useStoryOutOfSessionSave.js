@@ -5,8 +5,10 @@ const useStoryOutOfSessionSave = () => {
     const { t } = useTranslation();
     const [saveMessage, setSaveMessage] = useState('');
     const [savedStoryData, setSavedStoryData] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [hasSaved, setHasSaved] = useState(false);
 
-    const saveOutOfSessionStory = (
+    const saveOutOfSessionStory = async (
         storyText,
         selectedImagesPerSection,
         sectionsWithImages,
@@ -15,10 +17,16 @@ const useStoryOutOfSessionSave = () => {
         segmentation,
         // out-of-session save only
     ) => {
+        // Prevent multiple saves - set saving state immediately
+        if (isSaving) return;
+        
+        setIsSaving(true);
+
         const token = localStorage.getItem('token');
         if (!token) {
             setSaveMessage(t('memoryReconstruction.messages.loginRequired'));
             setTimeout(() => setSaveMessage(''), 3000);
+            setIsSaving(false);
             return;
         }
 
@@ -29,6 +37,7 @@ const useStoryOutOfSessionSave = () => {
         if (!allSectionsCovered) {
             setSaveMessage(t('memoryReconstruction.messages.selectAllImages'));
             setTimeout(() => setSaveMessage(''), 4000);
+            setIsSaving(false);
             return;
         }
 
@@ -49,37 +58,45 @@ const useStoryOutOfSessionSave = () => {
                     sectionData.images.find(img => img.url === selectedImagesPerSection[index])?.id || null : null
             }))
         };
+        try {
+            const response = await fetch(`/api/memory/save`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(saveData),
+            });
 
-        fetch(`/api/memory/save`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(saveData),
-        })
-        .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.json();
-        })
-        .then(data => {
+
+            const data = await response.json();
             setSaveMessage(t('memoryReconstruction.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
             setSavedStoryData(saveData);
-        })
-        .catch(error => {
+            setHasSaved(true); // Mark as saved successfully
+        } catch (error) {
             console.error('Error saving:', error);
             setSaveMessage(t('memoryReconstruction.messages.saveFailed'));
             setTimeout(() => setSaveMessage(''), 3000);
-        });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const resetSaveState = () => {
+        setHasSaved(false);
     };
 
     return {
         saveMessage,
         savedStoryData,
-        saveOutOfSessionStory
+        isSaving,
+        hasSaved,
+        saveOutOfSessionStory,
+        resetSaveState
     };
 };
 

@@ -1,8 +1,21 @@
 .story-list {
-    display: flex;
-    overflow-x: auto; /* Enable horizontal scrolling */
-    white-space: nowrap; /* Prevent wrapping */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
     padding: 10px 0;
+    justify-items: start;
+}
+
+@media (max-width: 992px) {
+    .story-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .story-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 .story-box {
@@ -10,17 +23,48 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
-    margin-right: 10px;
-    min-width: 200px; /* Adjust as needed */
     cursor: pointer;
     transition: background-color 0.3s ease;
-    overflow: hidden; /* Prevent content from overflowing */
-    text-overflow: ellipsis; /* Add ellipsis for long text */
-    white-space: nowrap; /* Prevent text wrapping */
+    white-space: normal;
 }
 
 .story-box:hover {
     background-color: #e0e0e0;
+}
+
+.story-box-compact {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    text-align: left;
+    align-items: flex-start;
+}
+
+.story-box-compact:hover {
+    background-color: #e0e0e0;
+}
+
+.story-box-compact p {
+    margin: 0px 0;
+    padding: 0;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-align: left;
+    width: 100%;
+    display: block;
+}
+
+.story-box-compact strong {
+    font-weight: 600;
 }
 
 .story-box.expanded {

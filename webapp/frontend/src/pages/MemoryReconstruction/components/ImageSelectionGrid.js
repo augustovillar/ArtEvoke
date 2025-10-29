@@ -10,6 +10,8 @@ const ImageSelectionGrid = ({
     onClearSelection,
     isSessionMode,
     loading,
+    isSaving,
+    hasSaved,
     storyText,
     saveMessage
 }) => {
@@ -63,20 +65,23 @@ const ImageSelectionGrid = ({
                             onClick={onOutOfSession}
                             disabled={
                                 loading || 
+                                isSaving ||
+                                hasSaved ||
                                 Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
                             }
                         >
-                            {t('memoryReconstruction.saveStory') || 'Salvar História'}
+                            {isSaving ? <span className="loading-spinner">◐</span> : t('common.save')}
                         </button>
                         <button
                             className="submit-button primary-button"
                             onClick={onInSession}
                             disabled={
-                                loading || 
+                                loading ||
+                                isSaving ||
                                 Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
                             }
                         >
-                            {t('memoryReconstruction.continueSession') || 'Continuar Sessão'}
+                            {isSaving ? <span className="loading-spinner">◐</span> : (t('memoryReconstruction.continueSession') || 'Continuar Sessão')}
                         </button>
                     </>
                 ) : (
@@ -94,10 +99,12 @@ const ImageSelectionGrid = ({
                             onClick={onOutOfSession}
                             disabled={
                                 loading || 
+                                isSaving ||
+                                hasSaved ||
                                 Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
                             }
                         >
-                            {t('memoryReconstruction.saveStory') || 'Salvar História'}
+                            {isSaving ? <span className="loading-spinner">◐</span> : t('common.save')}
                         </button>
                     </>
                 )}

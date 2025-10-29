@@ -40,10 +40,19 @@ const MemoryReconstruction = () => {
         selectImage, 
         clearSelection 
     } = useImageSelection();
+    
+    // Reset save state when user selects a different favorite image
+    const handleImageSelect = (sectionIndex, imageUrl) => {
+        selectImage(sectionIndex, imageUrl);
+        resetSaveState();
+    };
 
     const { 
-        saveMessage, 
-        saveOutOfSessionStory 
+        saveMessage,
+        isSaving,
+        hasSaved,
+        saveOutOfSessionStory,
+        resetSaveState
     } = useStoryOutOfSessionSave();
 
     // Verifica se está em modo sessão (com interrupção e avaliação)
@@ -62,13 +71,22 @@ const MemoryReconstruction = () => {
 
     const handleSubmit = () => {
         clearSelection();
+        resetSaveState(); // Reset save state on new submission
         // Sempre mostrar 6 imagens por seção
         submitStory(storyText, language, dataset, segmentation, 6);
     };
 
     // Handler para modo sessão (inSession): salva e vai para interrupção
-    const handleInSession = () => {
-        // No save here; just open the interruption modal. The save will be done in MemoryEvaluation.
+    const handleInSession = async () => {
+        // Save before proceeding to interruption
+        await saveOutOfSessionStory(
+            storyText,
+            selectedImagesPerSection,
+            sectionsWithImages,
+            language,
+            dataset,
+            segmentation
+        );
         setShowInterruption(true);
     };
 
@@ -82,7 +100,6 @@ const MemoryReconstruction = () => {
             dataset,
             segmentation
         );
-        alert("História salva com sucesso!");
     };
 
     // Handler para limpar seleção (modo livre)
@@ -157,12 +174,14 @@ const MemoryReconstruction = () => {
                 <ImageSelectionGrid
                     sectionsWithImages={sectionsWithImages}
                     selectedImagesPerSection={selectedImagesPerSection}
-                    onImageClick={selectImage}
+                    onImageClick={handleImageSelect}
                     onInSession={handleInSession}
                     onOutOfSession={handleOutOfSession}
                     onClearSelection={handleClearSelection}
                     isSessionMode={isSessionMode}
                     loading={loading}
+                    isSaving={isSaving}
+                    hasSaved={hasSaved}
                     storyText={storyText}
                     saveMessage={saveMessage}
                 />

@@ -16,9 +16,8 @@ from api_types.common import (
 from clients import get_maritaca_client
 import logging
 from sqlalchemy.orm import Session, joinedload
-from orm import CatalogItem, Ipiranga, WikiArt, SemArt
+from orm import CatalogItem
 from utils.auth import get_current_user
-
 
 def correct_grammer_and_translate(text, src_language):
     return text
@@ -62,41 +61,36 @@ async def select_images_per_section(
 
 @router.post("/generate-story")
 async def generate_story(body: GenerateStoryRequestDTO, db=Depends(get_db)) -> GenerateStoryResponse:
-    from orm import CatalogItem, SemArt, WikiArt, Ipiranga
-    from webapp.FastAPI.api_types.common import Dataset
-    
-    data = body.selectedImagesByDataset
+    catalog_item_ids = body.selectedImageIds
     art_descriptions = []
 
-    for dataset_name, catalog_item_ids in data.items():
-        # Get descriptions from catalog items
-        for catalog_item_id in catalog_item_ids:
-            try:
-                # Query the catalog item
-                catalog_item = db.query(CatalogItem).filter(
-                    CatalogItem.id == catalog_item_id
-                ).first()
+    for catalog_item_id in catalog_item_ids:
+        try:
+            # Query the catalog item
+            catalog_item = db.query(CatalogItem).filter(
+                CatalogItem.id == catalog_item_id
+            ).first()
+            
+            if not catalog_item:
+                print(f"[Warning] No catalog item found for ID: {catalog_item_id}")
+                continue
+            
+            # Get description based on source
+            description = None
+            if catalog_item.source == Dataset.semart and catalog_item.semart:
+                description = catalog_item.semart.description
+            elif catalog_item.source == Dataset.wikiart and catalog_item.wikiart:
+                description = catalog_item.wikiart.description
+            elif catalog_item.source == Dataset.ipiranga and catalog_item.ipiranga:
+                description = catalog_item.ipiranga.description
+            
+            if description:
+                art_descriptions.append(description)
+            else:
+                print(f"[Warning] No description found for catalog item: {catalog_item_id}")
                 
-                if not catalog_item:
-                    print(f"[Warning] No catalog item found for ID: {catalog_item_id}")
-                    continue
-                
-                # Get description based on source
-                description = None
-                if catalog_item.source == Dataset.semart and catalog_item.semart:
-                    description = catalog_item.semart.description
-                elif catalog_item.source == Dataset.wikiart and catalog_item.wikiart:
-                    description = catalog_item.wikiart.description
-                elif catalog_item.source == Dataset.ipiranga and catalog_item.ipiranga:
-                    description = catalog_item.ipiranga.description
-                
-                if description:
-                    art_descriptions.append(description)
-                else:
-                    print(f"[Warning] No description found for catalog item: {catalog_item_id}")
-                    
-            except Exception as e:
-                print(f"[Error] Failed to get description for {catalog_item_id}: {e}")
+        except Exception as e:
+            print(f"[Error] Failed to get description for {catalog_item_id}: {e}")
 
     if not art_descriptions:
         # Fallback story if no descriptions found

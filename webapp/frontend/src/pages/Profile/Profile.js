@@ -6,17 +6,15 @@ import './Profile.css';
 const Profile = () => {
     const { t } = useTranslation('common');
     const { user, userType } = useAuth();
-    const [savedArtSearches, setSavedArtSearches] = useState([]);
     const [savedMemoryReconstructions, setSavedMemoryReconstructions] = useState([]);
+    const [savedArtExplorations, setSavedArtExplorations] = useState([]);
     const [expandedItem, setExpandedItem] = useState(null);
     const [imageUrls, setImageUrls] = useState({});
     const [deleteMessage, setDeleteMessage] = useState('');
     const [expandedSections, setExpandedSections] = useState(new Set());
     const [selectedImage, setSelectedImage] = useState(null);
 
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
-
-    // Fetch image URLs when opening modal for memory reconstruction
+    // Fetch image URLs when opening modal for memory reconstruction or art exploration
     useEffect(() => {
         if (expandedItem && expandedItem.hasOwnProperty('sections')) {
             const allIds = [];
@@ -42,6 +40,26 @@ const Profile = () => {
                     console.error('Error fetching image URLs:', error);
                 });
             }
+        } else if (expandedItem && expandedItem.hasOwnProperty('story_generated')) {
+            // Art exploration - fetch image URLs
+            const allIds = expandedItem.images.map(img => img.id);
+            if (allIds.length > 0) {
+                fetch('/api/images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify({ ids: allIds }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    setImageUrls(data.urls || {});
+                })
+                .catch(error => {
+                    console.error('Error fetching image URLs:', error);
+                });
+            }
         } else {
             setImageUrls({});
         }
@@ -49,26 +67,6 @@ const Profile = () => {
 
     const fetchUserProfile = async () => {
         if (!user || userType !== 'patient') return;
-
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`/api/retrieve-searches`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch user profile');
-            }
-
-            const data = await response.json();
-            setSavedArtSearches(data.savedArtSearches || []);
-        } catch (error) {
-            console.error('Error fetching profile:', error);
-        }
 
         // Fetch memory reconstructions
         try {
@@ -87,6 +85,25 @@ const Profile = () => {
             }
         } catch (error) {
             console.error('Error fetching memory reconstructions:', error);
+        }
+
+        // Fetch art explorations
+        try {
+            const token = localStorage.getItem('token');
+            const artExplorationResponse = await fetch(`/api/art/retrieve?limit=10&offset=0`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (artExplorationResponse.ok) {
+                const artExplorationData = await artExplorationResponse.json();
+                setSavedArtExplorations(artExplorationData.art_explorations || []);
+            }
+        } catch (error) {
+            console.error('Error fetching art explorations:', error);
         }
     };
 
@@ -129,8 +146,8 @@ const Profile = () => {
 
         // Check for appropriate ID based on item type
         let itemId = null;
-        if (expandedItem.hasOwnProperty('sections')) {
-            // It's a memory reconstruction
+        if (expandedItem.hasOwnProperty('sections') || expandedItem.hasOwnProperty('story_generated')) {
+            // It's a memory reconstruction or art exploration
             itemId = expandedItem.id;
         } else {
             // It's a saved story generation or art search
@@ -153,12 +170,9 @@ const Profile = () => {
         }
 
         let deleteEndpoint = '';
-        if (expandedItem.hasOwnProperty('images')) {
-            // It's a saved story generation
-            deleteEndpoint = `/api/delete-generation/${itemId}`;
-        } else if (expandedItem.hasOwnProperty('selectedImagesByDataset')) {
-            // It's a saved art search
-            deleteEndpoint = `/api/delete-art-search/${itemId}`;
+        if (expandedItem.hasOwnProperty('story_generated')) {
+            // It's an art exploration
+            deleteEndpoint = `/api/art/delete/${itemId}`;
         } else if (expandedItem.hasOwnProperty('sections')) {
             // It's a memory reconstruction
             deleteEndpoint = `/api/memory/delete/${itemId}`;
@@ -197,49 +211,60 @@ const Profile = () => {
     return (
         <div>
             <div className="content-box">
-                <h1>{t('profile.welcomeTitle', { email: user?.email || 'User' })}</h1>
+                <h1>{t('profile.welcomeTitle', { email: user?.name || user?.email || 'User' })}</h1>
                 <p>{t('profile.welcomeDescription')}</p>
             </div>
 
             {userType === 'patient' ? (
                 <>
                     <div className="content-box">
-                        <h1>{t('profile.artHistoryTitle')}</h1>
+                        <h1>{t('profile.memoryReconstructionTitle')}</h1>
                         <div className="story-list">
-                            {savedArtSearches.length > 0 ? (
-                                savedArtSearches.map((search, index) => (
-                                    <div
-                                        key={search._id || index}
-                                        className="story-box"
-                                        onClick={() => handleItemClick(search)}
-                                    >
-                                        <h3><strong>{t('profile.date')}</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
-                                        <p>{search.text.substring(0, 50)}...</p>
-                                    </div>
-                                ))
+                            {savedMemoryReconstructions.length > 0 ? (
+                                savedMemoryReconstructions.map((reconstruction, index) => {
+                                    const createdDate = new Date(reconstruction.created_at);
+                                    return (
+                                        <div
+                                            key={reconstruction.id || index}
+                                            className="story-box story-box-compact"
+                                            onClick={() => handleItemClick(reconstruction)}
+                                        >
+                                            <p><strong>{t('profile.date')}:</strong> {createdDate.toLocaleDateString()}</p>
+                                            <p><strong>{t('profile.time')}:</strong> {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
+                                            <p><strong>{t('profile.dataset')}:</strong> {reconstruction.dataset}</p>
+                                            <p><strong>{t('profile.story')}:</strong> {reconstruction.story.substring(0, 60)}...</p>
+                                            <p><strong>{t('profile.sectionsCount')}:</strong> {reconstruction.sections.length}</p>
+                                        </div>
+                                    );
+                                })
                             ) : (
-                                <p>{t('profile.noSearchesYet')}</p>
+                                <p>{t('profile.noMemoryReconstructionsYet')}</p>
                             )}
                         </div>
                     </div>
 
                     <div className="content-box">
-                        <h1>{t('profile.memoryReconstructionTitle')}</h1>
+                        <h1>{t('profile.artExplorationsTitle')}</h1>
                         <div className="story-list">
-                            {savedMemoryReconstructions.length > 0 ? (
-                                savedMemoryReconstructions.map((reconstruction, index) => (
-                                    <div
-                                        key={reconstruction.id || index}
-                                        className="story-box"
-                                        onClick={() => handleItemClick(reconstruction)}
-                                    >
-                                        <h3><strong>{t('profile.date')}</strong> {new Date(reconstruction.created_at).toLocaleString()}</h3>
-                                        <p><strong>{t('profile.story')}:</strong> {reconstruction.story}</p>
-                                        <p><strong>{t('profile.sectionsCount')}:</strong> {reconstruction.sections.length}</p>
-                                    </div>
-                                ))
+                            {savedArtExplorations.length > 0 ? (
+                                savedArtExplorations.map((exploration, index) => {
+                                    const createdDate = new Date(exploration.created_at);
+                                    return (
+                                        <div
+                                            key={exploration.id || index}
+                                            className="story-box story-box-compact"
+                                            onClick={() => handleItemClick(exploration)}
+                                        >
+                                            <p><strong>{t('profile.date')}:</strong> {createdDate.toLocaleDateString()}</p>
+                                            <p><strong>{t('profile.time')}:</strong> {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
+                                            <p><strong>{t('profile.dataset')}:</strong> {exploration.dataset}</p>
+                                            <p><strong>{t('profile.storyGenerated')}:</strong> {exploration.story_generated.substring(0, 60)}...</p>
+                                            <p><strong>{t('profile.imagesSelected')}:</strong> {exploration.images.length}</p>
+                                        </div>
+                                    );
+                                })
                             ) : (
-                                <p>{t('profile.noMemoryReconstructionsYet')}</p>
+                                <p>{t('profile.noArtExplorationsYet')}</p>
                             )}
                         </div>
                     </div>
@@ -249,7 +274,55 @@ const Profile = () => {
                     <div className="modal-history-content">
                         <span className="history-close-button" onClick={closeModal}>&times;</span>
                         <h3><strong>{t('profile.date')}</strong> {new Date(expandedItem.dateAdded || expandedItem.created_at).toLocaleString()}</h3>
-                        {expandedItem.hasOwnProperty('sections') ? (
+                        {expandedItem.hasOwnProperty('story_generated') ? (
+                            // This is an art exploration
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <h4>{t('profile.artExplorationStory')}:</h4>
+                                    <p>{expandedItem.story_generated}</p>
+                                    <p><strong>{t('profile.dataset')}:</strong> {expandedItem.dataset}</p>
+                                    <p><strong>{t('profile.language')}:</strong> {expandedItem.language}</p>
+                                    <h4>{t('profile.selectedImages')}:</h4>
+                                </div>
+                                <div className="modal-sections-content" style={{ flex: 1, overflowY: 'auto' }}>
+                                    {expandedItem.images
+                                        .sort((a, b) => a.display_order - b.display_order)
+                                        .map((image, index) => {
+                                            const imageId = image.id;
+                                            const isExpanded = expandedSections.has(imageId);
+                                            return (
+                                                <div key={imageId} className="memory-section-modal">
+                                                    <div 
+                                                        className="section-header" 
+                                                        onClick={() => toggleSection(imageId)}
+                                                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                                                    >
+                                                        <h5 style={{ margin: 0 }}>
+                                                            {t('profile.imageLabel')} {index + 1}
+                                                        </h5>
+                                                        <span className="expand-arrow">
+                                                            {isExpanded ? '▲' : '▼'}
+                                                        </span>
+                                                    </div>
+                                                    {isExpanded && (
+                                                        <div className="section-content">
+                                                            <div className="section-images-grid" style={{ gridTemplateColumns: '1fr' }}>
+                                                                <img
+                                                                    src={imageUrls[imageId] || `/api/art/image/${imageId}`}
+                                                                    alt={t('profile.artExplorationImageAlt', { number: index + 1 })}
+                                                                    className="modal-history-image"
+                                                                    onClick={() => setSelectedImage(imageUrls[imageId] || `/api/art/image/${imageId}`)}
+                                                                    style={{ cursor: 'pointer', width: '100%' }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </div>
+                        ) : expandedItem.hasOwnProperty('sections') ? (
                             // This is a memory reconstruction
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                 <div style={{ marginBottom: '15px' }}>
@@ -300,44 +373,7 @@ const Profile = () => {
                                     })}
                                 </div>
                             </div>
-                        ) : (
-                            // Original logic for art searches and story generations
-                            <>
-                                <p>{expandedItem.text}</p>
-                                {expandedItem.hasOwnProperty('images') && Array.isArray(expandedItem.images) && expandedItem.images.length > 0 ? (
-                                    // This is for savedStoryGenerations (flat list of images)
-                                    <div className="modal-images-grid">
-                                        {expandedItem.images.map((imageUrl, index) => (
-                                            <img
-                                                key={index}
-                                                src={imageUrl}
-                                                alt={t('profile.storyImageAlt', { number: index + 1 })}
-                                                className="modal-history-image"
-                                            />
-                                        ))}
-                                    </div>
-                                ) : expandedItem.hasOwnProperty('selectedImagesByDataset') && expandedItem.selectedImagesByDataset ? (
-                                    // This is for savedArtSearches (structured images by dataset)
-                                    <div className="modal-images-grid">
-                                        {Object.entries(expandedItem.selectedImagesByDataset).map(([datasetName, urls]) => (
-                                            urls.length > 0 && (
-                                                <div key={datasetName} className="dataset-images-section">
-                                                    <h4>{datasetName.charAt(0).toUpperCase() + datasetName.slice(1)} {t('profile.imagesLabel')}</h4>
-                                                    {urls.map((imageUrl, index) => (
-                                                        <img
-                                                            key={`${datasetName}-${index}`}
-                                                            src={imageUrl}
-                                                            alt={t('profile.datasetImageAlt', { dataset: datasetName, number: index + 1 })}
-                                                            className="modal-history-image"
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )
-                                        ))}
-                                    </div>
-                                ) : null}
-                            </>
-                        )}
+                        ) : null}
 
                         <div className="modal-actions">
                             <button className="delete-button" onClick={handleDeleteClick}>{t('profile.delete')}</button>

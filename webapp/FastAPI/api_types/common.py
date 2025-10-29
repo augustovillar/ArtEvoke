@@ -74,7 +74,7 @@ class SelectImagesPerSectionRequestDTO(BaseModel):
 
 
 class GenerateStoryRequestDTO(BaseModel):
-    selectedImagesByDataset: Dict[str, List[str]]
+    selectedImageIds: List[str]
 
 
 class SelectImagesRVRequestDTO(BaseModel):

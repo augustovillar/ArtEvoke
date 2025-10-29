@@ -15,17 +15,13 @@ export const useStoryGeneration = () => {
         setGenerateLoading(true);
         setResponseText(null);
 
-        const selectedImagesByDataset = {};
-        const allDatasets = ['wikiart', 'semart', 'ipiranga'];
-        allDatasets.forEach(ds => {
-            selectedImagesByDataset[ds] = [];
-        });
+        const selectedImageIds = [];
 
         selectedImages.forEach(img => {
-            if (selectedImagesByDataset[img.dataset]) {
-                selectedImagesByDataset[img.dataset].push(img.url);
+            if (img.id) {
+                selectedImageIds.push(img.id);
             } else {
-                console.warn(`Image with unknown dataset '${img.dataset}' found. It will not be included in the generation request.`);
+                console.warn(`Image with missing ID found. It will not be included in the generation request.`);
             }
         });
 
@@ -36,7 +32,7 @@ export const useStoryGeneration = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    selectedImagesByDataset: selectedImagesByDataset,
+                    selectedImageIds: selectedImageIds,
                 }),
             });
 
