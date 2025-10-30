@@ -49,6 +49,9 @@ const Navbar = () => {
                         <Link to="/artsearch">{t('navbar.artExploration')}</Link>
                     </>
                 )}
+                {userType === 'patient' && (
+                    <Link to="/sessions">{t('sessions.mySessions')}</Link>
+                )}
                 {userType === 'doctor' && (
                     <Link to="/patients">{t('navbar.patients', 'Patients')}</Link>
                 )}

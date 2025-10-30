@@ -104,6 +104,9 @@ const Patients = () => {
                                     <button onClick={() => handleViewDetails(patient)} className="view-patient-btn">
                                         {t('patients.viewDetails', 'View Details')}
                                     </button>
+                                    <button onClick={() => navigate(`/sessions?patientId=${patient.id}`)} className="view-sessions-btn">
+                                        {t('sessions.title', 'Sessions')}
+                                    </button>
                                 </div>
                             </div>
                         ))}

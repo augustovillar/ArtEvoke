@@ -45,6 +45,11 @@ class MemoryReconstruction(Base):
     segmentation_strategy = Column(
         Enum("Conservative", "Broader", name="segmentation_strategy"), nullable=False
     )
+    in_session = Column(
+        Enum("true", "false", name="memory_reconstruction_in_session"),
+        nullable=False,
+        default="false",
+    )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships

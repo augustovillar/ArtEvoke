@@ -376,5 +376,65 @@
         "emailInvalid": "Por favor, digite um endereço de e-mail válido"
       }
     }
+  },
+  "sessions": {
+    "title": "Sessões",
+    "createSession": "Criar Nova Sessão",
+    "noSessions": "Nenhuma sessão encontrada.",
+    "mySessions": "Minhas Sessões",
+    "patientSessions": "Sessões do Paciente",
+    "mode": "Modo",
+    "status": "Status",
+    "interruptionTime": "Tempo de Interrupção",
+    "createdAt": "Criada em",
+    "startedAt": "Iniciada em",
+    "completedAt": "Concluída em",
+    "start": "Iniciar",
+    "continue": "Continuar",
+    "view": "Visualizar",
+    "delete": "Excluir",
+    "modes": {
+      "memory_reconstruction": "Reconstrução de Memória",
+      "art_exploration": "Exploração de Arte",
+      "both": "Ambos"
+    },
+    "statuses": {
+      "pending": "Pendente",
+      "in_progress": "Em Progresso",
+      "completed": "Concluída"
+    },
+    "create": {
+      "title": "Criar Nova Sessão",
+      "selectPatient": "Selecionar Paciente",
+      "selectPatientPlaceholder": "Escolha um paciente...",
+      "selectMode": "Selecionar Modo",
+      "interruptionTime": "Tempo de Interrupção (segundos)",
+      "interruptionTimeHelp": "Tempo de espera antes da avaliação (padrão: 10 segundos)",
+      "submit": "Criar Sessão",
+      "cancel": "Cancelar",
+      "success": "Sessão criada com sucesso!",
+      "error": "Falha ao criar sessão. Tente novamente.",
+      "validation": {
+        "patientRequired": "Selecione um paciente",
+        "modeRequired": "Selecione um modo",
+        "interruptionTimeMin": "O tempo de interrupção deve ser pelo menos 1 segundo",
+        "interruptionTimeMax": "O tempo de interrupção não pode exceder 300 segundos"
+      }
+    },
+    "deleteConfirm": {
+      "title": "Confirmar Exclusão",
+      "message": "Tem certeza de que deseja excluir esta sessão? Esta ação não pode ser desfeita.",
+      "confirm": "Sim, Excluir",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "loadFailed": "Falha ao carregar sessões",
+      "createFailed": "Falha ao criar sessão",
+      "deleteFailed": "Falha ao excluir sessão",
+      "startFailed": "Falha ao iniciar sessão",
+      "unauthorized": "Você não tem permissão para acessar estas sessões",
+      "noAccess": "Você não tem acesso a este paciente"
+    }
   }
 }
+

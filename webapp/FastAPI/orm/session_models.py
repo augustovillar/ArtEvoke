@@ -60,6 +60,12 @@ class Session(Base):
         Enum("art_exploration", "memory_reconstruction", "both", name="session_mode"),
         nullable=False,
     )
+    interruption_time = Column(SmallInteger, nullable=False, default=10)
+    status = Column(
+        Enum("pending", "in_progress", "completed", name="session_status"),
+        nullable=False,
+        default="pending",
+    )
     started_at = Column(Date, nullable=True)
     ended_at = Column(Date, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)

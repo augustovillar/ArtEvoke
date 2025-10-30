@@ -3,7 +3,7 @@ import React from 'react';
 import './i18n';
 import { Routes, Route } from 'react-router-dom';
 import { Navbar, Footer } from './components/common';
-import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
+import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, Sessions, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
 import MemoryEvaluation from './pages/MemoryReconstruction/Evaluation';
 import ArtEvaluation from './pages/ArtExploration/Evaluation';
 import './styles/App.css';
@@ -31,6 +31,7 @@ function App() {
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/patients" element={<Patients />} />
                                 <Route path="/patients/create" element={<CreatePatient />} />
+                                <Route path="/sessions" element={<Sessions />} />
                                 <Route path="/auth/role-selection" element={<RoleSelection mode="signup" />} />
                                 <Route path="/auth/login-role-selection" element={<RoleSelection mode="login" />} />
                                 <Route path="/auth/doctor-signup" element={<DoctorSignUp />} />

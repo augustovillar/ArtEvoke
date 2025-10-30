@@ -44,6 +44,11 @@ class ArtExploration(Base):
         nullable=False,
     )
     language = Column(Enum("EN", "PT", name="art_exploration_language"), nullable=False)
+    in_session = Column(
+        Enum("true", "false", name="art_exploration_in_session"),
+        nullable=False,
+        default="false",
+    )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships

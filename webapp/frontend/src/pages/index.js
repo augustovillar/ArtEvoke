@@ -4,6 +4,7 @@ export { default as About } from './About';
 export { default as Profile } from './Profile';
 export { default as Patients } from './Patients';
 export { default as CreatePatient } from './Patients/CreatePatient';
+export { default as Sessions } from './Sessions';
 export { default as ArtExploration } from './ArtExploration';
 export { default as MemoryReconstruction } from './MemoryReconstruction';
 export { default as Login } from './Auth/Login';

@@ -36,7 +36,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-async def get_current_user(request: Request, db: Session = Depends(get_db)) -> str:
+async def get_current_user(request: Request, db: Session = Depends(get_db)) -> dict:
     token = (
         request.headers.get("Authorization").split(" ")[1]
         if request.headers.get("Authorization")
@@ -48,14 +48,33 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> s
         )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        # Check if it's a patient token
         user_id = payload.get("userId")
-        user = db.query(Patient).filter(Patient.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
-
-        return user.id
+        if user_id:
+            user = db.query(Patient).filter(Patient.id == user_id).first()
+            if user:
+                return {"id": user.id, "role": "patient"}
+        
+        # Check if it's a doctor token
+        doctor_id = payload.get("doctorId")
+        if doctor_id:
+            doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
+            if doctor:
+                return {"id": doctor.id, "role": "doctor"}
+        
+        # User not found in either table
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+        
+    except jwt.JWTError as e:
+        print(f"Token verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token"
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Token verification failed: {e}")
         raise HTTPException(
