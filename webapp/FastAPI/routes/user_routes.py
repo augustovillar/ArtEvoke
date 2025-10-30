@@ -21,7 +21,7 @@ router = APIRouter()
 @router.post("/save-story")
 async def save_art_search(
     story_data: SaveStoryRequest,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
@@ -38,7 +38,7 @@ async def save_art_search(
         # Create ArtExploration entry
         art_exploration = ArtExploration(
             id=str(uuid.uuid4()),
-            patient_id=current_user,
+            patient_id=current_user["id"],
             story_generated=story_text,
             dataset="WikiArt",  # Default dataset - you may want to get this from request
             language="EN",  # Default language - you may want to get this from request
@@ -61,7 +61,7 @@ async def save_art_search(
 @router.post("/save-generation")
 async def save_story_generation(
     story_data: SaveGenerationRequest,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
@@ -74,7 +74,7 @@ async def save_story_generation(
         # Create MemoryReconstruction entry
         memory_reconstruction = MemoryReconstruction(
             id=str(uuid.uuid4()),
-            patient_id=current_user,
+            patient_id=current_user["id"],
             story=story_text,
             dataset="WikiArt",  # Default dataset - you may want to get this from request
             language="EN",  # Default language - you may want to get this from request
@@ -96,18 +96,18 @@ async def save_story_generation(
 
 @router.get("/retrieve-searches")
 async def retrieve_searches(
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> RetrieveSearchesResponse:
     # Get user's art explorations (saved searches)
     art_explorations = (
-        db.query(ArtExploration).filter(ArtExploration.patient_id == current_user).all()
+        db.query(ArtExploration).filter(ArtExploration.patient_id == current_user["id"]).all()
     )
 
     # Get user's memory reconstructions (saved generations)
     memory_reconstructions = (
         db.query(MemoryReconstruction)
-        .filter(MemoryReconstruction.patient_id == current_user)
+        .filter(MemoryReconstruction.patient_id == current_user["id"])
         .all()
     )
 
@@ -141,7 +141,7 @@ async def retrieve_searches(
 @router.delete("/delete-generation/{generation_id}")
 async def delete_story_generation(
     generation_id: str,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
@@ -149,7 +149,7 @@ async def delete_story_generation(
             db.query(MemoryReconstruction)
             .filter(
                 MemoryReconstruction.id == generation_id,
-                MemoryReconstruction.patient_id == current_user,
+                MemoryReconstruction.patient_id == current_user["id"],
             )
             .first()
         )
@@ -171,7 +171,7 @@ async def delete_story_generation(
 @router.delete("/delete-art-search/{search_id}")
 async def delete_art_search(
     search_id: str,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> MessageResponse:
     try:
@@ -179,7 +179,7 @@ async def delete_art_search(
             db.query(ArtExploration)
             .filter(
                 ArtExploration.id == search_id,
-                ArtExploration.patient_id == current_user,
+                ArtExploration.patient_id == current_user["id"],
             )
             .first()
         )
