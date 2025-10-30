@@ -380,6 +380,7 @@
     "title": "Sessions",
     "createSession": "Create New Session",
     "noSessions": "No sessions found.",
+    "selectPatientFirst": "Select a patient to view and create sessions.",
     "mySessions": "My Sessions",
     "patientSessions": "Patient Sessions",
     "mode": "Mode",
@@ -432,7 +433,20 @@
       "deleteFailed": "Failed to delete session",
       "startFailed": "Failed to start session",
       "unauthorized": "You do not have permission to access these sessions",
-      "noAccess": "You don't have access to this patient"
+      "noAccess": "You don't have access to this patient",
+      "notFound": "Session not found"
+    },
+    "details": {
+      "title": "Session Details",
+      "generalInfo": "General Information",
+      "timeline": "Timeline",
+      "results": "Results",
+      "seconds": "seconds",
+      "memoryReconstructionId": "Memory Reconstruction ID",
+      "artExplorationId": "Art Exploration ID",
+      "noResults": "No results available yet.",
+      "pendingMessage": "This session has not been started by the patient yet.",
+      "inProgressMessage": "This session is in progress."
     }
   }
 }

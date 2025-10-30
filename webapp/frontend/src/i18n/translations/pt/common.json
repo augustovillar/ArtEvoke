@@ -381,6 +381,7 @@
     "title": "Sessões",
     "createSession": "Criar Nova Sessão",
     "noSessions": "Nenhuma sessão encontrada.",
+    "selectPatientFirst": "Selecione um paciente para visualizar e criar sessões.",
     "mySessions": "Minhas Sessões",
     "patientSessions": "Sessões do Paciente",
     "mode": "Modo",
@@ -433,7 +434,20 @@
       "deleteFailed": "Falha ao excluir sessão",
       "startFailed": "Falha ao iniciar sessão",
       "unauthorized": "Você não tem permissão para acessar estas sessões",
-      "noAccess": "Você não tem acesso a este paciente"
+      "noAccess": "Você não tem acesso a este paciente",
+      "notFound": "Sessão não encontrada"
+    },
+    "details": {
+      "title": "Detalhes da Sessão",
+      "generalInfo": "Informações Gerais",
+      "timeline": "Linha do Tempo",
+      "results": "Resultados",
+      "seconds": "segundos",
+      "memoryReconstructionId": "ID da Reconstrução de Memória",
+      "artExplorationId": "ID da Exploração de Arte",
+      "noResults": "Nenhum resultado disponível ainda.",
+      "pendingMessage": "Esta sessão ainda não foi iniciada pelo paciente.",
+      "inProgressMessage": "Esta sessão está em andamento."
     }
   }
 }

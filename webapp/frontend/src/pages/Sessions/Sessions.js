@@ -7,7 +7,7 @@ import './Sessions.css';
 
 const Sessions = () => {
     const { t } = useTranslation('common');
-    const { user } = useAuth();
+    const { user, userType } = useAuth();
     const [searchParams] = useSearchParams();
     const patientId = searchParams.get('patientId');
     const [sessions, setSessions] = useState([]);
@@ -15,6 +15,9 @@ const Sessions = () => {
     const [error, setError] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const navigate = useNavigate();
+
+    // Debug log
+    console.log('Sessions - userType:', userType, 'patientId:', patientId, 'should show button:', userType === 'doctor' && patientId);
 
     const fetchSessions = useCallback(async () => {
         try {
@@ -24,7 +27,7 @@ const Sessions = () => {
             if (patientId) {
                 // Doctor viewing specific patient's sessions
                 url = `/api/sessions/patient/${patientId}`;
-            } else if (user?.role === 'patient') {
+            } else if (userType === 'patient') {
                 // Patient viewing their own sessions
                 url = '/api/sessions/my-sessions';
             } else {
@@ -42,15 +45,15 @@ const Sessions = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                // Se retornar array vazio ou array válido, é sucesso
+                // If returns empty array or valid array, it's success
                 setSessions(Array.isArray(data) ? data : []);
                 setError(null);
             } else if (response.status === 404) {
-                // 404 significa que não há sessões, não é um erro
+                // 404 means there are no sessions, not an error
                 setSessions([]);
                 setError(null);
             } else if (response.status === 403 || response.status === 401) {
-                // Erro de autorização
+                // Authorization error
                 const errorData = await response.json().catch(() => ({}));
                 if (errorData.detail) {
                     if (errorData.detail.includes("don't have access")) {
@@ -61,24 +64,24 @@ const Sessions = () => {
                         setError(t('sessions.errors.unauthorized'));
                     }
                 } else {
-                    // Pode ser só que não há sessões ainda, trata como lista vazia
+                    // Might just be that there are no sessions yet, treat as empty list
                     setSessions([]);
                     setError(null);
                 }
             } else {
-                // Outro erro real
+                // Other real error
                 setError(t('sessions.errors.loadFailed'));
                 setSessions([]);
             }
         } catch (error) {
-            // Erro de rede ou outro erro inesperado
+            // Network error or other unexpected error
             setError(t('sessions.errors.loadFailed'));
             console.error('Error:', error);
             setSessions([]);
         } finally {
             setLoading(false);
         }
-    }, [patientId, user, t]);
+    }, [patientId, userType, t]);
 
     useEffect(() => {
         fetchSessions();
@@ -168,16 +171,21 @@ const Sessions = () => {
         <div className="sessions-container">
             <div className="sessions-header">
                 <h1>{patientId ? t('sessions.patientSessions') : t('sessions.mySessions')}</h1>
-                {user?.role === 'doctor' && (
+                {userType === 'doctor' && patientId && (
                     <button className="btn-create-session" onClick={handleCreateSession}>
-                        {t('sessions.createSession')}
+                        + {t('sessions.createSession')}
                     </button>
                 )}
             </div>
 
             {error && <div className="sessions-error">{error}</div>}
 
-            {sessions.length === 0 ? (
+            {/* Show message if doctor but no patient selected */}
+            {userType === 'doctor' && !patientId ? (
+                <div className="sessions-empty">
+                    <p>{t('sessions.selectPatientFirst')}</p>
+                </div>
+            ) : sessions.length === 0 ? (
                 <div className="sessions-empty">
                     <p>{t('sessions.noSessions')}</p>
                 </div>
@@ -214,7 +222,7 @@ const Sessions = () => {
                                 )}
                             </div>
                             <div className="session-actions">
-                                {user?.role === 'patient' && session.status === 'pending' && (
+                                {userType === 'patient' && session.status === 'pending' && (
                                     <button 
                                         className="btn-start-session"
                                         onClick={() => handleStartSession(session)}
@@ -222,7 +230,7 @@ const Sessions = () => {
                                         {t('sessions.start')}
                                     </button>
                                 )}
-                                {user?.role === 'patient' && session.status === 'in_progress' && (
+                                {userType === 'patient' && session.status === 'in_progress' && (
                                     <button 
                                         className="btn-continue-session"
                                         onClick={() => handleStartSession(session)}
@@ -230,16 +238,14 @@ const Sessions = () => {
                                         {t('sessions.continue')}
                                     </button>
                                 )}
-                                {user?.role === 'doctor' && (
+                                {userType === 'doctor' && (
                                     <>
-                                        {session.status === 'completed' && (
-                                            <button 
-                                                className="btn-view-session"
-                                                onClick={() => navigate(`/sessions/${session.id}/results`)}
-                                            >
-                                                {t('sessions.view')}
-                                            </button>
-                                        )}
+                                        <button 
+                                            className="btn-view-session"
+                                            onClick={() => navigate(`/sessions/${session.id}/results`)}
+                                        >
+                                            {t('sessions.view')}
+                                        </button>
                                         <button 
                                             className="btn-delete-session"
                                             onClick={() => handleDeleteSession(session.id)}
