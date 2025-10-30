@@ -146,7 +146,7 @@ The backend uses UV for fast, reliable dependency management with `pyproject.tom
 ### 3. Run the Application with Docker
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Com Logs:
@@ -158,13 +158,13 @@ docker compose up -d --build && docker compose logs -f
 ## To stop the application 
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 Removing volumes
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 
