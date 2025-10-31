@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from orm import get_db, Patient, MemoryReconstruction, ArtExploration
+from orm import Session as SessionModel
 from api_types.user import (
     MessageResponse,
     RetrieveSearchesResponse,
@@ -14,6 +15,7 @@ from utils.auth import (
 )
 from typing import Dict, List
 import uuid
+from datetime import datetime
 
 router = APIRouter()
 
@@ -35,18 +37,52 @@ async def save_art_search(
                 status_code=400, detail="No story text or selected images to save."
             )
 
-        # Create ArtExploration entry
-        art_exploration = ArtExploration(
-            id=str(uuid.uuid4()),
-            patient_id=current_user["id"],
-            story_generated=story_text,
-            dataset="WikiArt",  # Default dataset - you may want to get this from request
-            language="EN",  # Default language - you may want to get this from request
-        )
+        # If evaluationId provided, update existing record (session mode)
+        if story_data.evaluationId:
+            art_exploration = (
+                db.query(ArtExploration)
+                .filter(
+                    ArtExploration.id == story_data.evaluationId,
+                    ArtExploration.patient_id == current_user["id"],
+                )
+                .first()
+            )
 
-        db.add(art_exploration)
+            if not art_exploration:
+                raise HTTPException(
+                    status_code=404, detail="Evaluation instance not found"
+                )
+
+            # Update existing record
+            art_exploration.story_generated = story_text
+            # Keep in_session='true' as it was created by session
+
+        else:
+            # Create new ArtExploration entry (practice mode)
+            art_exploration = ArtExploration(
+                id=str(uuid.uuid4()),
+                patient_id=current_user["id"],
+                story_generated=story_text,
+                dataset="WikiArt",  # Default dataset
+                language="EN",  # Default language
+                in_session="false",  # Practice mode
+            )
+            db.add(art_exploration)
+
         db.commit()
         db.refresh(art_exploration)
+
+        # If sessionId provided, mark session as completed
+        if story_data.sessionId:
+            session = db.query(SessionModel).filter(
+                SessionModel.id == story_data.sessionId,
+                SessionModel.patient_id == current_user["id"]
+            ).first()
+            
+            if session:
+                session.status = "completed"
+                session.ended_at = datetime.utcnow().date()
+                db.commit()
 
         # TODO: Add Images records for selected_images_by_dataset
         # This would require mapping image IDs to catalog_item IDs
@@ -71,19 +107,53 @@ async def save_story_generation(
         if not story_text:
             raise HTTPException(status_code=400, detail="Missing generatedStory")
 
-        # Create MemoryReconstruction entry
-        memory_reconstruction = MemoryReconstruction(
-            id=str(uuid.uuid4()),
-            patient_id=current_user["id"],
-            story=story_text,
-            dataset="WikiArt",  # Default dataset - you may want to get this from request
-            language="EN",  # Default language - you may want to get this from request
-            segmentation_strategy="Conservative",  # Default strategy - you may want to get this from request
-        )
+        # If evaluationId provided, update existing record (session mode)
+        if story_data.evaluationId:
+            memory_reconstruction = (
+                db.query(MemoryReconstruction)
+                .filter(
+                    MemoryReconstruction.id == story_data.evaluationId,
+                    MemoryReconstruction.patient_id == current_user["id"],
+                )
+                .first()
+            )
 
-        db.add(memory_reconstruction)
+            if not memory_reconstruction:
+                raise HTTPException(
+                    status_code=404, detail="Evaluation instance not found"
+                )
+
+            # Update existing record
+            memory_reconstruction.story = story_text
+            # Keep in_session='true' as it was created by session
+
+        else:
+            # Create new MemoryReconstruction entry (practice mode)
+            memory_reconstruction = MemoryReconstruction(
+                id=str(uuid.uuid4()),
+                patient_id=current_user["id"],
+                story=story_text,
+                dataset="WikiArt",  # Default dataset
+                language="EN",  # Default language
+                segmentation_strategy="Conservative",  # Default strategy
+                in_session="false",  # Practice mode
+            )
+            db.add(memory_reconstruction)
+
         db.commit()
         db.refresh(memory_reconstruction)
+
+        # If sessionId provided, mark session as completed
+        if story_data.sessionId:
+            session = db.query(SessionModel).filter(
+                SessionModel.id == story_data.sessionId,
+                SessionModel.patient_id == current_user["id"]
+            ).first()
+            
+            if session:
+                session.status = "completed"
+                session.ended_at = datetime.utcnow().date()
+                db.commit()
 
         # TODO: Map selectedImages to proper Sections with images relationship
 

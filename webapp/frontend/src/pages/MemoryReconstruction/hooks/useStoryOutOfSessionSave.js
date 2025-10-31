@@ -13,13 +13,14 @@ const useStoryOutOfSessionSave = () => {
         language,
         dataset,
         segmentation,
-        // out-of-session save only
+        sessionId = null,
+        evaluationId = null,
     ) => {
         const token = localStorage.getItem('token');
         if (!token) {
             setSaveMessage(t('memoryReconstruction.messages.loginRequired'));
             setTimeout(() => setSaveMessage(''), 3000);
-            return;
+            return Promise.reject('No token');
         }
 
         const allSectionsCovered = sectionsWithImages.every((_, index) => 
@@ -29,7 +30,7 @@ const useStoryOutOfSessionSave = () => {
         if (!allSectionsCovered) {
             setSaveMessage(t('memoryReconstruction.messages.selectAllImages'));
             setTimeout(() => setSaveMessage(''), 4000);
-            return;
+            return Promise.reject('Not all sections covered');
         }
 
         const saveData = {
@@ -38,9 +39,11 @@ const useStoryOutOfSessionSave = () => {
             language: language,
             dataset: dataset,
             segmentation: segmentation,
+            sessionId: sessionId,
+            evaluationId: evaluationId,
         };
 
-        fetch(`/api/save-generation`, {
+        return fetch(`/api/save-generation`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -58,11 +61,13 @@ const useStoryOutOfSessionSave = () => {
             setSaveMessage(t('memoryReconstruction.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
             setSavedStoryData(saveData);
+            return { success: true, data };
         })
         .catch(error => {
             console.error('Error saving:', error);
             setSaveMessage(t('memoryReconstruction.messages.saveFailed'));
             setTimeout(() => setSaveMessage(''), 3000);
+            return { success: false, error };
         });
     };
 

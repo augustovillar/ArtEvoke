@@ -1,3 +1,60 @@
+/* Session Mode Banner */
+.session-mode-banner,
+.practice-mode-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0 2rem 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    animation: slideInDown 0.5s ease-out;
+}
+
+.session-mode-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-left: 5px solid #4c51bf;
+}
+
+.practice-mode-banner {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-left: 5px solid #e53e3e;
+}
+
+.banner-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.banner-content {
+    flex: 1;
+}
+
+.banner-content h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.banner-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .story-textbox {
     width: calc(100% - 40px); /* Make it almost full width */
     height: 200px; /* Adjust height as needed */

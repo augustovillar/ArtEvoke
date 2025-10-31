@@ -60,12 +60,49 @@ async def create_session(
             detail="You don't have access to this patient",
         )
 
-    # Create new session
+    # Create evaluation instance(s) based on session mode
+    memory_reconstruction_id = None
+    art_exploration_id = None
+
+    if session_data.mode in ["memory_reconstruction", "both"]:
+        # Create MemoryReconstruction instance with placeholder data
+        mr_instance = MemoryReconstruction(
+            id=str(uuid.uuid4()),
+            patient_id=session_data.patient_id,
+            story="",  # Will be filled by patient
+            dataset="wikiart",  # Default, patient can change
+            language="PT",  # Default based on patient preference
+            segmentation_strategy="Conservative",  # Default
+            in_session="true",
+            created_at=datetime.utcnow(),
+        )
+        db.add(mr_instance)
+        db.flush()  # Get the ID without committing
+        memory_reconstruction_id = mr_instance.id
+
+    if session_data.mode in ["art_exploration", "both"]:
+        # Create ArtExploration instance with placeholder data
+        ae_instance = ArtExploration(
+            id=str(uuid.uuid4()),
+            patient_id=session_data.patient_id,
+            story_generated="",  # Will be generated during session
+            dataset="wikiart",  # Default
+            language="PT",  # Default
+            in_session="true",
+            created_at=datetime.utcnow(),
+        )
+        db.add(ae_instance)
+        db.flush()  # Get the ID without committing
+        art_exploration_id = ae_instance.id
+
+    # Create new session linked to evaluation instance(s)
     new_session = SessionModel(
         id=str(uuid.uuid4()),
         patient_id=session_data.patient_id,
         doctor_id=doctor.id,
         mode=session_data.mode,
+        memory_reconstruction_id=memory_reconstruction_id,
+        art_exploration_id=art_exploration_id,
         interruption_time=session_data.interruption_time or 10,
         status="pending",
         created_at=datetime.utcnow(),
@@ -252,3 +289,127 @@ async def delete_session(
     db.commit()
 
     return None
+
+
+@router.post("/{session_id}/complete", response_model=SessionResponse)
+async def complete_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Mark session as completed (called when patient finishes evaluation)"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
+
+    # Only patient can complete their sessions
+    if current_user["id"] != session.patient_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the patient can complete the session",
+        )
+
+    # Update session status
+    session.status = "completed"
+    session.ended_at = datetime.utcnow().date()
+
+    db.commit()
+    db.refresh(session)
+
+    return session
+
+
+@router.get("/{session_id}/evaluation")
+async def get_session_evaluation(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get the evaluation data (MemoryReconstruction or ArtExploration) linked to a session"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
+
+    # Verify authorization
+    if (
+        current_user["id"] != session.patient_id
+        and current_user["id"] != session.doctor_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this session evaluation",
+        )
+
+    evaluation_data = {}
+
+    # Get MemoryReconstruction data if present
+    if session.memory_reconstruction_id:
+        mr = (
+            db.query(MemoryReconstruction)
+            .filter(MemoryReconstruction.id == session.memory_reconstruction_id)
+            .first()
+        )
+        if mr:
+            evaluation_data["memory_reconstruction"] = {
+                "id": mr.id,
+                "story": mr.story,
+                "dataset": mr.dataset,
+                "language": mr.language,
+                "segmentation_strategy": mr.segmentation_strategy,
+                "in_session": mr.in_session,
+                "created_at": mr.created_at,
+                "sections": [
+                    {
+                        "id": section.id,
+                        "section_number": section.section_number,
+                        "content": section.content,
+                        "catalog_item_id": section.catalog_item_id,
+                        "title": section.title,
+                        "author": section.author,
+                        "year": section.year,
+                    }
+                    for section in mr.sections
+                ],
+            }
+
+    # Get ArtExploration data if present
+    if session.art_exploration_id:
+        ae = (
+            db.query(ArtExploration)
+            .filter(ArtExploration.id == session.art_exploration_id)
+            .first()
+        )
+        if ae:
+            evaluation_data["art_exploration"] = {
+                "id": ae.id,
+                "story_generated": ae.story_generated,
+                "dataset": ae.dataset,
+                "language": ae.language,
+                "in_session": ae.in_session,
+                "created_at": ae.created_at,
+                "images": [
+                    {
+                        "id": image.id,
+                        "image_number": image.image_number,
+                        "catalog_item_id": image.catalog_item_id,
+                        "title": image.title,
+                        "author": image.author,
+                        "year": image.year,
+                    }
+                    for image in ae.images
+                ],
+            }
+
+    if not evaluation_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No evaluation data found for this session",
+        )
+
+    return evaluation_data

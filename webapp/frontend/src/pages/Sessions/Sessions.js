@@ -138,7 +138,13 @@ const Sessions = () => {
 
             if (response.ok) {
                 // Navigate to the appropriate mode with session context
-                const mode = session.mode === 'memory_reconstruction' ? 'memory-reconstruction' : 'art-exploration';
+                // For "both" mode, start with memory reconstruction first
+                let mode;
+                if (session.mode === 'memory_reconstruction' || session.mode === 'both') {
+                    mode = 'memory-reconstruction';
+                } else {
+                    mode = 'art-exploration';
+                }
                 navigate(`/${mode}?sessionId=${session.id}&interruptionTime=${session.interruption_time}`);
             } else {
                 alert(t('sessions.errors.startFailed'));

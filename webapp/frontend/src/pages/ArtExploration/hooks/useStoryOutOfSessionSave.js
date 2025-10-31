@@ -5,7 +5,7 @@ export const useStoryOutOfSessionSave = () => {
     const { t } = useTranslation('common');
     const [saveMessage, setSaveMessage] = useState('');
 
-    const saveOutOfSessionStory = async (responseText, selectedImages) => {
+    const saveOutOfSessionStory = async (responseText, selectedImages, sessionId = null, evaluationId = null) => {
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -44,6 +44,8 @@ export const useStoryOutOfSessionSave = () => {
                 body: JSON.stringify({
                     storyText: responseText,
                     selectedImagesByDataset: selectedImagesByDatasetForSave,
+                    sessionId: sessionId,
+                    evaluationId: evaluationId,
                 }),
             });
 

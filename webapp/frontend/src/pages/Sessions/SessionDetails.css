@@ -142,6 +142,101 @@
     font-size: 1.1rem;
 }
 
+/* Evaluation Results Styles */
+.evaluation-results {
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+.evaluation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.story-section {
+    margin-top: 1rem;
+}
+
+.story-section h3 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.story-text {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--color-primary);
+    white-space: pre-wrap;
+    line-height: 1.6;
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sections-container,
+.images-container {
+    margin-top: 1.5rem;
+}
+
+.sections-container h3,
+.images-container h3 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.section-item {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-item h4 {
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.section-item p {
+    margin: 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.artwork-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.artwork-info p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.image-item {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-number {
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
 @media (max-width: 768px) {
     .session-details-container {
         padding: 1rem;
@@ -158,5 +253,9 @@
 
     .details-section {
         padding: 1.5rem;
+    }
+
+    .images-grid {
+        grid-template-columns: 1fr;
     }
 }

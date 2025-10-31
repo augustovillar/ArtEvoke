@@ -96,8 +96,12 @@ class SelectImagesRVRequestDTO(BaseModel):
 class SaveStoryRequest(BaseModel):
     storyText: str
     selectedImagesByDataset: Dict[str, List[str]]
+    sessionId: Optional[str] = None
+    evaluationId: Optional[str] = None
 
 
 class SaveGenerationRequest(BaseModel):
     selectedImages: List[str]
     generatedStory: str
+    sessionId: Optional[str] = None
+    evaluationId: Optional[str] = None
