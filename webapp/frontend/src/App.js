@@ -2,7 +2,7 @@
 import React from 'react';
 import './i18n';
 import { Routes, Route } from 'react-router-dom';
-import { Navbar, Footer } from './components/common';
+import { Navbar, Footer, ProtectedRoute } from './components/common';
 import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
 import MemoryEvaluation from './pages/MemoryReconstruction/Evaluation';
 import ArtEvaluation from './pages/ArtExploration/Evaluation';
@@ -22,15 +22,47 @@ function App() {
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="/about" element={<About />} />
-                                <Route path='/story' element={<MemoryReconstruction />} />
-                                <Route path='/memory-reconstruction/evaluation' element={<MemoryEvaluation />} />
-                                <Route path="/artsearch" element={<ArtExploration />} />
-                                <Route path="/art-exploration/evaluation" element={<ArtEvaluation />} />
+                                
+                                {/* Protected Routes - Only accessible when logged in */}
+                                <Route path='/story' element={
+                                    <ProtectedRoute>
+                                        <MemoryReconstruction />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path='/memory-reconstruction/evaluation' element={
+                                    <ProtectedRoute>
+                                        <MemoryEvaluation />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/artsearch" element={
+                                    <ProtectedRoute>
+                                        <ArtExploration />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/art-exploration/evaluation" element={
+                                    <ProtectedRoute>
+                                        <ArtEvaluation />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/profile" element={
+                                    <ProtectedRoute>
+                                        <Profile />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/patients" element={
+                                    <ProtectedRoute>
+                                        <Patients />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/patients/create" element={
+                                    <ProtectedRoute>
+                                        <CreatePatient />
+                                    </ProtectedRoute>
+                                } />
+                                
+                                {/* Public Auth Routes */}
                                 <Route path="/signup" element={<SignUp />} />
                                 <Route path="/login" element={<Login />} />
-                                <Route path="/profile" element={<Profile />} />
-                                <Route path="/patients" element={<Patients />} />
-                                <Route path="/patients/create" element={<CreatePatient />} />
                                 <Route path="/auth/role-selection" element={<RoleSelection mode="signup" />} />
                                 <Route path="/auth/login-role-selection" element={<RoleSelection mode="login" />} />
                                 <Route path="/auth/doctor-signup" element={<DoctorSignUp />} />
