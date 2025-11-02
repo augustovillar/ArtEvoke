@@ -282,18 +282,17 @@
 
 .login-prompt-button {
     padding: 12px 30px;
-    background-color: var(--primary-color, #2196F3);
-    color: white;
+    background-color: var(--button-bg);
+    color: var(--button-text);
     border: none;
     border-radius: 8px;
     font-size: 1.1em;
-    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .login-prompt-button:hover {
-    background-color: var(--primary-color-dark, #1976D2);
+    background-color: var(--button-hover-bg);
     transform: translateY(-2px);
 }
 
