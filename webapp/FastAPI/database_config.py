@@ -77,7 +77,7 @@ def get_connection_info():
         "port": int(os.getenv("DB_PORT", None)),
         "database": os.getenv("DB_NAME", None),
         "url": get_database_url().replace(
-            os.getenv("DB_PASSWORD",None), "***"
+            os.getenv("DB_PASSWORD", ""), "***"
         ),
     }
 
