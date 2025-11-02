@@ -43,16 +43,13 @@ const Navbar = () => {
         
             <div className="nav-links">
                 <Link to="/">{t('navbar.home')}</Link>
-                {userType !== 'doctor' && (
+                {isLoggedIn && userType !== 'doctor' && (
                     <>
                         <Link to="/story">{t('navbar.memoryReconstruction')}</Link>
                         <Link to="/artsearch">{t('navbar.artExploration')}</Link>
                     </>
                 )}
-                {userType === 'patient' && (
-                    <Link to="/sessions">{t('sessions.mySessions')}</Link>
-                )}
-                {userType === 'doctor' && (
+                {isLoggedIn && userType === 'doctor' && (
                     <Link to="/patients">{t('navbar.patients', 'Patients')}</Link>
                 )}
                 <Link to="/about">{t('navbar.about')}</Link>

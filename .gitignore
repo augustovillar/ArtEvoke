@@ -1,6 +1,9 @@
 # General
 **/__pycache__
 
+# Frontend
+frontend/node_modules
+
 # macOS
 .DS_Store
 **/.DS_Store
@@ -13,22 +16,16 @@
 
 #Ipiranga
 **/all_items_filtered.json
-**/*.db
-**/*.db-shm
-**/*.db-wal
-**Ipiranga/pages/**
+Ipiranga.csv
 
 # SemArt
 **/SemArt/Images
 **/semart_info
 SemArt.csv
 
-
 # WikiArt
 WikiArt.csv
 **/WikiArt/Images
-
-Ipiranga.csv
 
 
 # Environments
@@ -66,12 +63,11 @@ project_assets/scripts/outputs/faiss/?*.pkl
 
 **/embeddings/translations/**
 
-webapp/data/**
 project_assets/tests/embeddings/translations/**
 
 project_assets/tests/embeddings/**
 
-# Ignore for now all .sql
+# Ignore some .sql
 B_Ipiranga.sql
 B_SemArt.sql
 B_WikiArt.sql
@@ -80,7 +76,13 @@ C_SemArt.sql
 C_WikiArt.sql
 SemArt.zip
 
-**/.env.mysql
-**/my.cnf
+# Ignore snapshots
+*.snapshot
+# Environment files in env folder (keep .example files)
+webapp/env/.backend.env
+webapp/env/.mysql.env
+webapp/env/.phpmyadmin.env
+webapp/env/.nginx.env
+
 # Ignore specific internal instructions file
 /.github/instructions/intructions.instructions.md
