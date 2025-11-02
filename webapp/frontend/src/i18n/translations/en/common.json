@@ -237,6 +237,7 @@
     "saveStory": "Save Story",
     "continueSession": "Continue Session",
     "clearSelection": "Clear Selection",
+    "confirmClearSelection": "Are you sure you want to clear all selections?",
     "messages": {
       "loginRequired": "Please log in to save.",
       "selectAllImages": "Please select an image for every section before saving.",

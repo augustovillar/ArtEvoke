@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './MemoryReconstruction.css';
 import { useReadAloud } from '../../contexts/ReadAloudContext';
 import InterruptionModal from '../../components/interruptionModal';
@@ -20,6 +21,7 @@ const MemoryReconstruction = () => {
     const navigate = useNavigate();
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
+    const { t } = useTranslation('common');
 
     // Estados locais
     const [storyText, setStoryText] = useState('');
@@ -78,13 +80,13 @@ const MemoryReconstruction = () => {
 
     // Handler para modo sessão (inSession): salva e vai para interrupção
     const handleInSession = async () => {
-        handleSave()
+        await handleSave()
         setShowInterruption(true);
     };
 
     // Handler para modo livre (outOfSession): apenas salva
-    const handleSave = () => {
-        saveStory(
+    const handleSave = async () => {
+        await saveStory(
             storyText,
             selectedImagesPerSection,
             sectionsWithImages,
@@ -96,7 +98,7 @@ const MemoryReconstruction = () => {
 
     // Handler para limpar seleção (modo livre)
     const handleClearSelection = () => {
-        if (window.confirm("Tem certeza que deseja limpar todas as seleções?")) {
+        if (window.confirm(t('memoryReconstruction.confirmClearSelection'))) {
             clearSelection();
         }
     };

@@ -237,6 +237,7 @@
     "saveStory": "Salvar História",
     "continueSession": "Continuar Sessão",
     "clearSelection": "Limpar Seleção",
+    "confirmClearSelection": "Tem certeza que deseja limpar todas as seleções?",
     "messages": {
       "loginRequired": "Faça login para salvar.",
       "selectAllImages": "Selecione uma imagem para cada seção antes de salvar.",
