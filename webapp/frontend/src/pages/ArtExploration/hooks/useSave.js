@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const useStoryOutOfSessionSave = () => {
+export const useSave = () => {
     const { t } = useTranslation('common');
     const [saveMessage, setSaveMessage] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [hasSaved, setHasSaved] = useState(false);
 
-    const saveOutOfSessionStory = async (responseText, selectedImages, dataset, language) => {
+    const saveStory = async (responseText, selectedImages, dataset, language) => {
         // Prevent multiple saves - set saving state immediately
         if (isSaving) return { success: false, message: 'Already saving...' };
         
@@ -84,7 +84,8 @@ export const useStoryOutOfSessionSave = () => {
         setSaveMessage,
         isSaving,
         hasSaved,
-        saveOutOfSessionStory,
+        saveStory,
         resetSaveState
     };
 };
+

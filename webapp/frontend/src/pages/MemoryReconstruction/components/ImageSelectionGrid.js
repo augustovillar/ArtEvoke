@@ -6,7 +6,7 @@ const ImageSelectionGrid = ({
     selectedImagesPerSection,
     onImageClick,
     onInSession,
-    onOutOfSession,
+    onSave,
     onClearSelection,
     isSessionMode,
     loading,
@@ -61,8 +61,8 @@ const ImageSelectionGrid = ({
                     // Modo Sessão: botão de continuar para interrupção e avaliação + botão de salvar
                     <>
                         <button
-                            className="submit-button secondary-button"
-                            onClick={onOutOfSession}
+                            className="submit-button"
+                            onClick={onSave}
                             disabled={
                                 loading || 
                                 isSaving ||
@@ -70,10 +70,10 @@ const ImageSelectionGrid = ({
                                 Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
                             }
                         >
-                            {isSaving ? <span className="loading-spinner">◐</span> : t('common.save')}
+                            {isSaving ? <span className="loading-spinner">◐</span> : (hasSaved ? t('common.saved') : t('common.save'))}
                         </button>
                         <button
-                            className="submit-button primary-button"
+                            className="submit-button"
                             onClick={onInSession}
                             disabled={
                                 loading ||
@@ -88,15 +88,15 @@ const ImageSelectionGrid = ({
                     // Modo Livre: botões de salvar e limpar
                     <>
                         <button
-                            className="submit-button secondary-button"
+                            className="submit-button"
                             onClick={onClearSelection}
                             disabled={loading || Object.keys(selectedImagesPerSection).length === 0}
                         >
                             {t('memoryReconstruction.clearSelection') || 'Limpar Seleção'}
                         </button>
                         <button
-                            className="submit-button primary-button"
-                            onClick={onOutOfSession}
+                            className="submit-button"
+                            onClick={onSave}
                             disabled={
                                 loading || 
                                 isSaving ||
@@ -104,7 +104,7 @@ const ImageSelectionGrid = ({
                                 Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
                             }
                         >
-                            {isSaving ? <span className="loading-spinner">◐</span> : t('common.save')}
+                            {isSaving ? <span className="loading-spinner">◐</span> : (hasSaved ? t('common.saved') : t('common.save'))}
                         </button>
                     </>
                 )}

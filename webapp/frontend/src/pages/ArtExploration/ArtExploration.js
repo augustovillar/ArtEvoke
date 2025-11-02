@@ -13,7 +13,7 @@ import {
     useImageSearch,
     useImageSelection,
     useStoryGeneration,
-    useStoryOutOfSessionSave
+    useSave
 } from './components';
 
 const ArtExploration = () => {
@@ -37,7 +37,7 @@ const ArtExploration = () => {
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
     const { generateLoading, responseText, generateStory } = useStoryGeneration();
-    const { saveMessage, isSaving, hasSaved, saveOutOfSessionStory, resetSaveState } = useStoryOutOfSessionSave();
+    const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
@@ -55,21 +55,15 @@ const ArtExploration = () => {
         handleGenerateStory();
     };
 
-    // Handler para modo sessão (inSession): salva E vai para interrupção
-    const handleInSession = async () => {
-        // Save before proceeding to interruption
-        await saveOutOfSessionStory(responseText, selectedImages, dataset, language);
+    // Handler for saving
+    const handleSave = async () => {
+        await saveStory(responseText, selectedImages, dataset, language);
+    };
+
+    // Handler para modo sessão (inSession): salva e vai para interrupção
+    const handleContinue = async () => {
+        await handleSave();
         setShowInterruption(true);
-    };
-
-    // Handler para modo livre (outOfSession): apenas salva
-    const handleOutOfSession = async () => {
-        await saveOutOfSessionStory(responseText, selectedImages, dataset, language);
-    };
-
-    // Handler para salvar diretamente (sempre disponível)
-    const handleDirectSave = async () => {
-        await saveOutOfSessionStory(responseText, selectedImages, dataset, language);
     };
 
     // Handler para limpar seleção (modo livre)
@@ -140,12 +134,11 @@ const ArtExploration = () => {
             <GeneratedStory
                 responseText={responseText}
                 onRegenerate={handleRegenerateClick}
-                onSave={isSessionMode ? handleInSession : handleOutOfSession}
-                onDirectSave={handleDirectSave}
+                onSave={handleSave}
+                onContinue={handleContinue}
                 isGenerating={generateLoading}
                 isSaving={isSaving}
                 hasSaved={hasSaved}
-                saveMessage={saveMessage}
                 isSessionMode={isSessionMode}
             />
 

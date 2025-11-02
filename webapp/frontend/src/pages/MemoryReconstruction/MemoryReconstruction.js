@@ -13,7 +13,7 @@ import ImageSelectionGrid from './components/ImageSelectionGrid';
 // Hooks
 import useStorySubmit from './hooks/useStorySubmit';
 import useImageSelection from './hooks/useImageSelection';
-import useStoryOutOfSessionSave from './hooks/useStoryOutOfSessionSave';
+import useSave from './hooks/useSave';
 
 const MemoryReconstruction = () => {
     const location = useLocation();
@@ -51,9 +51,9 @@ const MemoryReconstruction = () => {
         saveMessage,
         isSaving,
         hasSaved,
-        saveOutOfSessionStory,
+        saveStory,
         resetSaveState
-    } = useStoryOutOfSessionSave();
+    } = useSave();
 
     // Verifica se está em modo sessão (com interrupção e avaliação)
     // PARA TESTE: deixado como true para sempre mostrar a interrupção
@@ -78,21 +78,13 @@ const MemoryReconstruction = () => {
 
     // Handler para modo sessão (inSession): salva e vai para interrupção
     const handleInSession = async () => {
-        // Save before proceeding to interruption
-        await saveOutOfSessionStory(
-            storyText,
-            selectedImagesPerSection,
-            sectionsWithImages,
-            language,
-            dataset,
-            segmentation
-        );
+        handleSave()
         setShowInterruption(true);
     };
 
     // Handler para modo livre (outOfSession): apenas salva
-    const handleOutOfSession = () => {
-        saveOutOfSessionStory(
+    const handleSave = () => {
+        saveStory(
             storyText,
             selectedImagesPerSection,
             sectionsWithImages,
@@ -176,7 +168,7 @@ const MemoryReconstruction = () => {
                     selectedImagesPerSection={selectedImagesPerSection}
                     onImageClick={handleImageSelect}
                     onInSession={handleInSession}
-                    onOutOfSession={handleOutOfSession}
+                    onSave={handleSave}
                     onClearSelection={handleClearSelection}
                     isSessionMode={isSessionMode}
                     loading={loading}

@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const useStoryOutOfSessionSave = () => {
+const useSave = () => {
     const { t } = useTranslation();
     const [saveMessage, setSaveMessage] = useState('');
     const [savedStoryData, setSavedStoryData] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [hasSaved, setHasSaved] = useState(false);
 
-    const saveOutOfSessionStory = async (
+    const saveStory = async (
         storyText,
         selectedImagesPerSection,
         sectionsWithImages,
         language,
         dataset,
         segmentation,
-        // out-of-session save only
+        // Can be used both in-session and out-of-session
     ) => {
         // Prevent multiple saves - set saving state immediately
         if (isSaving) return;
@@ -95,9 +95,10 @@ const useStoryOutOfSessionSave = () => {
         savedStoryData,
         isSaving,
         hasSaved,
-        saveOutOfSessionStory,
+        saveStory,
         resetSaveState
     };
 };
 
-export default useStoryOutOfSessionSave;
+export default useSave;
+
