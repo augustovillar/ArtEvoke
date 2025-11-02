@@ -91,8 +91,8 @@
     "paragraph2": "Esta tese explora como a inteligência artificial pode apoiar intervenções não medicamentosas para pessoas que vivem com a doença de Alzheimer (DA) através do uso de estímulos visuais e arte. Apresentamos uma plataforma protótipo que combina grandes modelos multimodais (LMMs), grandes modelos de linguagem (LLMs) e busca vetorial baseada em embeddings para conectar histórias pessoais com obras de arte curadas. Projetado para auxiliar na recuperação de memória e engajamento cognitivo, o ArtEvoke gera narrativas visuais personalizadas ou recupera pinturas relevantes baseadas na história do usuário. A arte é usada não apenas como um gatilho de memória, mas também como uma ferramenta para promover conexão emocional e engajamento. O protótipo é destinado para testes em ambientes terapêuticos e de pesquisa futuros, particularmente como uma ferramenta de apoio escalável para cuidadores e profissionais clínicos. Avaliamos o desempenho do modelo, efetividade de recuperação usando FAISS e design de interação do usuário com foco em acessibilidade. Estes achados destacam o potencial das ferramentas de IA para apoiar estimulação cognitiva escalável no cuidado da demência."
   },
   "home": {
-    "heroTitle": "Bem-vindos à nossa aplicação Art Evoke!",
-    "heroDescription": "Este site permite que você interaja com diferentes modelos de IA que podem sugerir diferentes pinturas baseadas em uma história fornecida, ou gerar uma história baseada em arte selecionada. Para começar, por favor clique em uma das duas opções abaixo!",
+    "heroTitle": "Bem-vindo ao ArtEvoke",
+    "heroDescription": "Uma plataforma inovadora que conecta arte e memória através de IA. Descubra obras de arte que ressoam com suas histórias ou explore arte para criar novas narrativas.",
     "memoryReconstruction": "Reconstrução de Memória",
     "memoryReconstructionDesc": "Gerar Imagens a partir de uma História",
     "artExploration": "Exploração de Arte",

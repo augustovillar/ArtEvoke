@@ -14,7 +14,8 @@ const Home = () => {
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
     
-    const [expandedMode, setExpandedMode] = useState(null);
+    const [expandedMemory, setExpandedMemory] = useState(false);
+    const [expandedArt, setExpandedArt] = useState(false);
 
     useEffect(() => {
         registerContent(contentRef, [
@@ -29,8 +30,12 @@ const Home = () => {
             // Se logado, navega para o modo
             navigate(mode === 'memory' ? '/story' : '/artsearch');
         } else {
-            // Se não logado, expande/recolhe a explicação
-            setExpandedMode(expandedMode === mode ? null : mode);
+            // Se não logado, expande/recolhe a explicação de forma independente
+            if (mode === 'memory') {
+                setExpandedMemory(!expandedMemory);
+            } else {
+                setExpandedArt(!expandedArt);
+            }
         }
     };
 
@@ -47,7 +52,7 @@ const Home = () => {
                 <div className="options-grid">
                     {/* Memory Reconstruction Card */}
                     <div 
-                        className={`option-card ${expandedMode === 'memory' ? 'expanded' : ''} ${!isLoggedIn ? 'clickable' : ''}`}
+                        className={`option-card ${expandedMemory ? 'expanded' : ''} ${!isLoggedIn ? 'clickable' : ''}`}
                         onClick={() => handleModeClick('memory')}
                     >
                         <div className="option-header">
@@ -58,7 +63,7 @@ const Home = () => {
                             <p className="option-brief">{t('home.memoryReconstructionDesc')}</p>
                         </div>
 
-                        {!isLoggedIn && expandedMode === 'memory' && (
+                        {!isLoggedIn && expandedMemory && (
                             <div className="option-expanded-content">
                                 <div className="expanded-section">
                                     <h3>{t('home.howItWorks')}</h3>
@@ -120,7 +125,7 @@ const Home = () => {
                                     className="collapse-button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setExpandedMode(null);
+                                        setExpandedMemory(false);
                                     }}
                                 >
                                     {t('home.showLess')}
@@ -128,7 +133,7 @@ const Home = () => {
                             </div>
                         )}
 
-                        {!isLoggedIn && expandedMode !== 'memory' && (
+                        {!isLoggedIn && !expandedMemory && (
                             <button className="expand-button">
                                 {t('home.learnMore')}
                             </button>
@@ -137,7 +142,7 @@ const Home = () => {
 
                     {/* Art Exploration Card */}
                     <div 
-                        className={`option-card ${expandedMode === 'art' ? 'expanded' : ''} ${!isLoggedIn ? 'clickable' : ''}`}
+                        className={`option-card ${expandedArt ? 'expanded' : ''} ${!isLoggedIn ? 'clickable' : ''}`}
                         onClick={() => handleModeClick('art')}
                     >
                         <div className="option-header">
@@ -148,7 +153,7 @@ const Home = () => {
                             <p className="option-brief">{t('home.artExplorationDesc')}</p>
                         </div>
 
-                        {!isLoggedIn && expandedMode === 'art' && (
+                        {!isLoggedIn && expandedArt && (
                             <div className="option-expanded-content">
                                 <div className="expanded-section">
                                     <h3>{t('home.howItWorks')}</h3>
@@ -201,7 +206,7 @@ const Home = () => {
                                     className="collapse-button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setExpandedMode(null);
+                                        setExpandedArt(false);
                                     }}
                                 >
                                     {t('home.showLess')}
@@ -209,7 +214,7 @@ const Home = () => {
                             </div>
                         )}
 
-                        {!isLoggedIn && expandedMode !== 'art' && (
+                        {!isLoggedIn && !expandedArt && (
                             <button className="expand-button">
                                 {t('home.learnMore')}
                             </button>

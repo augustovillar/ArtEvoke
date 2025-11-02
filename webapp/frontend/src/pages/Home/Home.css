@@ -13,12 +13,11 @@
 .hero-section {
     background-color: var(--container-color); /* Use container color from theme */
     border-radius: 12px; /* More rounded corners */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Shadow color might need to be specific for theme */
-    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Same shadow as cards */
+    padding: 30px;
     text-align: center;
     margin-bottom: 40px; /* Space below the hero section */
-    width: 100%; /* Take full width of home-container */
-    max-width: 800px; /* Max width for readability */
+    width: 100%; /* Take full width like other cards */
 }
 
 .hero-title {
@@ -41,11 +40,10 @@
 }
 
 .options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for cards */
+    display: flex;
+    flex-direction: column; /* Stack cards vertically */
     gap: 30px; /* Spacing between cards */
-    justify-content: center;
-    align-items: stretch; /* Make cards same height */
+    align-items: stretch; /* Cards take full width */
 }
 
 .option-card {
@@ -64,6 +62,7 @@
     justify-content: flex-start; /* Align content to start */
     overflow: hidden; /* Hide overflow content during expansion */
     cursor: pointer;
+    width: 100%; /* Take full width */
 }
 
 .option-card.clickable {
@@ -71,7 +70,6 @@
 }
 
 .option-card.expanded {
-    grid-column: 1 / -1; /* Span full width when expanded */
     max-height: none;
     min-height: auto;
 }
