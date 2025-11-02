@@ -208,6 +208,27 @@
     font-size: 16px;
 }
 
+/* Loading spinner animation */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
+    font-size: 20px;
+}
+
 /* Button styles for session mode */
 .primary-button {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './MemoryReconstruction.css';
 import { useReadAloud } from '../../contexts/ReadAloudContext';
 import InterruptionModal from '../../components/interruptionModal';
@@ -13,13 +14,14 @@ import ImageSelectionGrid from './components/ImageSelectionGrid';
 // Hooks
 import useStorySubmit from './hooks/useStorySubmit';
 import useImageSelection from './hooks/useImageSelection';
-import useStoryOutOfSessionSave from './hooks/useStoryOutOfSessionSave';
+import useSave from './hooks/useSave';
 
 const MemoryReconstruction = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
+    const { t } = useTranslation('common');
 
     // Estados locais
     const [storyText, setStoryText] = useState('');
@@ -40,11 +42,20 @@ const MemoryReconstruction = () => {
         selectImage, 
         clearSelection 
     } = useImageSelection();
+    
+    // Reset save state when user selects a different favorite image
+    const handleImageSelect = (sectionIndex, imageUrl) => {
+        selectImage(sectionIndex, imageUrl);
+        resetSaveState();
+    };
 
     const { 
-        saveMessage, 
-        saveOutOfSessionStory 
-    } = useStoryOutOfSessionSave();
+        saveMessage,
+        isSaving,
+        hasSaved,
+        saveStory,
+        resetSaveState
+    } = useSave();
 
     // Verifica se está em modo sessão (com interrupção e avaliação)
     // PARA TESTE: deixado como true para sempre mostrar a interrupção
@@ -62,19 +73,20 @@ const MemoryReconstruction = () => {
 
     const handleSubmit = () => {
         clearSelection();
+        resetSaveState(); // Reset save state on new submission
         // Sempre mostrar 6 imagens por seção
         submitStory(storyText, language, dataset, segmentation, 6);
     };
 
     // Handler para modo sessão (inSession): salva e vai para interrupção
-    const handleInSession = () => {
-        // No save here; just open the interruption modal. The save will be done in MemoryEvaluation.
+    const handleInSession = async () => {
+        await handleSave()
         setShowInterruption(true);
     };
 
     // Handler para modo livre (outOfSession): apenas salva
-    const handleOutOfSession = () => {
-        saveOutOfSessionStory(
+    const handleSave = async () => {
+        await saveStory(
             storyText,
             selectedImagesPerSection,
             sectionsWithImages,
@@ -82,12 +94,11 @@ const MemoryReconstruction = () => {
             dataset,
             segmentation
         );
-        alert("História salva com sucesso!");
     };
 
     // Handler para limpar seleção (modo livre)
     const handleClearSelection = () => {
-        if (window.confirm("Tem certeza que deseja limpar todas as seleções?")) {
+        if (window.confirm(t('memoryReconstruction.confirmClearSelection'))) {
             clearSelection();
         }
     };
@@ -157,12 +168,14 @@ const MemoryReconstruction = () => {
                 <ImageSelectionGrid
                     sectionsWithImages={sectionsWithImages}
                     selectedImagesPerSection={selectedImagesPerSection}
-                    onImageClick={selectImage}
+                    onImageClick={handleImageSelect}
                     onInSession={handleInSession}
-                    onOutOfSession={handleOutOfSession}
+                    onSave={handleSave}
                     onClearSelection={handleClearSelection}
                     isSessionMode={isSessionMode}
                     loading={loading}
+                    isSaving={isSaving}
+                    hasSaved={hasSaved}
                     storyText={storyText}
                     saveMessage={saveMessage}
                 />

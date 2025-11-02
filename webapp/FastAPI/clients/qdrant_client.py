@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient
 import time
-from api_types.art import Dataset
+from api_types.common import Dataset
 
 # Global variables
 _qdrant_client = None

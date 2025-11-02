@@ -6,10 +6,12 @@ const ImageSelectionGrid = ({
     selectedImagesPerSection,
     onImageClick,
     onInSession,
-    onOutOfSession,
+    onSave,
     onClearSelection,
     isSessionMode,
     loading,
+    isSaving,
+    hasSaved,
     storyText,
     saveMessage
 }) => {
@@ -56,41 +58,57 @@ const ImageSelectionGrid = ({
             ))}
             <div className="buttons-container">
                 {isSessionMode ? (
-                    // Modo Sessão: apenas botão de continuar para interrupção e avaliação
-                    <button
-                        className="submit-button primary-button"
-                        onClick={onInSession}
-                        disabled={
-                            loading || 
-                            Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
-                        }
-                    >
-                        {t('memoryReconstruction.continueSession') || 'Continuar Sessão'}
-                    </button>
+                    // Modo Sessão: botão de continuar para interrupção e avaliação + botão de salvar
+                    <>
+                        <button
+                            className="submit-button"
+                            onClick={onSave}
+                            disabled={
+                                loading || 
+                                isSaving ||
+                                hasSaved ||
+                                Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
+                            }
+                        >
+                            {isSaving ? <span className="loading-spinner">◐</span> : (hasSaved ? t('common.saved') : t('common.save'))}
+                        </button>
+                        <button
+                            className="submit-button"
+                            onClick={onInSession}
+                            disabled={
+                                loading ||
+                                isSaving ||
+                                Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
+                            }
+                        >
+                            {isSaving ? <span className="loading-spinner">◐</span> : (t('memoryReconstruction.continueSession') || 'Continuar Sessão')}
+                        </button>
+                    </>
                 ) : (
                     // Modo Livre: botões de salvar e limpar
                     <>
                         <button
-                            className="submit-button secondary-button"
+                            className="submit-button"
                             onClick={onClearSelection}
                             disabled={loading || Object.keys(selectedImagesPerSection).length === 0}
                         >
                             {t('memoryReconstruction.clearSelection') || 'Limpar Seleção'}
                         </button>
                         <button
-                            className="submit-button primary-button"
-                            onClick={onOutOfSession}
+                            className="submit-button"
+                            onClick={onSave}
                             disabled={
                                 loading || 
+                                isSaving ||
+                                hasSaved ||
                                 Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length
                             }
                         >
-                            {t('memoryReconstruction.saveStory') || 'Salvar História'}
+                            {isSaving ? <span className="loading-spinner">◐</span> : (hasSaved ? t('common.saved') : t('common.save'))}
                         </button>
                     </>
                 )}
             </div>
-            {saveMessage && <p>{saveMessage}</p>}
         </div>
     );
 };
