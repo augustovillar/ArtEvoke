@@ -13,12 +13,11 @@
 .hero-section {
     background-color: var(--container-color); /* Use container color from theme */
     border-radius: 12px; /* More rounded corners */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Shadow color might need to be specific for theme */
-    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Same shadow as cards */
+    padding: 30px;
     text-align: center;
     margin-bottom: 40px; /* Space below the hero section */
-    width: 100%; /* Take full width of home-container */
-    max-width: 800px; /* Max width for readability */
+    width: 100%; /* Take full width like other cards */
 }
 
 .hero-title {
@@ -41,11 +40,10 @@
 }
 
 .options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for cards */
+    display: flex;
+    flex-direction: column; /* Stack cards vertically */
     gap: 30px; /* Spacing between cards */
-    justify-content: center;
-    align-items: stretch; /* Make cards same height */
+    align-items: stretch; /* Cards take full width */
 }
 
 .option-card {
@@ -58,16 +56,244 @@
     flex-direction: column;
     align-items: center;
     padding: 30px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effects */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, max-height 0.5s ease; /* Smooth hover effects */
     text-align: center;
     min-height: 250px; /* Ensure a minimum height for cards */
-    justify-content: center; /* Vertically center content */
+    justify-content: flex-start; /* Align content to start */
+    overflow: hidden; /* Hide overflow content during expansion */
+    cursor: pointer;
+    width: 100%; /* Take full width */
 }
 
-.option-card:hover {
+.option-card.clickable {
+    cursor: pointer;
+}
+
+.option-card.expanded {
+    max-height: none;
+    min-height: auto;
+}
+
+.option-card:hover:not(.expanded) {
     transform: translateY(-8px); /* Lift card on hover */
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
 }
+
+.option-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.option-brief {
+    color: var(--text-color-paragraph);
+    margin: 10px 0;
+    font-size: 0.95em;
+}
+
+.option-expanded-content {
+    width: 100%;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid var(--border-color, #e0e0e0);
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.expanded-section {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.expanded-section h3 {
+    color: var(--text-color-darker);
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.how-it-works-list {
+    list-style-position: inside;
+    color: var(--text-color-paragraph);
+    line-height: 1.8;
+    padding-left: 20px;
+}
+
+.how-it-works-list li {
+    margin-bottom: 10px;
+}
+
+.example-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.example-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.example-image-placeholder {
+    background-color: var(--icon-bg-color, #e0f2f7);
+    border-radius: 8px;
+    padding: 40px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    color: var(--text-color-darker);
+    font-weight: 500;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.example-image-placeholder.selected {
+    border-color: var(--primary-color, #2196F3);
+    background-color: var(--primary-light, #e3f2fd);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.example-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.example-section-item {
+    background-color: var(--container-color);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color, #2196F3);
+}
+
+.example-section-item h4 {
+    color: var(--text-color-darker);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.section-text {
+    color: var(--text-color-paragraph);
+    font-style: italic;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.keywords-section {
+    margin-bottom: 20px;
+}
+
+.keywords-section h4 {
+    color: var(--text-color-darker);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.keywords-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.keyword-tag {
+    background-color: var(--primary-color, #2196F3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.example-story {
+    background-color: var(--icon-bg-color, #f5f5f5);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color, #2196F3);
+}
+
+.example-text {
+    color: var(--text-color-paragraph);
+    font-style: italic;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.example-description {
+    color: var(--text-color-paragraph);
+    line-height: 1.6;
+    margin: 10px 0 0 0;
+}
+
+.expand-button,
+.collapse-button {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.expand-button:hover,
+.collapse-button:hover {
+    background-color: var(--button-hover-bg);
+    transform: translateY(-2px);
+}
+
+.collapse-button {
+    width: 100%;
+    margin-top: 30px;
+}
+
+.login-prompt {
+    margin-top: 40px;
+    padding: 30px;
+    background-color: var(--container-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.login-prompt p {
+    color: var(--text-color-paragraph);
+    font-size: 1.1em;
+    margin-bottom: 20px;
+}
+
+.login-prompt-button {
+    padding: 12px 30px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.login-prompt-button:hover {
+    background-color: var(--button-hover-bg);
+    transform: translateY(-2px);
+}
+
 
 .option-icon-wrapper {
     /* You might need a specific variable for icon background if it needs to change */
