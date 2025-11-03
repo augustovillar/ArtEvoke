@@ -14,19 +14,9 @@ class Language(str, Enum):
     en = "en"
     pt = "pt"
 
-
-class SavedArtSearch(BaseModel):
-    text: str
-    selectedImagesByDataset: Dict[str, List[str]] = Field(default_factory=dict)
-    dateAdded: datetime
-    _id: Optional[str] = None
-
-
-class SavedStoryGeneration(BaseModel):
-    text: str
-    images: List[str]
-    dateAdded: datetime
-    _id: Optional[str] = None
+class SegmentationStrategy(str, Enum):
+    conservative = "conservative"
+    broader = "broader"
 
 
 class ImageItem(BaseModel):
@@ -84,24 +74,10 @@ class SelectImagesPerSectionRequestDTO(BaseModel):
 
 
 class GenerateStoryRequestDTO(BaseModel):
-    selectedImagesByDataset: Dict[str, List[str]]
+    selectedImageIds: List[str]
 
 
 class SelectImagesRVRequestDTO(BaseModel):
     story: str
     dataset: Dataset
     sections: List[int]
-
-
-class SaveStoryRequest(BaseModel):
-    storyText: str
-    selectedImagesByDataset: Dict[str, List[str]]
-    sessionId: Optional[str] = None
-    evaluationId: Optional[str] = None
-
-
-class SaveGenerationRequest(BaseModel):
-    selectedImages: List[str]
-    generatedStory: str
-    sessionId: Optional[str] = None
-    evaluationId: Optional[str] = None

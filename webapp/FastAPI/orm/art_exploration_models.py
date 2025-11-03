@@ -15,7 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import Base
-from api_types.art import Dataset
+from api_types.common import Dataset, Language
 
 class ArtExploration(Base):
     """ArtExploration table - stores art exploration sessions."""
@@ -43,12 +43,7 @@ class ArtExploration(Base):
         Enum(Dataset, name="art_exploration_dataset"),
         nullable=False,
     )
-    language = Column(Enum("EN", "PT", name="art_exploration_language"), nullable=False)
-    in_session = Column(
-        Enum("true", "false", name="art_exploration_in_session"),
-        nullable=False,
-        default="false",
-    )
+    language = Column(Enum(Language, name="art_exploration_language"), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships

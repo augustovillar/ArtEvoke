@@ -1,17 +1,25 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const useStoryOutOfSessionSave = () => {
+export const useSave = () => {
     const { t } = useTranslation('common');
     const [saveMessage, setSaveMessage] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [hasSaved, setHasSaved] = useState(false);
 
-    const saveOutOfSessionStory = async (responseText, selectedImages, sessionId = null, evaluationId = null) => {
+    const saveStory = async (responseText, selectedImages, dataset, language) => {
+        // Prevent multiple saves - set saving state immediately
+        if (isSaving) return { success: false, message: 'Already saving...' };
+        
+        setIsSaving(true);
+
         const token = localStorage.getItem('token');
 
         if (!token) {
             const message = t('artExploration.loginToSave');
             setSaveMessage(message);
             setTimeout(() => setSaveMessage(''), 3000);
+            setIsSaving(false);
             return { success: false, message };
         }
 
@@ -19,33 +27,24 @@ export const useStoryOutOfSessionSave = () => {
             const message = t('artExploration.noStoryToSave');
             setSaveMessage(message);
             setTimeout(() => setSaveMessage(''), 3000);
+            setIsSaving(false);
             return { success: false, message };
         }
-
-        const selectedImagesByDatasetForSave = {};
-        const allDatasets = ['wikiart', 'semart', 'ipiranga'];
-        allDatasets.forEach(ds => {
-            selectedImagesByDatasetForSave[ds] = [];
-        });
-
-        selectedImages.forEach(img => {
-            if (selectedImagesByDatasetForSave[img.dataset]) {
-                selectedImagesByDatasetForSave[img.dataset].push(img.url);
-            }
-        });
-
         try {
-            const response = await fetch(`/api/save-story`, {
+            const response = await fetch(`/api/art/save`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    storyText: responseText,
-                    selectedImagesByDataset: selectedImagesByDatasetForSave,
-                    sessionId: sessionId,
-                    evaluationId: evaluationId,
+                    story_generated: responseText,
+                    dataset: dataset,
+                    language: language,
+                    images_selected: selectedImages.map((img, index) => ({
+                        id: img.id,
+                        display_order: index + 1
+                    })),
                 }),
             });
 
@@ -63,6 +62,7 @@ export const useStoryOutOfSessionSave = () => {
                 selectedImages: selectedImages,
             };
 
+            setHasSaved(true); // Mark as saved successfully
             return { success: true, message: successMessage, data: saveData };
         } catch (error) {
             console.error('There was a problem saving the story:', error);
@@ -70,12 +70,22 @@ export const useStoryOutOfSessionSave = () => {
             setSaveMessage(errorMessage);
             setTimeout(() => setSaveMessage(''), 3000);
             return { success: false, message: errorMessage, error };
+        } finally {
+            setIsSaving(false);
         }
+    };
+
+    const resetSaveState = () => {
+        setHasSaved(false);
     };
 
     return {
         saveMessage,
         setSaveMessage,
-        saveOutOfSessionStory
+        isSaving,
+        hasSaved,
+        saveStory,
+        resetSaveState
     };
 };
+

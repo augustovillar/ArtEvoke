@@ -5,11 +5,12 @@ export const useImageSelection = () => {
 
     const handleImageToggle = (imageToToggle) => {
         setSelectedImages(prevSelected => {
-            const isSelected = prevSelected.some(img => img.url === imageToToggle.url);
+            const isSelected = prevSelected.some(img => img.id === imageToToggle.id);
             if (isSelected) {
-                return prevSelected.filter(img => img.url !== imageToToggle.url);
+                return prevSelected.filter(img => img.id !== imageToToggle.id);
             } else {
                 return [...prevSelected, { 
+                    id: imageToToggle.id,
                     url: imageToToggle.url, 
                     name: imageToToggle.name, 
                     dataset: imageToToggle.dataset 

@@ -16,7 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import Base
-from api_types.art import Dataset
+from api_types.common import Dataset, Language, SegmentationStrategy
 
 class MemoryReconstruction(Base):
     """MemoryReconstruction table - stores memory reconstruction sessions."""
@@ -40,10 +40,10 @@ class MemoryReconstruction(Base):
         nullable=False,
     )
     language = Column(
-        Enum("EN", "PT", name="memory_reconstruction_language"), nullable=False
+        Enum(Language, name="memory_reconstruction_language"), nullable=False
     )
     segmentation_strategy = Column(
-        Enum("Conservative", "Broader", name="segmentation_strategy"), nullable=False
+        Enum(SegmentationStrategy, name="segmentation_strategy"), nullable=False
     )
     in_session = Column(
         Enum("true", "false", name="memory_reconstruction_in_session"),

@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 const GeneratedStory = ({ 
     responseText, 
     onRegenerate, 
-    onCopyToClipboard, 
-    onSave, 
-    isGenerating, 
-    saveMessage,
-    isSessionMode 
+    onSave,
+    onContinue,
+    isGenerating,
+    isSaving,
+    hasSaved,
+    isSessionMode
 }) => {
     const { t } = useTranslation('common');
 
@@ -28,23 +29,35 @@ const GeneratedStory = ({
                 >
                     {t('artExploration.regenerateStory')}
                 </button>
-                <button 
-                    className="submit-button" 
-                    onClick={onCopyToClipboard}
-                >
-                    {t('artExploration.copyText')}
-                </button>
-                <button 
-                    className="submit-button" 
-                    onClick={onSave}
-                >
-                    {isSessionMode 
-                        ? (t('artExploration.continueToEvaluation') || 'Prosseguir para Avaliação')
-                        : t('artExploration.saveToAccount')
-                    }
-                </button>
+                {isSessionMode ? (
+                    // Modo Sessão: botão de salvar + botão de continuar para interrupção e avaliação
+                    <>
+                        <button
+                            className="submit-button"
+                            onClick={onSave}
+                            disabled={isSaving || hasSaved}
+                        >
+                            {isSaving ? <span className="loading-spinner">◐</span> : (hasSaved ? t('common.saved') : t('common.save'))}
+                        </button>
+                        <button
+                            className="submit-button"
+                            onClick={onContinue}
+                            disabled={isSaving}
+                        >
+                            {isSaving ? <span className="loading-spinner">◐</span> : t('artExploration.continueToEvaluation')}
+                        </button>
+                    </>
+                ) : (
+                    // Modo Livre: botão de salvar
+                    <button
+                        className="submit-button"
+                        onClick={onSave}
+                        disabled={isSaving || hasSaved}
+                    >
+                        {isSaving ? <span className="loading-spinner">◐</span> : (hasSaved ? t('common.saved') : t('common.save'))}
+                    </button>
+                )}
             </div>
-            {saveMessage && <p>{saveMessage}</p>}
         </div>
     );
 };

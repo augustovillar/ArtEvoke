@@ -1,6 +1,6 @@
 import numpy as np
 from orm import CatalogItem
-from api_types.art import Dataset
+from api_types.common import Dataset
 from clients import get_embedding_client, get_database_client, get_qdrant_client, encode_text
 
 # Lazy client initialization
@@ -100,7 +100,7 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
             
             if not catalog_item:
                 continue
-            print("passou")
+            
             # Get the specific artwork data based on source
             artwork_data = None
             image_url = None
