@@ -1,6 +1,6 @@
 // src/ArtExploration.js
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './ArtExploration.css';
 import InterruptionModal from '../../components/interruptionModal';

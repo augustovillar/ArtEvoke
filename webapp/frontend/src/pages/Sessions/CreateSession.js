@@ -14,10 +14,31 @@ const CreateSession = ({ patientId, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        fetchDefaultInterruptionTime();
         if (!patientId) {
             fetchPatients();
         }
     }, [patientId]);
+
+    const fetchDefaultInterruptionTime = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/sessions/config/default-interruption-time', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const defaultTime = data.default_interruption_time || 10;
+                setFormData(prev => ({ ...prev, interruption_time: defaultTime }));
+            }
+        } catch (error) {
+            console.error('Error fetching default interruption time:', error);
+            // Keep default value of 10
+        }
+    };
 
     const fetchPatients = async () => {
         try {
@@ -158,7 +179,6 @@ const CreateSession = ({ patientId, onClose, onSuccess }) => {
                         >
                             <option value="memory_reconstruction">{t('sessions.modes.memory_reconstruction')}</option>
                             <option value="art_exploration">{t('sessions.modes.art_exploration')}</option>
-                            <option value="both">{t('sessions.modes.both')}</option>
                         </select>
                         {errors.mode && <span className="error-message">{errors.mode}</span>}
                     </div>

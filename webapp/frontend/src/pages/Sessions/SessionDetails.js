@@ -12,10 +12,6 @@ const SessionDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        fetchSessionDetails();
-    }, [sessionId]);
-
     const fetchSessionDetails = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -61,6 +57,10 @@ const SessionDetails = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchSessionDetails();
+    }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const getStatusClass = (status) => {
         switch (status) {

@@ -134,19 +134,21 @@ CREATE TABLE IF NOT EXISTS CatalogItem (
 
 
 /*  ====================================================== */
-/*  Art Exploration */
+/*  Art Exploration (FK to Session added later) */
 /*  ====================================================== */
 CREATE TABLE IF NOT EXISTS ArtExploration (
   id              CHAR(36)    NOT NULL,
   patient_id      CHAR(36)    NOT NULL,
-  story_generated TEXT        NOT NULL,
-  dataset         ENUM('ipiranga', 'wikiart','semart') NOT NULL,
-  language        ENUM('en','pt') NOT NULL,
+  session_id      CHAR(36)    NULL,
+  story_generated TEXT        NULL,
+  dataset         ENUM('ipiranga', 'wikiart','semart') NULL,
+  language        ENUM('en','pt') NULL,
   created_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_art_exploration PRIMARY KEY (id),
   CONSTRAINT fk_artexp_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   INDEX idx_artexp_patient (patient_id),
+  INDEX idx_artexp_session (session_id),
   INDEX idx_artexp_dataset (dataset),
   INDEX idx_artexp_language (language)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -166,19 +168,21 @@ CREATE TABLE IF NOT EXISTS Images (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*  ====================================================== */
-/*  3) Memory Reconstruction (modo de reconstrução de memória) */
+/*  3) Memory Reconstruction (FK to Session added later) */
 /*  ====================================================== */
 CREATE TABLE IF NOT EXISTS MemoryReconstruction (
     id                    CHAR(36)   NOT NULL,
     patient_id            CHAR(36)   NOT NULL,
-    story                 TEXT NOT NULL,
-    dataset               ENUM('ipiranga', 'wikiart', 'semart') NOT NULL,   
-    language              ENUM('en','pt') NOT NULL,
-    segmentation_strategy ENUM('conservative','broader') NOT NULL,
+    session_id            CHAR(36)   NULL,
+    story                 TEXT NULL,
+    dataset               ENUM('ipiranga', 'wikiart', 'semart') NULL,   
+    language              ENUM('en','pt') NULL,
+    segmentation_strategy ENUM('conservative','broader') NULL,
     created_at            TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_memrec PRIMARY KEY (id),
     CONSTRAINT fk_memrec_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
-        ON UPDATE CASCADE ON DELETE RESTRICT
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    INDEX idx_memrec_session (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*  Seções da história com até 6 imagens + favorita */
@@ -226,8 +230,8 @@ CREATE TABLE IF NOT EXISTS `Session` (
   doctor_id                 CHAR(36)  NOT NULL,
   memory_reconstruction_id  CHAR(36)  NULL,
   art_exploration_id        CHAR(36)  NULL,
-  mode ENUM('art_exploration','memory_reconstruction','both') NOT NULL,
-  interruption_time         SMALLINT  NOT NULL DEFAULT 10,
+  mode ENUM('art_exploration','memory_reconstruction') NOT NULL,
+  interruption_time         SMALLINT  NOT NULL DEFAULT 10 CHECK (interruption_time BETWEEN 1 AND 300),
   status ENUM('pending','in_progress','completed') NOT NULL DEFAULT 'pending',
   started_at DATE NULL,
   ended_at   DATE NULL,
@@ -391,3 +395,16 @@ CREATE TABLE IF NOT EXISTS PosEvaluation (
     FOREIGN KEY (session_id) REFERENCES Session(id)
       ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*  ====================================================== */
+/*  Add Foreign Keys for session_id (after Session exists) */
+/*  ====================================================== */
+ALTER TABLE ArtExploration 
+  ADD CONSTRAINT fk_artexp_session 
+  FOREIGN KEY (session_id) REFERENCES `Session`(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE MemoryReconstruction 
+  ADD CONSTRAINT fk_memrec_session 
+  FOREIGN KEY (session_id) REFERENCES `Session`(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;

@@ -57,10 +57,15 @@ class Session(Base):
         nullable=True,
     )
     mode = Column(
-        Enum("art_exploration", "memory_reconstruction", "both", name="session_mode"),
+        Enum("art_exploration", "memory_reconstruction", name="session_mode"),
         nullable=False,
     )
-    interruption_time = Column(SmallInteger, nullable=False, default=10)
+    interruption_time = Column(
+        SmallInteger, 
+        nullable=False, 
+        default=10,
+        # Aligns with CHECK constraint in SQL: interruption_time BETWEEN 1 AND 300
+    )
     status = Column(
         Enum("pending", "in_progress", "completed", name="session_status"),
         nullable=False,
@@ -74,9 +79,15 @@ class Session(Base):
     patient = relationship("Patient", back_populates="sessions")
     doctor = relationship("Doctor", back_populates="sessions")
     memory_reconstruction = relationship(
-        "MemoryReconstruction", back_populates="sessions"
+        "MemoryReconstruction", 
+        back_populates="sessions",
+        foreign_keys="[Session.memory_reconstruction_id]"
     )
-    art_exploration = relationship("ArtExploration", back_populates="sessions")
+    art_exploration = relationship(
+        "ArtExploration", 
+        back_populates="sessions",
+        foreign_keys="[Session.art_exploration_id]"
+    )
     pre_evaluation = relationship(
         "PreEvaluation",
         back_populates="session",

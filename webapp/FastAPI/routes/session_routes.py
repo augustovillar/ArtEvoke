@@ -22,6 +22,15 @@ from api_types.session import SessionCreate, SessionUpdate, SessionResponse
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
+# Default interruption time (in seconds) - aligned with frontend config
+DEFAULT_INTERRUPTION_TIME = 10
+
+
+@router.get("/config/default-interruption-time")
+async def get_default_interruption_time():
+    """Get the default interruption time for sessions"""
+    return {"default_interruption_time": DEFAULT_INTERRUPTION_TIME}
+
 
 @router.post("/", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
 async def create_session(
@@ -30,6 +39,21 @@ async def create_session(
     current_user: dict = Depends(get_current_user),
 ):
     """Create a new session for a patient (doctor only)"""
+    # Validate mode (only 'memory_reconstruction' or 'art_exploration', NOT 'both')
+    if session_data.mode not in ["memory_reconstruction", "art_exploration"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid mode. Must be 'memory_reconstruction' or 'art_exploration'",
+        )
+    
+    # Validate interruption_time (use default if not provided, ensure within range)
+    interruption_time = session_data.interruption_time if session_data.interruption_time is not None else DEFAULT_INTERRUPTION_TIME
+    if interruption_time < 1 or interruption_time > 300:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Interruption time must be between 1 and 300 seconds",
+        )
+    
     # Verify doctor exists
     doctor = db.query(Doctor).filter(Doctor.id == current_user["id"]).first()
     if not doctor:
@@ -60,55 +84,58 @@ async def create_session(
             detail="You don't have access to this patient",
         )
 
-    # Create evaluation instance(s) based on session mode
+    # Create evaluation instance based on session mode
+    # DECISÃO: Criar o objeto do modo AGORA (na criação da sessão)
+    # para ter o ID disponível imediatamente
     memory_reconstruction_id = None
     art_exploration_id = None
 
-    if session_data.mode in ["memory_reconstruction", "both"]:
-        # Create MemoryReconstruction instance with placeholder data
-        mr_instance = MemoryReconstruction(
-            id=str(uuid.uuid4()),
-            patient_id=session_data.patient_id,
-            story="",  # Will be filled by patient
-            dataset="wikiart",  # Default, patient can change
-            language="PT",  # Default based on patient preference
-            segmentation_strategy="Conservative",  # Default
-            in_session="true",
-            created_at=datetime.utcnow(),
-        )
-        db.add(mr_instance)
-        db.flush()  # Get the ID without committing
-        memory_reconstruction_id = mr_instance.id
-
-    if session_data.mode in ["art_exploration", "both"]:
-        # Create ArtExploration instance with placeholder data
-        ae_instance = ArtExploration(
-            id=str(uuid.uuid4()),
-            patient_id=session_data.patient_id,
-            story_generated="",  # Will be generated during session
-            dataset="wikiart",  # Default
-            language="PT",  # Default
-            in_session="true",
-            created_at=datetime.utcnow(),
-        )
-        db.add(ae_instance)
-        db.flush()  # Get the ID without committing
-        art_exploration_id = ae_instance.id
-
-    # Create new session linked to evaluation instance(s)
+    # Create new session first to get session_id
     new_session = SessionModel(
         id=str(uuid.uuid4()),
         patient_id=session_data.patient_id,
         doctor_id=doctor.id,
         mode=session_data.mode,
-        memory_reconstruction_id=memory_reconstruction_id,
-        art_exploration_id=art_exploration_id,
-        interruption_time=session_data.interruption_time or 10,
+        memory_reconstruction_id=None,  # Will be set after creating evaluation object
+        art_exploration_id=None,  # Will be set after creating evaluation object
+        interruption_time=interruption_time,
         status="pending",
         created_at=datetime.utcnow(),
     )
-
     db.add(new_session)
+    db.flush()  # Get session ID without committing
+
+    # Create evaluation instance based on session mode
+    # Fields will be filled by patient during session (dataset, language, story, etc)
+    if session_data.mode == "memory_reconstruction":
+        mr_instance = MemoryReconstruction(
+            id=str(uuid.uuid4()),
+            patient_id=session_data.patient_id,
+            session_id=new_session.id,
+            story=None,  # Filled when patient starts session
+            dataset=None,  # Selected during session by patient
+            language=None,  # Selected during session by patient
+            segmentation_strategy=None,  # Selected during session by patient
+            created_at=datetime.utcnow(),
+        )
+        db.add(mr_instance)
+        db.flush()
+        new_session.memory_reconstruction_id = mr_instance.id
+
+    elif session_data.mode == "art_exploration":
+        ae_instance = ArtExploration(
+            id=str(uuid.uuid4()),
+            patient_id=session_data.patient_id,
+            session_id=new_session.id,
+            story_generated=None,  # Generated when patient completes session
+            dataset=None,  # Selected during session by patient
+            language=None,  # Selected during session by patient
+            created_at=datetime.utcnow(),
+        )
+        db.add(ae_instance)
+        db.flush()
+        new_session.art_exploration_id = ae_instance.id
+
     db.commit()
     db.refresh(new_session)
 

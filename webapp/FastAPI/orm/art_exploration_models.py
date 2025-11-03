@@ -23,6 +23,7 @@ class ArtExploration(Base):
     __tablename__ = "ArtExploration"
     __table_args__ = (
         Index("idx_artexp_patient", "patient_id"),
+        Index("idx_artexp_session", "session_id"),
         Index("idx_artexp_dataset", "dataset"),
         Index("idx_artexp_language", "language"),
         {
@@ -38,12 +39,20 @@ class ArtExploration(Base):
         ForeignKey("Patient.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
     )
-    story_generated = Column(Text, nullable=False)
+    session_id = Column(
+        String(36),
+        ForeignKey("Session.id", onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+    )
+    story_generated = Column(Text, nullable=True)  # Filled when patient completes session
     dataset = Column(
         Enum(Dataset, name="art_exploration_dataset"),
-        nullable=False,
+        nullable=True,  # Selected during session by patient
     )
-    language = Column(Enum(Language, name="art_exploration_language"), nullable=False)
+    language = Column(
+        Enum(Language, name="art_exploration_language"), 
+        nullable=True  # Selected during session by patient
+    )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -51,7 +60,11 @@ class ArtExploration(Base):
     images = relationship(
         "Images", back_populates="art_exploration", cascade="all, delete-orphan"
     )
-    sessions = relationship("Session", back_populates="art_exploration")
+    sessions = relationship(
+        "Session", 
+        back_populates="art_exploration",
+        foreign_keys="[Session.art_exploration_id]"
+    )
     ae_questions = relationship(
         "AEQuestion", back_populates="art_exploration", cascade="all, delete-orphan"
     )

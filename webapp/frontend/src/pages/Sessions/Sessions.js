@@ -7,7 +7,7 @@ import './Sessions.css';
 
 const Sessions = () => {
     const { t } = useTranslation('common');
-    const { user, userType } = useAuth();
+    const { userType } = useAuth();
     const [searchParams] = useSearchParams();
     const patientId = searchParams.get('patientId');
     const [sessions, setSessions] = useState([]);
@@ -137,14 +137,10 @@ const Sessions = () => {
             });
 
             if (response.ok) {
-                // Navigate to the appropriate mode with session context
-                // For "both" mode, start with memory reconstruction first
-                let mode;
-                if (session.mode === 'memory_reconstruction' || session.mode === 'both') {
-                    mode = 'memory-reconstruction';
-                } else {
-                    mode = 'art-exploration';
-                }
+                // Navigate to the appropriate mode based on session mode
+                const mode = session.mode === 'memory_reconstruction' 
+                    ? 'memory-reconstruction' 
+                    : 'art-exploration';
                 navigate(`/${mode}?sessionId=${session.id}&interruptionTime=${session.interruption_time}`);
             } else {
                 alert(t('sessions.errors.startFailed'));

@@ -6,8 +6,18 @@ from datetime import date, datetime
 # Session types
 class SessionCreate(BaseModel):
     patient_id: str
-    mode: str  # "art_exploration", "memory_reconstruction", "both"
+    mode: str  # "art_exploration" or "memory_reconstruction" (NOT "both")
     interruption_time: Optional[int] = 10
+    
+    class Config:
+        # Add validation for mode
+        json_schema_extra = {
+            "example": {
+                "patient_id": "123e4567-e89b-12d3-a456-426614174000",
+                "mode": "memory_reconstruction",
+                "interruption_time": 10
+            }
+        }
 
 
 class SessionUpdate(BaseModel):
