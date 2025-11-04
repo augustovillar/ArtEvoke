@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from orm import get_db, Patient, Doctor as DoctorORM, PatientDoctor
 from api_types.user import Doctor, DoctorInDB, DoctorLogin, LoginResponse, MessageResponse
-from utils.auth import verify_password, get_password_hash, create_access_token, get_current_doctor
+from utils.auth import verify_password, get_password_hash, create_access_token, get_current_user, verify_doctor_role
 from api_types.patient import CreatePatientRequest, CreatePatientResponse
 import uuid
 import random
@@ -66,23 +66,26 @@ async def doctor_login(doctor_login: DoctorLogin, db: Session = Depends(get_db))
 
 
 @router.get("/profile")
-async def get_doctor_profile(current_doctor: str = Depends(get_current_doctor), db: Session = Depends(get_db)) -> DoctorInDB:
-    doctor = db.query(Doctor).filter(Doctor.id == current_doctor).first()
+async def get_doctor_profile(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> DoctorInDB:
+    doctor_id = verify_doctor_role(current_user)
+    doctor = db.query(DoctorORM).filter(DoctorORM.id == doctor_id).first()
     return DoctorInDB(
         _id=doctor.id,
         email=doctor.email,
         password=doctor.password,
         name=doctor.name,
+        date_of_birth=doctor.date_of_birth.strftime('%Y-%m-%d'),
         specialization=doctor.specialization,
     )
 
 
 @router.get("/patients")
-async def get_doctor_patients(current_doctor: str = Depends(get_current_doctor), db: Session = Depends(get_db)):
+async def get_doctor_patients(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    doctor_id = verify_doctor_role(current_user)
     # Get all patients associated with this doctor using a join for better performance
     patients_query = db.query(Patient, PatientDoctor).join(
         PatientDoctor, Patient.id == PatientDoctor.patient_id
-    ).filter(PatientDoctor.doctor_id == current_doctor).all()
+    ).filter(PatientDoctor.doctor_id == doctor_id).all()
     
     patients = []
     for patient, patient_doctor in patients_query:
@@ -118,11 +121,11 @@ def generate_unique_code(db: Session) -> str:
 @router.post("/patients", response_model=CreatePatientResponse)
 async def create_patient(
     request: CreatePatientRequest, 
-    current_doctor: str = Depends(get_current_doctor),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     # Use the authenticated doctor from JWT token
-    doctor_id = current_doctor
+    doctor_id = verify_doctor_role(current_user)
 
     # Check if email already exists
     existing = db.query(Patient).filter(Patient.email == request.email).first()
@@ -146,7 +149,7 @@ async def create_patient(
     # Create PatientDoctor relationship
     patient_doctor = PatientDoctor(
         patient_id=patient.id,
-        doctor_id=current_doctor
+        doctor_id=doctor_id
     )
     db.add(patient_doctor)
 

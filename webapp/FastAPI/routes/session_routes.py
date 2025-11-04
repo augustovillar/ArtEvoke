@@ -17,7 +17,7 @@ from orm import (
     MemoryReconstruction,
     ArtExploration,
 )
-from utils.auth import get_current_user
+from utils.auth import get_current_user, verify_doctor_role
 from api_types.session import SessionCreate, SessionUpdate, SessionResponse
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -54,14 +54,9 @@ async def create_session(
             detail="Interruption time must be between 1 and 300 seconds",
         )
     
-    # Verify doctor exists
-    doctor = db.query(Doctor).filter(Doctor.id == current_user["id"]).first()
-    if not doctor:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only doctors can create sessions",
-        )
-
+    # Verify user is doctor and get doctor ID
+    doctor_id = verify_doctor_role(current_user)
+    
     # Verify patient exists
     patient = db.query(Patient).filter(Patient.id == session_data.patient_id).first()
     if not patient:
@@ -73,7 +68,7 @@ async def create_session(
     relationship = (
         db.query(PatientDoctor)
         .filter(
-            PatientDoctor.doctor_id == doctor.id,
+            PatientDoctor.doctor_id == doctor_id,
             PatientDoctor.patient_id == session_data.patient_id
         )
         .first()
@@ -94,7 +89,7 @@ async def create_session(
     new_session = SessionModel(
         id=str(uuid.uuid4()),
         patient_id=session_data.patient_id,
-        doctor_id=doctor.id,
+        doctor_id=doctor_id,
         mode=session_data.mode,
         memory_reconstruction_id=None,  # Will be set after creating evaluation object
         art_exploration_id=None,  # Will be set after creating evaluation object

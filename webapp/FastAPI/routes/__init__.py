@@ -1,7 +1,6 @@
 from orm import get_db
 
 from . import art_routes
-from . import user_routes
 from . import doctor_routes
 from . import patient_routes
 from . import session_routes
