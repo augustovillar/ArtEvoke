@@ -2,6 +2,11 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    --color-primary: #3b82f6;
+    --color-secondary: #6b7280;
+    --color-secondary-dark: #4b5563;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
 }
 
 .session-details-header {
@@ -26,10 +31,12 @@
     cursor: pointer;
     font-size: 1rem;
     transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-back:hover {
     background-color: var(--color-secondary-dark);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .session-details-content {

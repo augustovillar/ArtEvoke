@@ -1,7 +1,3 @@
-"""
-Routes for managing sessions between doctors and patients
-"""
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -22,7 +18,6 @@ from api_types.session import SessionCreate, SessionUpdate, SessionResponse
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
-# Default interruption time (in seconds) - aligned with frontend config
 DEFAULT_INTERRUPTION_TIME = 10
 
 
@@ -79,9 +74,6 @@ async def create_session(
             detail="You don't have access to this patient",
         )
 
-    # Create evaluation instance based on session mode
-    # DECISÃO: Criar o objeto do modo AGORA (na criação da sessão)
-    # para ter o ID disponível imediatamente
     memory_reconstruction_id = None
     art_exploration_id = None
 
