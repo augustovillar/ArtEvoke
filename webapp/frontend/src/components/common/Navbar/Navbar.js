@@ -47,6 +47,7 @@ const Navbar = () => {
                     <>
                         <Link to="/story">{t('navbar.memoryReconstruction')}</Link>
                         <Link to="/artsearch">{t('navbar.artExploration')}</Link>
+                        <Link to="/sessions">{t('navbar.mySessions')}</Link>
                     </>
                 )}
                 {isLoggedIn && userType === 'doctor' && (
