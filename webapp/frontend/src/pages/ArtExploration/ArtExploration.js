@@ -1,6 +1,6 @@
 // src/ArtExploration.js
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './ArtExploration.css';
 import InterruptionModal from '../../components/interruptionModal';
@@ -17,15 +17,25 @@ import {
 } from './components';
 
 const ArtExploration = () => {
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Get sessionId from URL params
+    const sessionId = searchParams.get('sessionId');
+    const interruptionTime = searchParams.get('interruptionTime');
+
     const [storyText, setStoryText] = useState('');
     const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
 
     // Interruption states
     const [showInterruption, setShowInterruption] = useState(false);
+    
+    // Session states
+    const [loadingSession, setLoadingSession] = useState(false);
+    const [evaluationId, setEvaluationId] = useState(null);
 
-    const location = useLocation();
-    const navigate = useNavigate();
     const { t } = useTranslation('common');
 
     // Verifica se está em modo sessão (com interrupção e avaliação)
@@ -38,6 +48,47 @@ const ArtExploration = () => {
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
     const { generateLoading, responseText, generateStory } = useStoryGeneration();
     const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
+
+    // Load existing evaluation data if in session mode
+    useEffect(() => {
+        const loadSessionData = async () => {
+            if (!sessionId) return;
+
+            setLoadingSession(true);
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/sessions/${sessionId}/evaluation`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.art_exploration) {
+                        const ae = data.art_exploration;
+                        setEvaluationId(ae.id);
+                        setLanguage(ae.language?.toLowerCase() || 'en');
+                        setDataset(ae.dataset || 'wikiart');
+
+                        // If images and story exist, pre-populate them
+                        if (ae.story_generated) {
+                            // This will be handled by the useStoryGeneration hook
+                        }
+                        if (ae.images && ae.images.length > 0) {
+                            // Pre-populate selected images
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading session data:', error);
+            } finally {
+                setLoadingSession(false);
+            }
+        };
+
+        loadSessionData();
+    }, [sessionId]);
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
@@ -109,6 +160,27 @@ const ArtExploration = () => {
 
     return (
         <div>
+            {/* Session Mode Banner */}
+            {isSessionMode && (
+                <div className="session-mode-banner">
+                    <div className="banner-icon">🎯</div>
+                    <div className="banner-content">
+                        <h3>Modo Sessão Ativo</h3>
+                        <p>Esta é uma avaliação formal que será salva para revisão médica.</p>
+                    </div>
+                </div>
+            )}
+
+            {!isSessionMode && (
+                <div className="practice-mode-banner">
+                    <div className="banner-icon">🎨</div>
+                    <div className="banner-content">
+                        <h3>Modo Prática</h3>
+                        <p>Você está praticando. Seus dados serão salvos, mas não fazem parte de uma sessão formal.</p>
+                    </div>
+                </div>
+            )}
+
             <InstructionsSection />
             
             <KeywordInputForm

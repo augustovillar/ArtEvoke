@@ -1,9 +1,7 @@
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
-from fastapi import HTTPException, status, Request, Depends
-from sqlalchemy.orm import Session
-from orm import get_db, Patient, Doctor
+from fastapi import HTTPException, status, Request
 import os
 import hashlib
 
@@ -36,7 +34,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-async def get_current_user(request: Request, db: Session = Depends(get_db)) -> str:
+async def get_current_user(request: Request) -> dict:
     token = (
         request.headers.get("Authorization").split(" ")[1]
         if request.headers.get("Authorization")
@@ -48,43 +46,44 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> s
         )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("userId")
-        user = db.query(Patient).filter(Patient.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
-
-        return user.id
-    except Exception as e:
-        print(f"Token verification failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token"
-        )
-
-
-async def get_current_doctor(request: Request, db: Session = Depends(get_db)) -> str:
-    token = (
-        request.headers.get("Authorization").split(" ")[1]
-        if request.headers.get("Authorization")
-        else None
-    )
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="No token provided"
-        )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        # Check if it's a patient token
+        patient_id = payload.get("patientId")
+        if patient_id:
+            return {"id": patient_id, "role": "patient"}
+        
+        # Check if it's a doctor token
         doctor_id = payload.get("doctorId")
-        doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
-        if not doctor:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Doctor not found"
-            )
-
-        return doctor.id
+        if doctor_id:
+            return {"id": doctor_id, "role": "doctor"}
+        
+        # User not found in either table
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+        
+    except jwt.JWTError as e:
+        print(f"Token verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token"
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Token verification failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token"
         )
+
+
+def verify_doctor_role(current_user: dict) -> str:
+    """
+    Verifies that the current user is a doctor and returns the doctor ID.
+    Raises HTTPException if user is not a doctor.
+    """
+    if current_user.get("role") != "doctor":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Access denied. Doctor role required."
+        )
+    return current_user["id"]

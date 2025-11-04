@@ -1,7 +1,7 @@
 from datetime import datetime
 from .common import Dataset, Language, SegmentationStrategy
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class ImagesItem(BaseModel):
     display_order: int
@@ -16,9 +16,9 @@ class SaveArtExplorationRequestDTO(BaseModel):
 
 class ArtExplorationResponse(BaseModel):
     id: str
-    story_generated: str
-    dataset: Dataset
-    language: Language
+    story_generated: Optional[str] = None
+    dataset: Optional[Dataset] = None
+    language: Optional[Language] = None
     created_at: datetime
     images: List[ImagesItem]
 

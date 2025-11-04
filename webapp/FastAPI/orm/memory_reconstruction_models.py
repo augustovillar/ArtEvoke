@@ -22,11 +22,14 @@ class MemoryReconstruction(Base):
     """MemoryReconstruction table - stores memory reconstruction sessions."""
 
     __tablename__ = "MemoryReconstruction"
-    __table_args__ = {
-        "mysql_engine": "InnoDB",
-        "mysql_charset": "utf8mb4",
-        "mysql_collate": "utf8mb4_unicode_ci",
-    }
+    __table_args__ = (
+        Index("idx_memrec_session", "session_id"),
+        {
+            "mysql_engine": "InnoDB",
+            "mysql_charset": "utf8mb4",
+            "mysql_collate": "utf8mb4_unicode_ci",
+        },
+    )
 
     id = Column(String(36), primary_key=True)
     patient_id = Column(
@@ -34,16 +37,23 @@ class MemoryReconstruction(Base):
         ForeignKey("Patient.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
     )
-    story = Column(Text, nullable=False)
+    session_id = Column(
+        String(36),
+        ForeignKey("Session.id", onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+    )
+    story = Column(Text, nullable=True)  # Filled when patient starts session
     dataset = Column(
         Enum(Dataset, name="memory_reconstruction_dataset"),
-        nullable=False,
+        nullable=True,  # Selected during session by patient
     )
     language = Column(
-        Enum(Language, name="memory_reconstruction_language"), nullable=False
+        Enum(Language, name="memory_reconstruction_language"), 
+        nullable=True  # Selected during session by patient
     )
     segmentation_strategy = Column(
-        Enum(SegmentationStrategy, name="segmentation_strategy"), nullable=False
+        Enum(SegmentationStrategy, name="segmentation_strategy"), 
+        nullable=True  # Selected during session by patient
     )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
@@ -52,7 +62,11 @@ class MemoryReconstruction(Base):
     sections = relationship(
         "Sections", back_populates="memory_reconstruction", cascade="all, delete-orphan"
     )
-    sessions = relationship("Session", back_populates="memory_reconstruction")
+    sessions = relationship(
+        "Session", 
+        back_populates="memory_reconstruction",
+        foreign_keys="[Session.memory_reconstruction_id]"
+    )
     mr_questions = relationship(
         "MRQuestion",
         back_populates="memory_reconstruction",

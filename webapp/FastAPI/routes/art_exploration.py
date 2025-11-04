@@ -19,12 +19,12 @@ router = APIRouter()
 @router.post("/save")
 async def save_art_exploration(
     request: SaveArtExplorationRequestDTO,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     art_exploration = ArtExploration(
         id=str(uuid.uuid4()),
-        patient_id=current_user,
+        patient_id=current_user["id"],
         story_generated=request.story_generated,
         dataset=request.dataset,  
         language=request.language,
@@ -54,16 +54,18 @@ async def save_art_exploration(
 async def get_art_explorations(
     limit: int = 5,
     offset: int = 0,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Get total count
+    # Get total count (only items not in session - session_id is NULL)
     total_count = db.query(ArtExploration).filter(
-        ArtExploration.patient_id == current_user
+        ArtExploration.patient_id == current_user["id"],
+        ArtExploration.session_id.is_(None)
     ).count()
-    # Get memory reconstructions with pagination
+    # Get art explorations with pagination (only items not in session)
     art_exploration_query: List[ArtExploration] = db.query(ArtExploration).filter(
-        ArtExploration.patient_id == current_user
+        ArtExploration.patient_id == current_user["id"],
+        ArtExploration.session_id.is_(None)
     ).order_by(ArtExploration.created_at.desc()).offset(offset).limit(limit).all()
 
     art_explorations = []
@@ -101,13 +103,13 @@ async def get_art_explorations(
 @router.delete("/delete/{art_exploration_id}")
 async def delete_art_exploration(
     art_exploration_id: str,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Find the memory reconstruction
     memory_reconstruction = db.query(ArtExploration).filter(
         ArtExploration.id == art_exploration_id,
-        ArtExploration.patient_id == current_user
+        ArtExploration.patient_id == current_user["id"]
     ).first()
 
     if not memory_reconstruction:

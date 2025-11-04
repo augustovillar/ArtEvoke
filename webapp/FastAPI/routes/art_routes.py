@@ -120,7 +120,7 @@ async def generate_story(body: GenerateStoryRequestDTO, db=Depends(get_db)) -> G
 async def get_images(
     request: Request,
     ids: dict,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Check if user is authenticated

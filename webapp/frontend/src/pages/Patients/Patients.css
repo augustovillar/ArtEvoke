@@ -33,12 +33,12 @@
 
 .search-input:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    border-color: #3b82f6;
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
 }
 
 .create-patient-btn {
-    background-color: #007bff;
+    background-color: #3b82f6;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -49,32 +49,35 @@
 }
 
 .create-patient-btn:hover {
-    background-color: #0056b3;
+    background-color: #2563eb;
 }
 
 .patient-card-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
     margin-top: 15px;
 }
 
 .status-badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 8px 16px;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: normal;
+    text-align: center;
 }
 
 .status-badge.active {
-    background-color: #28a745;
-    color: white;
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
 }
 
 .status-badge.pending {
-    background-color: #ffc107;
-    color: black;
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
 }
 
 .modal-overlay {
@@ -110,7 +113,7 @@
 }
 
 .close-modal-btn {
-    background-color: #6c757d;
+    background-color: #6b7280;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -121,7 +124,7 @@
 }
 
 .close-modal-btn:hover {
-    background-color: #5a6268;
+    background-color: #4b5563;
 }
 
 .patients-list {
@@ -159,17 +162,37 @@
 }
 
 .view-patient-btn {
-    background-color: #28a745;
+    background-color: #3b82f6;
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    margin-top: 15px;
+    font-weight: normal;
     transition: background-color 0.3s;
+    width: 100%;
+    text-align: center;
 }
 
 .view-patient-btn:hover {
-    background-color: #218838;
+    background-color: #2563eb;
+}
+
+.view-sessions-btn {
+    background-color: #06b6d4;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
+    transition: background-color 0.3s;
+    width: 100%;
+    text-align: center;
+}
+
+.view-sessions-btn:hover {
+    background-color: #0891b2;
 }

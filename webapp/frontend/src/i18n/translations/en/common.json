@@ -7,6 +7,7 @@
     "about": "About",
     "memoryReconstruction": "Memory Reconstruction",
     "artExploration": "Art Exploration",
+    "mySessions": "My Sessions",
     "profile": "Profile",
     "patients": "Patients",
     "logout": "Logout",
@@ -430,5 +431,79 @@
         "emailInvalid": "Please enter a valid email address"
       }
     }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "createSession": "Create New Session",
+    "noSessions": "No sessions found.",
+    "selectPatientFirst": "Select a patient to view and create sessions.",
+    "mySessions": "My Sessions",
+    "patientSessions": "Patient Sessions",
+    "mode": "Mode",
+    "status": "Status",
+    "interruptionTime": "Interruption Time",
+    "createdAt": "Created at",
+    "startedAt": "Started at",
+    "completedAt": "Completed at",
+    "start": "Start",
+    "continue": "Continue",
+    "view": "View",
+    "delete": "Delete",
+    "modes": {
+      "memory_reconstruction": "Memory Reconstruction",
+      "art_exploration": "Art Exploration",
+      "both": "Both"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed"
+    },
+    "create": {
+      "title": "Create New Session",
+      "selectPatient": "Select Patient",
+      "selectPatientPlaceholder": "Choose a patient...",
+      "selectMode": "Select Mode",
+      "interruptionTime": "Interruption Time (seconds)",
+      "interruptionTimeHelp": "Wait time before evaluation (default: 10 seconds)",
+      "submit": "Create Session",
+      "cancel": "Cancel",
+      "success": "Session created successfully!",
+      "error": "Failed to create session. Please try again.",
+      "validation": {
+        "patientRequired": "Please select a patient",
+        "modeRequired": "Please select a mode",
+        "interruptionTimeMin": "Interruption time must be at least 1 second",
+        "interruptionTimeMax": "Interruption time cannot exceed 300 seconds"
+      }
+    },
+    "deleteConfirm": {
+      "title": "Confirm Deletion",
+      "message": "Are you sure you want to delete this session? This action cannot be undone.",
+      "confirm": "Yes, Delete",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "loadFailed": "Failed to load sessions",
+      "createFailed": "Failed to create session",
+      "deleteFailed": "Failed to delete session",
+      "startFailed": "Failed to start session",
+      "unauthorized": "You do not have permission to access these sessions",
+      "noAccess": "You don't have access to this patient",
+      "notFound": "Session not found"
+    },
+    "details": {
+      "title": "Session Details",
+      "generalInfo": "General Information",
+      "timeline": "Timeline",
+      "results": "Results",
+      "seconds": "seconds",
+      "memoryReconstructionId": "Memory Reconstruction ID",
+      "artExplorationId": "Art Exploration ID",
+      "noResults": "No results available yet.",
+      "pendingMessage": "This session has not been started by the patient yet.",
+      "inProgressMessage": "This session is in progress."
+    }
   }
 }
+

@@ -1,7 +1,7 @@
 from datetime import datetime
 from .common import Dataset, Language, SegmentationStrategy
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class SectionMemoryReconstruction(BaseModel):
@@ -31,10 +31,10 @@ class SectionResponse(SectionMemoryReconstruction):
 
 class MemoryReconstructionResponse(BaseModel):
     id: str
-    story: str
-    dataset: Dataset
-    language: Language
-    segmentation_strategy: SegmentationStrategy
+    story: Optional[str] = None
+    dataset: Optional[Dataset] = None
+    language: Optional[Language] = None
+    segmentation_strategy: Optional[SegmentationStrategy] = None
     created_at: datetime
     sections: List[SectionResponse]
 

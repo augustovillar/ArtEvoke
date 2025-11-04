@@ -3,7 +3,7 @@ import React from 'react';
 import './i18n';
 import { Routes, Route } from 'react-router-dom';
 import { Navbar, Footer, ProtectedRoute } from './components/common';
-import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
+import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, Sessions, SessionDetails, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
 import MemoryEvaluation from './pages/MemoryReconstruction/Evaluation';
 import ArtEvaluation from './pages/ArtExploration/Evaluation';
 import './styles/App.css';
@@ -57,6 +57,16 @@ function App() {
                                 <Route path="/patients/create" element={
                                     <ProtectedRoute>
                                         <CreatePatient />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/sessions" element={
+                                    <ProtectedRoute>
+                                        <Sessions />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/sessions/:sessionId/results" element={
+                                    <ProtectedRoute>
+                                        <SessionDetails />
                                     </ProtectedRoute>
                                 } />
                                 

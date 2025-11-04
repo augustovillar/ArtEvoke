@@ -18,12 +18,12 @@ router = APIRouter()
 @router.post("/save")
 async def save_memory_reconstruction(
     request: SaveMemoryReconstructionRequestDTO,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     memory_reconstruction = MemoryReconstruction(
         id=str(uuid.uuid4()),
-        patient_id=current_user,
+        patient_id=current_user["id"],
         story=request.story,
         dataset=request.dataset,  
         language=request.language,
@@ -61,17 +61,19 @@ async def save_memory_reconstruction(
 async def get_memory_reconstructions(
     limit: int = 5,
     offset: int = 0,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Get total count
+    # Get total count (only items not in session - session_id is NULL)
     total_count = db.query(MemoryReconstruction).filter(
-        MemoryReconstruction.patient_id == current_user
+        MemoryReconstruction.patient_id == current_user["id"],
+        MemoryReconstruction.session_id.is_(None)
     ).count()
 
-    # Get memory reconstructions with pagination
+    # Get memory reconstructions with pagination (only items not in session)
     memory_reconstructions_query = db.query(MemoryReconstruction).filter(
-        MemoryReconstruction.patient_id == current_user
+        MemoryReconstruction.patient_id == current_user["id"],
+        MemoryReconstruction.session_id.is_(None)
     ).order_by(MemoryReconstruction.created_at.desc()).offset(offset).limit(limit).all()
 
     memory_reconstructions = []
@@ -118,13 +120,13 @@ async def get_memory_reconstructions(
 @router.delete("/delete/{memory_reconstruction_id}")
 async def delete_memory_reconstruction(
     memory_reconstruction_id: str,
-    current_user: str = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Find the memory reconstruction
     memory_reconstruction = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.id == memory_reconstruction_id,
-        MemoryReconstruction.patient_id == current_user
+        MemoryReconstruction.patient_id == current_user["id"]
     ).first()
 
     if not memory_reconstruction:

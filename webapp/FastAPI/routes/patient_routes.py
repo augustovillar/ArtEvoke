@@ -14,7 +14,7 @@ async def patient_login(user_login: UserLogin, db: Session = Depends(get_db)) ->
     if not db_patient or not verify_password(user_login.password, db_patient.password):
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
-    access_token = create_access_token(data={"userId": db_patient.id})
+    access_token = create_access_token(data={"patientId": db_patient.id})
     patient_return = {
         "_id": db_patient.id,
         "email": db_patient.email,
