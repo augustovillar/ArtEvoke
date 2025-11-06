@@ -57,6 +57,11 @@ class SelectImagesResponse(BaseModel):
 
 class GenerateStoryResponse(BaseModel):
     text: str
+    events: List[str]
+    distractor: str
+    environment: str
+    timeOfDay: str
+    emotion: str
 
 
 class SearchImagesRequestDTO(BaseModel):
@@ -75,9 +80,16 @@ class SelectImagesPerSectionRequestDTO(BaseModel):
 
 class GenerateStoryRequestDTO(BaseModel):
     selectedImageIds: List[str]
+    language: Language
 
 
 class SelectImagesRVRequestDTO(BaseModel):
     story: str
     dataset: Dataset
     sections: List[int]
+
+class ImproveTextRequestDTO(BaseModel):
+    raw_text: str
+
+class ImproveTextResponseDTO(BaseModel):
+    processed_text: str
