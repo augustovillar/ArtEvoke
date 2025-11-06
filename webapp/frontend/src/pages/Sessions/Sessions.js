@@ -138,10 +138,26 @@ const Sessions = () => {
 
             if (response.ok) {
                 // Navigate to the appropriate mode based on session mode
-                const mode = session.mode === 'memory_reconstruction' 
-                    ? 'memory-reconstruction' 
-                    : 'art-exploration';
-                navigate(`/${mode}?sessionId=${session.id}&interruptionTime=${session.interruption_time}`);
+                // Pass session data via state to avoid unnecessary fetch
+                if (session.mode === 'memory_reconstruction') {
+                    navigate(`/sessions/${session.id}/memory-reconstruction`, {
+                        state: {
+                            sessionId: session.id,
+                            memoryReconstructionId: session.memory_reconstruction_id,
+                            interruptionTime: session.interruption_time,
+                            mode: session.mode
+                        }
+                    });
+                } else if (session.mode === 'art_exploration') {
+                    navigate(`/sessions/${session.id}/art-exploration`, {
+                        state: {
+                            sessionId: session.id,
+                            artExplorationId: session.art_exploration_id,
+                            interruptionTime: session.interruption_time,
+                            mode: session.mode
+                        }
+                    });
+                }
             } else {
                 alert(t('sessions.errors.startFailed'));
             }

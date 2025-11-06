@@ -83,9 +83,10 @@ class Session(Base):
         back_populates="sessions",
         foreign_keys="[Session.memory_reconstruction_id]"
     )
+    # Note: ArtExploration doesn't have a back reference to Session
+    # The relationship is one-way: Session -> ArtExploration
     art_exploration = relationship(
-        "ArtExploration", 
-        back_populates="sessions",
+        "ArtExploration",
         foreign_keys="[Session.art_exploration_id]"
     )
     pre_evaluation = relationship(
