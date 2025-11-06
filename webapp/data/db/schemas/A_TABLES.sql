@@ -242,14 +242,15 @@ CREATE TABLE IF NOT EXISTS `Session` (
   KEY idx_session_mr (memory_reconstruction_id),
   KEY idx_session_ae (art_exploration_id),
   KEY idx_session_mode (mode),
+  -- Ensure exactly one evaluation ID is set based on mode
+  CONSTRAINT chk_session_mode_consistency CHECK (
+    (mode = 'memory_reconstruction' AND memory_reconstruction_id IS NOT NULL AND art_exploration_id IS NULL) OR
+    (mode = 'art_exploration' AND art_exploration_id IS NOT NULL AND memory_reconstruction_id IS NULL)
+  ),
   CONSTRAINT fk_session_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_session_doctor FOREIGN KEY (doctor_id)  REFERENCES Doctor(id)
-    ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT fk_session_mr FOREIGN KEY (memory_reconstruction_id) REFERENCES MemoryReconstruction(id)
-    ON UPDATE CASCADE ON DELETE SET NULL,
-  CONSTRAINT fk_session_ae FOREIGN KEY (art_exploration_id) REFERENCES ArtExploration(id)
-    ON UPDATE CASCADE ON DELETE SET NULL
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

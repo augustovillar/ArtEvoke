@@ -74,55 +74,29 @@ async def create_session(
             detail="You don't have access to this patient",
         )
 
+    # Generate UUID for the corresponding evaluation mode
+    # The actual evaluation record will be created when the patient starts the session
+    # But we pre-generate the ID to maintain referential integrity
     memory_reconstruction_id = None
     art_exploration_id = None
+    
+    if session_data.mode == "memory_reconstruction":
+        memory_reconstruction_id = str(uuid.uuid4())
+    elif session_data.mode == "art_exploration":
+        art_exploration_id = str(uuid.uuid4())
 
-    # Create new session first to get session_id
     new_session = SessionModel(
         id=str(uuid.uuid4()),
         patient_id=session_data.patient_id,
         doctor_id=doctor_id,
         mode=session_data.mode,
-        memory_reconstruction_id=None,  # Will be set after creating evaluation object
-        art_exploration_id=None,  # Will be set after creating evaluation object
+        memory_reconstruction_id=memory_reconstruction_id,
+        art_exploration_id=art_exploration_id,
         interruption_time=interruption_time,
         status="pending",
         created_at=datetime.utcnow(),
     )
     db.add(new_session)
-    db.flush()  # Get session ID without committing
-
-    # Create evaluation instance based on session mode
-    # Fields will be filled by patient during session (dataset, language, story, etc)
-    if session_data.mode == "memory_reconstruction":
-        mr_instance = MemoryReconstruction(
-            id=str(uuid.uuid4()),
-            patient_id=session_data.patient_id,
-            session_id=new_session.id,
-            story=None,  # Filled when patient starts session
-            dataset=None,  # Selected during session by patient
-            language=None,  # Selected during session by patient
-            segmentation_strategy=None,  # Selected during session by patient
-            created_at=datetime.utcnow(),
-        )
-        db.add(mr_instance)
-        db.flush()
-        new_session.memory_reconstruction_id = mr_instance.id
-
-    elif session_data.mode == "art_exploration":
-        ae_instance = ArtExploration(
-            id=str(uuid.uuid4()),
-            patient_id=session_data.patient_id,
-            session_id=new_session.id,
-            story_generated=None,  # Generated when patient completes session
-            dataset=None,  # Selected during session by patient
-            language=None,  # Selected during session by patient
-            created_at=datetime.utcnow(),
-        )
-        db.add(ae_instance)
-        db.flush()
-        new_session.art_exploration_id = ae_instance.id
-
     db.commit()
     db.refresh(new_session)
 
@@ -420,10 +394,6 @@ async def get_session_evaluation(
                 ],
             }
 
-    if not evaluation_data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No evaluation data found for this session",
-        )
-
+    # Return empty dict if no evaluation data exists yet (session not started)
+    # This is expected behavior now - evaluations are created when the patient starts the session
     return evaluation_data
