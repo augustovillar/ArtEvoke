@@ -94,9 +94,6 @@ const PatientLogin = () => {
                     <button onClick={() => navigate('/auth/login-role-selection')} className="back-button">
                         {t('patientLogin.back', 'Back')}
                     </button>
-                    <button onClick={() => navigate('/auth/patient-complete')} className="complete-link">
-                        {t('patientLogin.needAccount', 'Complete Profile')}
-                    </button>
                 </div>
             </div>
         </div>
