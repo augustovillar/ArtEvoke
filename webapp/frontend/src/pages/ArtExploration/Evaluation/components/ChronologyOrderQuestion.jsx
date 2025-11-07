@@ -28,7 +28,7 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
         const shuffled = [...mockStoryEvents.correctOrder].sort(() => Math.random() - 0.5);
         setShuffledEvents(shuffled);
         setOrderedEvents(new Array(mockStoryEvents.correctOrder.length).fill(null));
-    }, []);
+    }, [mockStoryEvents.correctOrder]);
 
     const handleDragStart = (event, eventText) => {
         setDraggedItem(eventText);

@@ -1,5 +1,7 @@
 import common from './common.json';
 
-export default {
+const translations = {
   common
 };
+
+export default translations;

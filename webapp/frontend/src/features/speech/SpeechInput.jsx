@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 export default function SpeechInput({ onChange, initialValue = '' }) {
   const [isListening, setIsListening] = useState(false);

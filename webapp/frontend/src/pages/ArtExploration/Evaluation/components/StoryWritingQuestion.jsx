@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QuestionReadAloudButton } from '../../../../components/ui';
 import styles from './StoryWritingQuestion.module.css';

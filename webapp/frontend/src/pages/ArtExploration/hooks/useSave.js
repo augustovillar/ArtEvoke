@@ -59,7 +59,7 @@ export const useSave = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            await response.json();
             const successMessage = t('artExploration.storySaved');
             setSaveMessage(successMessage);
             setTimeout(() => setSaveMessage(''), 3000);
