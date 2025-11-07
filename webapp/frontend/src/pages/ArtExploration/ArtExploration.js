@@ -31,12 +31,20 @@ const ArtExploration = () => {
 
     // Interruption states
     const [showInterruption, setShowInterruption] = useState(false);
-    
+
     // Session states
     const [loadingSession, setLoadingSession] = useState(false);
     const [evaluationId, setEvaluationId] = useState(null);
 
-    const { t } = useTranslation('common');
+    const { t, i18n } = useTranslation('common');
+
+    // Sync language state with i18n language
+    useEffect(() => {
+        const currentLang = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
+        if (currentLang === 'en' || currentLang === 'pt') {
+            setLanguage(currentLang);
+        }
+    }, [i18n.language]);
 
     // Verifica se está em modo sessão (com interrupção e avaliação)
     // PARA TESTE: deixado como true para sempre mostrar a interrupção
@@ -98,7 +106,7 @@ const ArtExploration = () => {
     // Handle story generation from selected images
     const handleGenerateStory = () => {
         resetSaveState(); // Reset save state when generating new story
-        generateStory(selectedImages);
+        generateStory(selectedImages, language);
     };
 
     // Regenerate the story
@@ -116,7 +124,7 @@ const ArtExploration = () => {
         await handleSave();
         setShowInterruption(true);
     };
-
+ 
     // Handler para limpar seleção (modo livre)
     const handleClearSelections = () => {
         if (window.confirm(t('artExploration.confirmClearSelections'))) {
@@ -182,7 +190,7 @@ const ArtExploration = () => {
             )}
 
             <InstructionsSection />
-            
+
             <KeywordInputForm
                 storyText={storyText}
                 setStoryText={setStoryText}

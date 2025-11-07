@@ -45,11 +45,9 @@ def doTextSegmentation(mode, text, max_sections):
     else:
         return [text.strip()]
 
-    # If we have fewer sentences than the required size, return all sentences as one section
     if len(sentences) < size:
         return [" ".join(sentences)]
 
-    # Check traditional sections
     sections = _get_sections(sentences, size, step, ensure_last)
 
     if len(sections) == 0:
