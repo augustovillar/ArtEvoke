@@ -508,6 +508,53 @@
       "pendingMessage": "This session has not been started by the patient yet.",
       "inProgressMessage": "This session is in progress."
     }
+  },
+  "consent": {
+    "title": "Participant Consent Form",
+    "purpose": {
+      "title": "Purpose",
+      "text": "This platform allows users to share personal stories, which are then transformed into sequences of images in collaboration with partner museums. The goal of this test is to evaluate and improve the platform's usability, relevance, and impact based on participant feedback."
+    },
+    "voluntary": {
+      "title": "Voluntary Participation",
+      "text": "Your participation is completely voluntary. You may stop using the platform or withdraw your participation at any time, without any consequences."
+    },
+    "information": {
+      "title": "Information Collected",
+      "intro": "To participate, we will ask only for the following basic information:",
+      "age": "Age (to confirm eligibility)",
+      "education": "Level of Education (for research contextualization)",
+      "additional": "Additionally, the stories you share and the feedback you provide during your use of the platform may be collected. No personal identification data (such as full name, address, or contact information) will be required."
+    },
+    "dataUse": {
+      "title": "How Your Data Will Be Used",
+      "text": "Your contributions will be used only for research and development purposes, specifically to improve the platform experience and evaluate how effectively it supports storytelling and cultural engagement.",
+      "noSale": "No data will be sold, shared, or used for commercial or targeted advertising purposes."
+    },
+    "conflicts": {
+      "title": "Conflicts of Interest",
+      "text": "By agreeing to participate, you confirm that:",
+      "voluntary": "You are participating voluntarily.",
+      "noConflicts": "You have no conflicts of interest related to this research or platform."
+    },
+    "confidentiality": {
+      "title": "Confidentiality",
+      "text": "Your participation will remain anonymous. Any results or insights shared publicly will not contain information that could identify you."
+    },
+    "agreement": {
+      "title": "Consent Agreement",
+      "intro": "By checking the box below and/or continuing to use this platform, I declare that:",
+      "voluntary": "I am participating voluntarily.",
+      "age": "I am over the age required to consent in my country/region.",
+      "understand": "I understand how my data will be used.",
+      "noConflicts": "I have no conflicts of interest regarding the use or evaluation of this platform.",
+      "agree": "I agree to the terms stated above."
+    },
+    "checkbox": {
+      "label": "I agree and consent to participate"
+    },
+    "accept": "Accept and Continue",
+    "decline": "Decline"
   }
 }
 

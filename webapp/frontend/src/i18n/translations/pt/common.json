@@ -509,6 +509,53 @@
       "pendingMessage": "Esta sessão ainda não foi iniciada pelo paciente.",
       "inProgressMessage": "Esta sessão está em andamento."
     }
+  },
+  "consent": {
+    "title": "Formulário de Consentimento do Participante",
+    "purpose": {
+      "title": "Objetivo",
+      "text": "Esta plataforma permite que os usuários compartilhem histórias pessoais, que são então transformadas em sequências de imagens em colaboração com museus parceiros. O objetivo deste teste é avaliar e melhorar a usabilidade, relevância e impacto da plataforma com base no feedback dos participantes."
+    },
+    "voluntary": {
+      "title": "Participação Voluntária",
+      "text": "Sua participação é completamente voluntária. Você pode parar de usar a plataforma ou retirar sua participação a qualquer momento, sem consequências."
+    },
+    "information": {
+      "title": "Informações Coletadas",
+      "intro": "Para participar, solicitaremos apenas as seguintes informações básicas:",
+      "age": "Idade (para confirmar elegibilidade)",
+      "education": "Nível de Educação (para contextualização da pesquisa)",
+      "additional": "Além disso, as histórias que você compartilhar e o feedback que fornecer durante o uso da plataforma podem ser coletados. Nenhum dado de identificação pessoal (como nome completo, endereço ou informações de contato) será exigido."
+    },
+    "dataUse": {
+      "title": "Como Seus Dados Serão Usados",
+      "text": "Suas contribuições serão usadas apenas para fins de pesquisa e desenvolvimento, especificamente para melhorar a experiência da plataforma e avaliar o quão efetivamente ela apoia a narrativa e o engajamento cultural.",
+      "noSale": "Nenhum dado será vendido, compartilhado ou usado para fins comerciais ou de publicidade direcionada."
+    },
+    "conflicts": {
+      "title": "Conflitos de Interesse",
+      "text": "Ao concordar em participar, você confirma que:",
+      "voluntary": "Você está participando voluntariamente.",
+      "noConflicts": "Você não tem conflitos de interesse relacionados a esta pesquisa ou plataforma."
+    },
+    "confidentiality": {
+      "title": "Confidencialidade",
+      "text": "Sua participação permanecerá anônima. Quaisquer resultados ou insights compartilhados publicamente não conterão informações que possam identificá-lo."
+    },
+    "agreement": {
+      "title": "Acordo de Consentimento",
+      "intro": "Ao marcar a caixa abaixo e/ou continuar a usar esta plataforma, declaro que:",
+      "voluntary": "Estou participando voluntariamente.",
+      "age": "Tenho mais de idade do que a necessária para consentir no meu país/região.",
+      "understand": "Entendo como meus dados serão usados.",
+      "noConflicts": "Não tenho conflitos de interesse em relação ao uso ou avaliação desta plataforma.",
+      "agree": "Concordo com os termos declarados acima."
+    },
+    "checkbox": {
+      "label": "Concordo e consinto em participar"
+    },
+    "accept": "Aceitar e Continuar",
+    "decline": "Recusar"
   }
 }
 

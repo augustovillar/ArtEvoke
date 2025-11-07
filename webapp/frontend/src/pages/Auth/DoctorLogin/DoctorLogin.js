@@ -87,9 +87,6 @@ const DoctorLogin = () => {
                     <button onClick={() => navigate('/auth/login-role-selection')} className="back-button">
                         {t('doctorLogin.back', 'Back')}
                     </button>
-                    <button onClick={() => navigate('/auth/doctor-signup')} className="signup-link">
-                        {t('doctorLogin.needAccount', 'Need an account?')}
-                    </button>
                 </div>
             </div>
         </div>
