@@ -93,58 +93,73 @@ const ArtExplorationSession = () => {
         loadSessionData();
     }, [sessionId, navigate, location.state]);
 
-    // Handle form submission to fetch images
     const handleSubmit = () => {
         searchImages(storyText, language, dataset);
     };
 
-    // Handle story generation from selected images
     const handleGenerateStory = () => {
         resetSaveState();
         generateStory(selectedImages);
     };
 
-    // Regenerate the story
     const handleRegenerateClick = () => {
         handleGenerateStory();
     };
 
-    // Handler for saving in session mode
     const handleSave = async () => {
-        await saveStory(responseText, selectedImages, dataset, language, artExplorationId); // Pass artExplorationId for session mode
+        await saveStory(responseText, selectedImages, dataset, language, artExplorationId); 
     };
 
-    // Handler to continue to interruption
     const handleContinue = async () => {
+        console.log('handleContinue called - saving and starting interruption');
         await handleSave();
         setShowInterruption(true);
     };
 
-    // Handler to clear selections
     const handleClearSelections = () => {
         if (window.confirm(t('artExploration.confirmClearSelections'))) {
             clearSelections();
         }
     };
-
-    // Function called when interruption is completed
     const handleInterruptionComplete = () => {
+        console.log('handleInterruptionComplete called - proceeding to next step');
         setShowInterruption(false);
         handleProceedToNextStep();
     };
 
-    // Function to proceed to next step (evaluation)
     const handleProceedToNextStep = () => {
-        navigate(`/sessions/${sessionId}/art-exploration/evaluation`, {
-            state: {
-                artExplorationId,
-                sessionId,
-                generatedStory: responseText,
-                selectedImages: selectedImages.map(img => ({
+        // Create sessionData object that matches what ArtEvaluation expects
+        const sessionData = {
+            sessionId,
+            artExplorationId,
+            mode: 'session',
+            phase1: {
+                query: storyText || '',
+                language: language || 'en',
+                dataset: dataset || 'wikiart',
+                generatedStory: responseText || '',
+                selectedImages: (selectedImages || []).map(img => ({
                     url: img.url,
                     name: img.name,
                     id: img.id
                 }))
+            },
+            interruption: {
+                duration: interruptionTime || 10,
+                completed: true
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        console.log('Navigating to evaluation with sessionData:', sessionData);
+        console.log('sessionId:', sessionId);
+        console.log('artExplorationId:', artExplorationId);
+        console.log('responseText:', responseText);
+        console.log('selectedImages:', selectedImages);
+        
+        navigate(`/sessions/${sessionId}/art-exploration/evaluation`, {
+            state: {
+                sessionData
             }
         });
     };

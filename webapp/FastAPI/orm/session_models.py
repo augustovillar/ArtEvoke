@@ -67,7 +67,7 @@ class Session(Base):
         # Aligns with CHECK constraint in SQL: interruption_time BETWEEN 1 AND 300
     )
     status = Column(
-        Enum("pending", "in_progress", "completed", name="session_status"),
+        Enum("pending", "in_progress", "in_evaluation", "completed", name="session_status"),
         nullable=False,
         default="pending",
     )

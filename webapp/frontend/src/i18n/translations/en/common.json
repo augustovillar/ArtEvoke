@@ -447,6 +447,8 @@
     "completedAt": "Completed at",
     "start": "Start",
     "continue": "Continue",
+    "continueEvaluation": "Continue Evaluation",
+    "viewResults": "View Results",
     "view": "View",
     "delete": "Delete",
     "modes": {
@@ -457,6 +459,7 @@
     "statuses": {
       "pending": "Pending",
       "in_progress": "In Progress",
+      "in_evaluation": "In Evaluation",
       "completed": "Completed"
     },
     "create": {
@@ -488,6 +491,7 @@
       "createFailed": "Failed to create session",
       "deleteFailed": "Failed to delete session",
       "startFailed": "Failed to start session",
+      "statusCheckFailed": "Failed to check session status",
       "unauthorized": "You do not have permission to access these sessions",
       "noAccess": "You don't have access to this patient",
       "notFound": "Session not found"

@@ -165,7 +165,7 @@ async def get_my_sessions(
     sessions = (
         db.query(SessionModel)
         .filter(SessionModel.patient_id == current_user["id"])
-        .filter(SessionModel.status.in_(["pending", "in_progress"]))
+        .filter(SessionModel.status.in_(["pending", "in_progress", "in_evaluation"]))
         .order_by(SessionModel.created_at.desc())
         .all()
     )
@@ -308,6 +308,40 @@ async def complete_session(
     db.refresh(session)
 
     return session
+
+
+@router.get("/{session_id}/status")
+async def get_session_status(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get session status to determine appropriate redirection"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
+
+    # Verify authorization
+    if (
+        current_user["id"] != session.patient_id
+        and current_user["id"] != session.doctor_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this session",
+        )
+
+    return {
+        "session_id": session.id,
+        "mode": session.mode,
+        "status": session.status,
+        "art_exploration_id": session.art_exploration_id,
+        "memory_reconstruction_id": session.memory_reconstruction_id,
+        "interruption_time": session.interruption_time
+    }
 
 
 @router.get("/{session_id}/evaluation")

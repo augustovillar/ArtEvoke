@@ -12,7 +12,7 @@ class SessionCreate(BaseModel):
 
 
 class SessionUpdate(BaseModel):
-    status: Optional[Literal["pending", "in_progress", "completed"]] = None
+    status: Optional[Literal["pending", "in_progress", "in_evaluation", "completed"]] = None
     started_at: Optional[date] = None
     ended_at: Optional[date] = None
     memory_reconstruction_id: Optional[str] = None
@@ -25,7 +25,7 @@ class SessionResponse(BaseModel):
     doctor_id: str
     mode: Literal["art_exploration", "memory_reconstruction"]
     interruption_time: int
-    status: Literal["pending", "in_progress", "completed"]
+    status: Literal["pending", "in_progress", "in_evaluation", "completed"]
     memory_reconstruction_id: Optional[str] = None
     art_exploration_id: Optional[str] = None
     started_at: Optional[date] = None

@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS `Session` (
   art_exploration_id        CHAR(36)  NULL,  -- Pre-generated ID, record created later
   mode ENUM('art_exploration','memory_reconstruction') NOT NULL,
   interruption_time         SMALLINT  NOT NULL DEFAULT 10 CHECK (interruption_time BETWEEN 1 AND 300),
-  status ENUM('pending','in_progress','completed') NOT NULL DEFAULT 'pending',
+  status ENUM('pending','in_progress','in_evaluation','completed') NOT NULL DEFAULT 'pending',
   started_at DATE NULL,
   ended_at   DATE NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

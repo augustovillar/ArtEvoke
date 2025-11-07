@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from orm import get_db, ArtExploration, Images
+from orm.session_models import Session as SessionModel
 from api_types.art_exploration import (
     SaveArtExplorationRequestDTO,
     ImagesItem,
@@ -52,6 +53,16 @@ async def create_art_exploration(
         )
         
         db.add(image_record)
+
+    # If this is session mode, update session status to 'in_evaluation'
+    if art_exploration_id:
+        session = db.query(SessionModel).filter(
+            SessionModel.art_exploration_id == art_exploration_id
+        ).first()
+        
+        if session:
+            session.status = "in_evaluation"
+            db.add(session)
 
     db.commit()
     db.refresh(art_exploration)

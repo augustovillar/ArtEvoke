@@ -448,6 +448,8 @@
     "completedAt": "Concluída em",
     "start": "Iniciar",
     "continue": "Continuar",
+    "continueEvaluation": "Continuar Avaliação",
+    "viewResults": "Ver Resultados",
     "view": "Visualizar",
     "delete": "Excluir",
     "modes": {
@@ -458,6 +460,7 @@
     "statuses": {
       "pending": "Pendente",
       "in_progress": "Em Progresso",
+      "in_evaluation": "Em Avaliação",
       "completed": "Concluída"
     },
     "create": {
@@ -489,6 +492,7 @@
       "createFailed": "Falha ao criar sessão",
       "deleteFailed": "Falha ao excluir sessão",
       "startFailed": "Falha ao iniciar sessão",
+      "statusCheckFailed": "Falha ao verificar status da sessão",
       "unauthorized": "Você não tem permissão para acessar estas sessões",
       "noAccess": "Você não tem acesso a este paciente",
       "notFound": "Sessão não encontrada"

@@ -13,6 +13,9 @@ const ArtEvaluation = () => {
   const { t } = useTranslation('common');
   const { sessionData } = location.state || {};
 
+  console.log('ArtEvaluation - location.state:', location.state);
+  console.log('ArtEvaluation - sessionData:', sessionData);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [evaluationData, setEvaluationData] = useState({
     storyWriting: null,
@@ -46,9 +49,13 @@ const ArtEvaluation = () => {
   const totalSteps = 2 + objectiveQuestions.length; // 1 story writing + 1 chronology + objective questions
 
   useEffect(() => {
+    console.log('ArtEvaluation useEffect - checking sessionData');
     if (!sessionData) {
+      console.error('No sessionData found in location.state');
       alert('Dados da sessão não encontrados. Redirecionando...');
-      navigate('/artsearch');
+      navigate('/sessions');
+    } else {
+      console.log('SessionData found, proceeding with evaluation');
     }
   }, [sessionData, navigate]);
 
@@ -74,11 +81,27 @@ const ArtEvaluation = () => {
     setIsSaving(true);
     const completeSession = { ...sessionData, evaluation: evaluationData, completedAt: new Date().toISOString() };
     try {
-      // TODO: Implement API call to persist Art Exploration session
-      // await fetch('/api/sessions/art-exploration', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(completeSession) });
+      const token = localStorage.getItem('token');
+      
+      // Extract sessionId from sessionData
+      const sessionId = sessionData.sessionId;
+      
+      if (sessionId) {
+        // Mark session as completed
+        await fetch(`/api/sessions/${sessionId}/complete`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      
+      // TODO: Implement API call to persist Art Exploration evaluation data
+      // await fetch('/api/sessions/art-exploration/evaluation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(completeSession) });
       console.log('Saving Art Exploration session:', completeSession);
       alert('Sessão salva com sucesso!');
-      navigate('/profile');
+      navigate('/sessions');
     } catch (err) {
       console.error('Erro ao salvar sessão de Art Exploration:', err);
       alert('Erro ao salvar sessão. Tente novamente.');
