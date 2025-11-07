@@ -15,8 +15,14 @@ const PatientLogin = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setLoading(true);
+        // Validate form first
+        if (!email || !password) {
+            setError(t('patientLogin.fillFields', 'Please fill in all fields.'));
+            return;
+        }
+
         setError('');
+        setLoading(true);
 
         try {
             const response = await fetch(`/api/patients/login`, {
@@ -49,6 +55,7 @@ const PatientLogin = () => {
         }
     };
 
+    // Show login form first
     return (
         <div className="patient-login-container">
             <div className="patient-login-box">
@@ -86,9 +93,6 @@ const PatientLogin = () => {
                 <div className="links">
                     <button onClick={() => navigate('/auth/login-role-selection')} className="back-button">
                         {t('patientLogin.back', 'Back')}
-                    </button>
-                    <button onClick={() => navigate('/auth/patient-complete')} className="complete-link">
-                        {t('patientLogin.needAccount', 'Complete Profile')}
                     </button>
                 </div>
             </div>

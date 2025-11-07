@@ -85,8 +85,10 @@ class GenerateStoryRequestDTO(BaseModel):
 
 class SelectImagesRVRequestDTO(BaseModel):
     story: str
-    dataset: Dataset
-    sections: List[int]
+    section_number: int
+
+class SectionVRResponseDTO(SectionItem):
+    sectionsQuantity: int
 
 class ImproveTextRequestDTO(BaseModel):
     raw_text: str

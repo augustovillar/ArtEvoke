@@ -5,8 +5,10 @@ from utils.embeddings import (
     get_top_k_images_from_text,
 )
 from api_types.common import (
+    Dataset,
     SelectImagesResponse,
     SelectImagesRVRequestDTO,
+    SectionVRResponseDTO,
     ImproveTextRequestDTO,
     ImproveTextResponseDTO,
 )
@@ -31,19 +33,17 @@ def load_vr_prompt() -> str:
 @router.post("/select-images-rv")
 async def select_images_rv(
     body: SelectImagesRVRequestDTO, db=Depends(get_db)
-) -> SelectImagesResponse:
+) -> SectionVRResponseDTO:
+    # Split the Story into Segments
     sections = doTextSegmentation("conservative", body.story, max_sections=5)
-    results = []
 
-    for section in sections[body.sections]:
-        section_images = get_top_k_images_from_text(
-            section,
-            body.dataset.value,
-            k=6,
-        )
-        results.append({"section": section, "images": section_images})
+    section_images = get_top_k_images_from_text(
+        sections[body.section_number],
+        Dataset.wikiart,
+        k=6,
+    )
 
-    return {"sections": results}
+    return {"section": sections[body.section_number], "images": section_images, "sectionsQuantity": len(sections)}
 
 
 @router.post("/improve-text")

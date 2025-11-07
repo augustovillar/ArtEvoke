@@ -23,36 +23,17 @@ def get_embedding_client():
         return None
     
     if _embedding_model is None:
-        # Check available GPUs
-        num_gpus = torch.cuda.device_count()
-
         model_kwargs = {
             "attn_implementation": "sdpa",
             "dtype": torch.float16,
+            "device_map": "cuda:0",
         }
-        
-        if num_gpus > 1:
-            model_kwargs["device_map"] = "balanced"
-        elif num_gpus == 1:
-            model_kwargs["device_map"] = "cuda:0"
-        else:
-            model_kwargs["device_map"] = "cpu"
         
         _embedding_model = SentenceTransformer(
             "Qwen/Qwen3-Embedding-4B",
             model_kwargs=model_kwargs,
             tokenizer_kwargs={"padding_side": "left"},
         )
-        
-        # Print device allocation details
-        if num_gpus > 0:
-            print(f"✅ Embedding model loaded and distributed across {num_gpus} GPU(s)")
-            for i in range(num_gpus):
-                mem_allocated = torch.cuda.memory_allocated(i) / 1024**3  # Convert to GB
-                mem_reserved = torch.cuda.memory_reserved(i) / 1024**3
-                print(f"   GPU {i} ({torch.cuda.get_device_name(i)}): {mem_allocated:.2f}GB allocated, {mem_reserved:.2f}GB reserved")
-        else:
-            print(f"✅ Embedding model loaded on CPU")
     
     return _embedding_model
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ConsentForm, ErrorModal } from '../../../components/common';
 import './PatientComplete.css';
 
 const PatientComplete = () => {
@@ -20,19 +21,14 @@ const PatientComplete = () => {
         ethnicity: ''
     });
     const [error, setError] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [showConsent, setShowConsent] = useState(false);
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value
-        });
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleConsentAccept = async () => {
+        // User accepted consent, now proceed with account creation
+        setShowConsent(false);
         setLoading(true);
         setError('');
 
@@ -56,16 +52,68 @@ const PatientComplete = () => {
             } else {
                 const errorData = await response.json();
                 console.error('Patient completion failed:', errorData);
-                setError(errorData.detail || t('patientComplete.errorGeneral', 'Profile completion failed'));
+                const errorMessage = errorData.detail || t('patientComplete.errorGeneral', 'Profile completion failed');
+                setError(errorMessage);
+                setShowErrorModal(true);
             }
         } catch (error) {
             console.error('Error during patient completion:', error);
-            setError(t('patientComplete.errorOccurred', 'An error occurred during profile completion'));
+            const errorMessage = t('patientComplete.errorOccurred', 'An error occurred during profile completion');
+            setError(errorMessage);
+            setShowErrorModal(true);
         } finally {
             setLoading(false);
         }
     };
 
+    const handleConsentDecline = () => {
+        // User declined consent, go back to role selection
+        setShowConsent(false);
+        navigate('/auth/role-selection');
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData({
+            ...formData,
+            [name]: type === 'checkbox' ? checked : value
+        });
+    };
+
+    const validateForm = () => {
+        if (!formData.email || !formData.code || !formData.password || !formData.date_of_birth || 
+            !formData.education_level || !formData.occupation) {
+            setError(t('patientComplete.fillFields', 'Please fill in all required fields.'));
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        
+        // Validate form first
+        if (!validateForm()) {
+            return;
+        }
+
+        // Show consent form instead of submitting immediately
+        setError('');
+        setShowConsent(true);
+    };
+
+    // Show consent form after user clicks complete profile
+    if (showConsent) {
+        return (
+            <ConsentForm
+                onAccept={handleConsentAccept}
+                onDecline={handleConsentDecline}
+                showDecline={true}
+            />
+        );
+    }
+
+    // Show registration form first
     return (
         <div className="patient-complete-container">
             <div className="patient-complete-box">
@@ -247,7 +295,14 @@ const PatientComplete = () => {
                     </button>
                 </form>
 
-                {error && <div className="error-message">{error}</div>}
+                <ErrorModal
+                    isOpen={showErrorModal}
+                    message={error}
+                    onClose={() => {
+                        setShowErrorModal(false);
+                        setError('');
+                    }}
+                />
 
                 <div className="back-link">
                     <button onClick={() => navigate('/auth/role-selection')} className="back-button">
