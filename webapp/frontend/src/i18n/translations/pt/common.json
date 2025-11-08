@@ -239,6 +239,14 @@
     "pageTitle": "Instruções de Reconstrução da Memória",
     "description": "A ferramenta de reconstrução da memória permite que você insira uma história ou uma memória (ou parte dela). Após enviar o texto, nosso modelo de IA irá segmentar o texto e sugerir a melhor pintura correspondente por seção da base de dados selecionada, o que pode ajudá-lo a lembrar de mais detalhes da história. Se não estiver satisfeito com o resultado, pode clicar no botão \"Mostrar 5 imagens por seção\" para gerar ainda mais imagens.",
     "optionsIntro": "Após inserir o texto, você tem 3 opções para explorar.",
+    "sessionModeBanner": {
+      "title": "Modo Sessão Ativo",
+      "description": "Esta é uma avaliação formal que será salva para revisão médica."
+    },
+    "practiceModeBanner": {
+      "title": "Modo Prática",
+      "description": "Você está praticando. Seus dados serão salvos, mas não fazem parte de uma sessão formal."
+    },
     "instructions": {
       "language": "Você pode selecionar o idioma que usou para ajudar nosso modelo a corrigir a ortografia e traduzir para o inglês",
       "dataset": "Você pode escolher uma de 3 bases de dados para nosso modelo pesquisar, oferecendo uma gama mais ampla de resultados",

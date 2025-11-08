@@ -239,6 +239,14 @@
     "pageTitle": "Memory Reconstruction Instructions",
     "description": "The memory reconstruction tool allows you to input a story or a memory (or part of it). After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story. If you are not satisfied with the given result, you can click on the \"Show 5 images per section\" button to generate even more images.",
     "optionsIntro": "After inputting the text, you are given 3 options to play with.",
+    "sessionModeBanner": {
+      "title": "Session Mode Active",
+      "description": "This is a formal assessment that will be saved for medical review."
+    },
+    "practiceModeBanner": {
+      "title": "Practice Mode",
+      "description": "You are practicing. Your data will be saved, but it is not part of a formal session."
+    },
     "instructions": {
       "language": "You can select the language that you used in order to help our model correct the spelling and translate to english",
       "dataset": "You can choose one of 3 databases for our model to search from, giving you a wider array of results",

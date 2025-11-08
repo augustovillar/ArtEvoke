@@ -7,7 +7,7 @@ export { default as CreatePatient } from './Patients/CreatePatient';
 export { default as Sessions } from './Sessions';
 export { default as SessionDetails } from './Sessions/SessionDetails';
 export { ArtExplorationFree, ArtExplorationSession } from './ArtExploration';
-export { default as MemoryReconstruction } from './MemoryReconstruction';
+export { MemoryReconstructionFree, MemoryReconstructionSession } from './MemoryReconstruction';
 export { default as Login } from './Auth/Login';
 export { default as SignUp } from './Auth/SignUp';
 export { default as RoleSelection } from './Auth/RoleSelection';

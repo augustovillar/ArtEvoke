@@ -1,43 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './MemoryReconstruction.css';
 import { useReadAloud } from '../../contexts/ReadAloudContext';
 import InterruptionModal from '../../components/interruptionModal';
 import { INTERRUPTION_CONFIG } from '../../config/interruption.config';
 
-// Componentes
 import InstructionsSection from './components/InstructionsSection';
 import StoryInputForm from './components/StoryInputForm';
 import ImageSelectionGrid from './components/ImageSelectionGrid';
 
-// Hooks
 import useStorySubmit from './hooks/useStorySubmit';
 import useImageSelection from './hooks/useImageSelection';
 import useSave from './hooks/useSave';
 
-const MemoryReconstruction = () => {
+const MemoryReconstructionSession = () => {
+    const { sessionId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
-    const { t } = useTranslation('common');
+    const { t, i18n } = useTranslation('common');
 
-    // Get sessionId from URL params
-    const sessionId = searchParams.get('sessionId');
-    const interruptionTime = searchParams.get('interruptionTime');
-
-    // Estados locais
     const [storyText, setStoryText] = useState('');
     const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
     const [segmentation, setSegmentation] = useState('conservative');
     const [showInterruption, setShowInterruption] = useState(false);
+    const [interruptionTime, setInterruptionTime] = useState(10);
     const [loadingSession, setLoadingSession] = useState(false);
-    const [evaluationId, setEvaluationId] = useState(null);
 
-    // Hooks personalizados
+    useEffect(() => {
+        const currentLang = i18n.language.split('-')[0];
+        if (currentLang === 'en' || currentLang === 'pt') {
+            setLanguage(currentLang);
+        }
+    }, [i18n.language]);
+
     const { 
         sectionsWithImages, 
         loading, 
@@ -50,9 +49,8 @@ const MemoryReconstruction = () => {
         clearSelection 
     } = useImageSelection();
     
-    // Reset save state when user selects a different favorite image
-    const handleImageSelect = (sectionIndex, imageUrl) => {
-        selectImage(sectionIndex, imageUrl);
+    const handleImageSelect = (imageObject, sectionIndex) => {
+        selectImage(imageObject, sectionIndex);
         resetSaveState();
     };
 
@@ -64,10 +62,6 @@ const MemoryReconstruction = () => {
         resetSaveState
     } = useSave();
 
-    // Check if in session mode
-    const isSessionMode = !!sessionId;
-
-    // Load existing evaluation data if in session mode
     useEffect(() => {
         const loadSessionData = async () => {
             if (!sessionId) return;
@@ -75,7 +69,7 @@ const MemoryReconstruction = () => {
             setLoadingSession(true);
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`/api/sessions/${sessionId}/evaluation`, {
+                const response = await fetch(`/api/sessions/${sessionId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -83,20 +77,7 @@ const MemoryReconstruction = () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.memory_reconstruction) {
-                        const mr = data.memory_reconstruction;
-                        setEvaluationId(mr.id);
-                        setStoryText(mr.story || '');
-                        setLanguage(mr.language?.toLowerCase() || 'en');
-                        setDataset(mr.dataset || 'wikiart');
-                        setSegmentation(mr.segmentation_strategy?.toLowerCase() || 'conservative');
-
-                        // If sections exist, pre-populate the story submission
-                        if (mr.sections && mr.sections.length > 0) {
-                            // Reconstruct sections data for the UI
-                            // This will be handled by the useStorySubmit hook
-                        }
-                    }
+                    setInterruptionTime(data.interruption_time || 10);
                 }
             } catch (error) {
                 console.error('Error loading session data:', error);
@@ -106,7 +87,7 @@ const MemoryReconstruction = () => {
         };
 
         loadSessionData();
-    }, [sessionId]);
+    }, [sessionId, navigate, location.state]);
 
     useEffect(() => {
         registerContent(contentRef, [
@@ -119,18 +100,15 @@ const MemoryReconstruction = () => {
 
     const handleSubmit = () => {
         clearSelection();
-        resetSaveState(); // Reset save state on new submission
-        // Sempre mostrar 6 imagens por seção
+        resetSaveState();
         submitStory(storyText, language, dataset, segmentation, 6);
     };
 
-    // Handler para modo sessão (inSession): salva e vai para interrupção
-    const handleInSession = async () => {
-        await handleSave()
+    const handleContinue = async () => {
+        await handleSave();
         setShowInterruption(true);
     };
 
-    // Handler para modo livre (outOfSession): apenas salva
     const handleSave = async () => {
         await saveStory(
             storyText,
@@ -139,12 +117,10 @@ const MemoryReconstruction = () => {
             language,
             dataset,
             segmentation,
-            sessionId,
-            evaluationId
+            sessionId
         );
     };
 
-    // Handler para limpar seleção (modo livre)
     const handleClearSelection = () => {
         if (window.confirm(t('memoryReconstruction.confirmClearSelection'))) {
             clearSelection();
@@ -157,66 +133,55 @@ const MemoryReconstruction = () => {
     };
 
     const handleProceedToNextStep = () => {
-        console.log("Prosseguindo para avaliação...");
-        // Dados serão montados a partir do estado atual (não do savedStoryData)
-        
-        // Navegar para página de avaliação com dados da sessão
-        navigate('/memory-reconstruction/evaluation', { 
-            state: { 
-                sessionData: {
-                    userId: 'test-user', // TODO: pegar do contexto de autenticação
-                    timestamp: new Date().toISOString(),
-                    mode: 'session',
-                    phase1: {
-                        story: storyText,
-                        language,
-                        dataset,
-                        segmentation,
-                        sections: sectionsWithImages.map((section, index) => ({
-                            sectionId: index,
-                            sectionText: section.section,
-                            imagesShown: section.images.map(img => ({
-                                url: img.url,
-                                name: img.name
-                            })),
-                            selectedImage: {
-                                url: selectedImagesPerSection[index],
-                                name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name
-                            }
-                        }))
-                    },
-                    interruption: {
-                        task: INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.translationKey,
-                        duration: INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.duration,
-                        completed: true
+        const sessionData = {
+            sessionId,
+            mode: 'session',
+            phase1: {
+                story: storyText,
+                language,
+                dataset,
+                segmentation,
+                sections: sectionsWithImages.map((section, index) => ({
+                    sectionId: index,
+                    sectionText: section.section,
+                    imagesShown: section.images.map(img => ({
+                        url: img.url,
+                        name: img.name,
+                        id: img.id
+                    })),
+                    selectedImage: {
+                        url: selectedImagesPerSection[index],
+                        name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name
                     }
-                }
-            } 
+                }))
+            },
+            interruption: {
+                duration: interruptionTime,
+                completed: true
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        navigate(`/sessions/${sessionId}/memory-reconstruction/evaluation`, {
+            state: {
+                sessionData
+            }
         });
     };
 
+    if (loadingSession) {
+        return <div className="sessions-loading">{t('common.loading')}</div>;
+    }
+
     return (
         <div>
-            {/* Session Mode Banner */}
-            {isSessionMode && (
-                <div className="session-mode-banner">
-                    <div className="banner-icon">🎯</div>
-                    <div className="banner-content">
-                        <h3>Modo Sessão Ativo</h3>
-                        <p>Esta é uma avaliação formal que será salva para revisão médica.</p>
-                    </div>
+            <div className="session-mode-banner">
+                <div className="banner-icon">🎯</div>
+                <div className="banner-content">
+                    <h3>{t('memoryReconstruction.sessionModeBanner.title')}</h3>
+                    <p>{t('memoryReconstruction.sessionModeBanner.description')}</p>
                 </div>
-            )}
-
-            {!isSessionMode && (
-                <div className="practice-mode-banner">
-                    <div className="banner-icon">🎨</div>
-                    <div className="banner-content">
-                        <h3>Modo Prática</h3>
-                        <p>Você está praticando. Seus dados serão salvos, mas não fazem parte de uma sessão formal.</p>
-                    </div>
-                </div>
-            )}
+            </div>
 
             <div ref={contentRef}>
                 <InstructionsSection />
@@ -238,10 +203,9 @@ const MemoryReconstruction = () => {
                     sectionsWithImages={sectionsWithImages}
                     selectedImagesPerSection={selectedImagesPerSection}
                     onImageClick={handleImageSelect}
-                    onInSession={handleInSession}
-                    onSave={handleSave}
+                    onInSession={handleContinue}
                     onClearSelection={handleClearSelection}
-                    isSessionMode={isSessionMode}
+                    isSessionMode={true}
                     loading={loading}
                     isSaving={isSaving}
                     hasSaved={hasSaved}
@@ -250,10 +214,9 @@ const MemoryReconstruction = () => {
                 />
             </div>
 
-            {/* Modal de Interrupção */}
             <InterruptionModal
                 isOpen={showInterruption}
-                duration={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.duration}
+                duration={interruptionTime}
                 translationKey={INTERRUPTION_CONFIG.MEMORY_RECONSTRUCTION.translationKey}
                 mode="memory-reconstruction"
                 onComplete={handleInterruptionComplete}
@@ -262,4 +225,4 @@ const MemoryReconstruction = () => {
     );
 };
 
-export default MemoryReconstruction;
+export default MemoryReconstructionSession;
