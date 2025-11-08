@@ -6,7 +6,7 @@ export const useStoryGeneration = () => {
     const [generateLoading, setGenerateLoading] = useState(false);
     const [responseText, setResponseText] = useState(null);
 
-    const generateStory = async (selectedImages) => {
+    const generateStory = async (selectedImages, language = 'en') => {
         if (selectedImages.length === 0) {
             alert(t('artExploration.selectAtLeastOne'));
             return;
@@ -25,27 +25,40 @@ export const useStoryGeneration = () => {
             }
         });
 
+        // Normalize language: ensure it's 'en' or 'pt'
+        const normalizedLanguage = language && typeof language === 'string' 
+            ? language.split('-')[0].toLowerCase() 
+            : 'en';
+        
+        // Validate language
+        const validLanguage = (normalizedLanguage === 'en' || normalizedLanguage === 'pt') 
+            ? normalizedLanguage 
+            : 'en';
+
         try {
-            const response = await fetch(`/api/generate-story`, {
+            const response = await fetch(`/api/art/generate-story`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     selectedImageIds: selectedImageIds,
+                    language: validLanguage,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error('Internal error');
             }
 
             const data = await response.json();
             setResponseText(data.text);
-            return data.text;
+            return data;
         } catch (error) {
             console.error("There was a problem with the fetch operation:", error);
-            setResponseText('Failed to generate story. Please try again.');
+            const errorMessage = error.message || 'Failed to generate story. Please try again.';
+            alert(errorMessage);
+            setResponseText(null);
             throw error;
         } finally {
             setGenerateLoading(false);

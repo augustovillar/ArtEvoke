@@ -33,7 +33,15 @@ const ArtExplorationSession = () => {
     const [loadingSession, setLoadingSession] = useState(false);
     const [artExplorationId, setArtExplorationId] = useState(null);
 
-    const { t } = useTranslation('common');
+    const { t, i18n } = useTranslation('common');
+
+    // Sync language state with i18n language
+    useEffect(() => {
+        const currentLang = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
+        if (currentLang === 'en' || currentLang === 'pt') {
+            setLanguage(currentLang);
+        }
+    }, [i18n.language]);
 
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
@@ -51,14 +59,20 @@ const ArtExplorationSession = () => {
             }
 
             // Try to get data from navigation state first (passed from Sessions.js)
-            const sessionData = location.state;
+            const stateData = location.state;
             
-            if (sessionData && sessionData.artExplorationId && sessionData.interruptionTime) {
-                // Data was passed via navigation state - use it directly!
-                setArtExplorationId(sessionData.artExplorationId);
-                setInterruptionTime(sessionData.interruptionTime);
-                setLoadingSession(false);
-                return;
+            if (stateData) {
+                // Check if data is passed directly or wrapped in sessionData
+                const artExpId = stateData.artExplorationId || (stateData.sessionData && stateData.sessionData.artExplorationId);
+                const intTime = stateData.interruptionTime || (stateData.sessionData && stateData.sessionData.interruption && stateData.sessionData.interruption.duration);
+                
+                if (artExpId && intTime) {
+                    // Data was passed via navigation state - use it directly!
+                    setArtExplorationId(artExpId);
+                    setInterruptionTime(intTime);
+                    setLoadingSession(false);
+                    return;
+                }
             }
 
             // Fallback: if no state data, fetch from backend
@@ -98,8 +112,8 @@ const ArtExplorationSession = () => {
     };
 
     const handleGenerateStory = () => {
-        resetSaveState();
-        generateStory(selectedImages);
+        resetSaveState(); // Reset save state when generating new story
+        generateStory(selectedImages, language);
     };
 
     const handleRegenerateClick = () => {
@@ -115,7 +129,6 @@ const ArtExplorationSession = () => {
         await handleSave();
         setShowInterruption(true);
     };
-
     const handleClearSelections = () => {
         if (window.confirm(t('artExploration.confirmClearSelections'))) {
             clearSelections();
@@ -180,7 +193,7 @@ const ArtExplorationSession = () => {
             </div>
 
             <InstructionsSection />
-            
+
             <KeywordInputForm
                 storyText={storyText}
                 setStoryText={setStoryText}
