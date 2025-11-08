@@ -215,7 +215,15 @@
     "saveFailed": "Falha ao salvar a história. Por favor, tente novamente.",
     "confirmClearSelections": "Tem certeza que deseja limpar todas as seleções?",
     "generatedImageAlt": "Imagem Gerada {{name}}",
-    "selectedImageAlt": "Imagem Selecionada {{name}}"
+    "selectedImageAlt": "Imagem Selecionada {{name}}",
+    "sessionModeBanner": {
+      "title": "Modo Sessão Ativo",
+      "description": "Esta é uma avaliação formal que será salva para revisão médica."
+    },
+    "practiceModeBanner": {
+      "title": "Modo Prática",
+      "description": "Você está praticando. Seus dados serão salvos no seu perfil, mas não fazem parte de uma sessão formal."
+    }
   },
   "signup": {
     "title": "Cadastrar",

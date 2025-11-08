@@ -60,8 +60,8 @@ const ArtExplorationFree = () => {
             <div className="practice-mode-banner">
                 <div className="banner-icon">🎨</div>
                 <div className="banner-content">
-                    <h3>Modo Prática</h3>
-                    <p>Você está praticando. Seus dados serão salvos no seu perfil, mas não fazem parte de uma sessão formal.</p>
+                    <h3>{t('artExploration.practiceModeBanner.title')}</h3>
+                    <p>{t('artExploration.practiceModeBanner.description')}</p>
                 </div>
             </div>
 

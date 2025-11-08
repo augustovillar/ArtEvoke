@@ -51,7 +51,7 @@ async def create_art_exploration(
     - **Free mode**: No ID provided, generates new UUID
     - **Session mode**: ID provided from session's art_exploration_id
     """
-    # Generate or use provided ID
+    
     record_id = art_exploration_id if art_exploration_id else str(uuid.uuid4())
     
     art_exploration = ArtExploration(

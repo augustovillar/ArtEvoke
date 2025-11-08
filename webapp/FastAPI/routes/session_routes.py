@@ -33,8 +33,6 @@ async def create_session(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    """Create a new session for a patient (doctor only)"""
-    # Validate mode (only 'memory_reconstruction' or 'art_exploration', NOT 'both')
     if session_data.mode not in ["memory_reconstruction", "art_exploration"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

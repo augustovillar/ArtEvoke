@@ -1,4 +1,3 @@
-// src/pages/ArtExploration/ArtExplorationSession.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -25,17 +24,14 @@ const ArtExplorationSession = () => {
     const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
 
-    // Interruption states
     const [showInterruption, setShowInterruption] = useState(false);
     const [interruptionTime, setInterruptionTime] = useState(10);
     
-    // Session states
     const [loadingSession, setLoadingSession] = useState(false);
     const [artExplorationId, setArtExplorationId] = useState(null);
 
     const { t, i18n } = useTranslation('common');
 
-    // Sync language state with i18n language
     useEffect(() => {
         const currentLang = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
         if (currentLang === 'en' || currentLang === 'pt') {
@@ -43,7 +39,6 @@ const ArtExplorationSession = () => {
         }
     }, [i18n.language]);
 
-    // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
     const { generateLoading, responseText, generateStory } = useStoryGeneration();
@@ -112,7 +107,7 @@ const ArtExplorationSession = () => {
     };
 
     const handleGenerateStory = () => {
-        resetSaveState(); // Reset save state when generating new story
+        resetSaveState(); 
         generateStory(selectedImages, language);
     };
 
@@ -125,7 +120,6 @@ const ArtExplorationSession = () => {
     };
 
     const handleContinue = async () => {
-        console.log('handleContinue called - saving and starting interruption');
         await handleSave();
         setShowInterruption(true);
     };
@@ -135,13 +129,11 @@ const ArtExplorationSession = () => {
         }
     };
     const handleInterruptionComplete = () => {
-        console.log('handleInterruptionComplete called - proceeding to next step');
         setShowInterruption(false);
         handleProceedToNextStep();
     };
 
     const handleProceedToNextStep = () => {
-        // Create sessionData object that matches what ArtEvaluation expects
         const sessionData = {
             sessionId,
             artExplorationId,
@@ -164,12 +156,6 @@ const ArtExplorationSession = () => {
             timestamp: new Date().toISOString()
         };
 
-        console.log('Navigating to evaluation with sessionData:', sessionData);
-        console.log('sessionId:', sessionId);
-        console.log('artExplorationId:', artExplorationId);
-        console.log('responseText:', responseText);
-        console.log('selectedImages:', selectedImages);
-        
         navigate(`/sessions/${sessionId}/art-exploration/evaluation`, {
             state: {
                 sessionData
@@ -187,8 +173,8 @@ const ArtExplorationSession = () => {
             <div className="session-mode-banner">
                 <div className="banner-icon">🎯</div>
                 <div className="banner-content">
-                    <h3>Modo Sessão Ativo</h3>
-                    <p>Esta é uma avaliação formal que será salva para revisão médica.</p>
+                    <h3>{t('artExploration.sessionModeBanner.title')}</h3>
+                    <p>{t('artExploration.sessionModeBanner.description')}</p>
                 </div>
             </div>
 

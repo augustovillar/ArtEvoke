@@ -215,7 +215,15 @@
     "saveFailed": "Failed to save the story. Please try again.",
     "confirmClearSelections": "Are you sure you want to clear all selections?",
     "generatedImageAlt": "Generated Image {{name}}",
-    "selectedImageAlt": "Selected Image {{name}}"
+    "selectedImageAlt": "Selected Image {{name}}",
+    "sessionModeBanner": {
+      "title": "Session Mode Active",
+      "description": "This is a formal assessment that will be saved for medical review."
+    },
+    "practiceModeBanner": {
+      "title": "Practice Mode",
+      "description": "You are practicing. Your data will be saved to your profile, but it is not part of a formal session."
+    }
   },
   "signup": {
     "title": "Sign Up",
