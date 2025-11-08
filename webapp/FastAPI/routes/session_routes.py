@@ -155,7 +155,7 @@ async def get_my_sessions(
     sessions = (
         db.query(SessionModel)
         .filter(SessionModel.patient_id == current_user["id"])
-        .filter(SessionModel.status.in_(["pending", "in_progress", "in_evaluation"]))
+        .filter(SessionModel.status.in_(["pending", "in_progress", "in_evaluation", "completed"]))
         .order_by(SessionModel.created_at.desc())
         .all()
     )
