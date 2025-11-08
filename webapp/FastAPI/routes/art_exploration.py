@@ -43,19 +43,17 @@ async def create_art_exploration(
     request: SaveArtExplorationRequestDTO,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
-    art_exploration_id: Optional[str] = Query(None, description="Optional ID for session mode. If not provided, a new ID will be generated (free mode)"),
+    session_id: Optional[str] = Query(None, description="Optional session ID for session mode. If provided, links art exploration to this session."),
 ):
     """
     Create a new art exploration record.
     
-    - **Free mode**: No ID provided, generates new UUID
-    - **Session mode**: ID provided from session's art_exploration_id
+    - **Free mode**: No session_id provided, generates new UUID
+    - **Session mode**: session_id provided, generates UUID and links to session
     """
     
-    record_id = art_exploration_id if art_exploration_id else str(uuid.uuid4())
-    
     art_exploration = ArtExploration(
-        id=record_id,
+        id=str(uuid.uuid4()),
         patient_id=current_user["id"],
         story_generated=request.story_generated,
         dataset=request.dataset,  
@@ -75,13 +73,14 @@ async def create_art_exploration(
         
         db.add(image_record)
 
-    # If this is session mode, update session status to 'in_evaluation'
-    if art_exploration_id:
+    # If this is session mode, update session with art_exploration_id and change status
+    if session_id:
         session = db.query(SessionModel).filter(
-            SessionModel.art_exploration_id == art_exploration_id
+            SessionModel.id == session_id
         ).first()
         
         if session:
+            session.art_exploration_id = art_exploration.id
             session.status = "in_evaluation"
             db.add(session)
 

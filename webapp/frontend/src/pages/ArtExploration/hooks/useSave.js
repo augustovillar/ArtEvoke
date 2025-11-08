@@ -7,7 +7,7 @@ export const useSave = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [hasSaved, setHasSaved] = useState(false);
 
-    const saveStory = async (responseText, selectedImages, dataset, language, artExplorationId = null) => {
+    const saveStory = async (responseText, selectedImages, dataset, language, sessionId = null) => {
         // Prevent multiple saves - set saving state immediately
         if (isSaving) return { success: false, message: 'Already saving...' };
         
@@ -32,10 +32,10 @@ export const useSave = () => {
         }
 
         try {
-            // Build endpoint with optional artExplorationId query param
+            // Build endpoint with optional sessionId query param
             let endpoint = `/api/art/save`;
-            if (artExplorationId) {
-                endpoint += `?art_exploration_id=${artExplorationId}`;
+            if (sessionId) {
+                endpoint += `?session_id=${sessionId}`;
             }
 
             const response = await fetch(endpoint, {

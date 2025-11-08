@@ -44,7 +44,7 @@ const ArtExplorationFree = () => {
 
     // Handler for saving in free mode (not in session)
     const handleSave = async () => {
-        await saveStory(responseText, selectedImages, dataset, language); // No artExplorationId = free mode
+        await saveStory(responseText, selectedImages, dataset, language); // No sessionId = free mode
     };
 
     // Handler to clear selections

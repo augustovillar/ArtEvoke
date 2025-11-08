@@ -71,25 +71,14 @@ async def create_session(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this patient",
         )
-
-    # Generate UUID for the corresponding evaluation mode
-    # The actual evaluation record will be created when the patient starts the session
-    # But we pre-generate the ID to maintain referential integrity
-    memory_reconstruction_id = None
-    art_exploration_id = None
     
-    if session_data.mode == "memory_reconstruction":
-        memory_reconstruction_id = str(uuid.uuid4())
-    elif session_data.mode == "art_exploration":
-        art_exploration_id = str(uuid.uuid4())
-
     new_session = SessionModel(
         id=str(uuid.uuid4()),
         patient_id=session_data.patient_id,
         doctor_id=doctor_id,
         mode=session_data.mode,
-        memory_reconstruction_id=memory_reconstruction_id,
-        art_exploration_id=art_exploration_id,
+        memory_reconstruction_id=None,
+        art_exploration_id=None,
         interruption_time=interruption_time,
         status="pending",
         created_at=datetime.utcnow(),

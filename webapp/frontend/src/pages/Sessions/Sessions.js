@@ -151,7 +151,6 @@ const Sessions = () => {
                 if (sessionStatus.mode === 'art_exploration') {
                     const sessionData = {
                         sessionId: sessionStatus.session_id,
-                        artExplorationId: sessionStatus.art_exploration_id,
                         mode: 'session',
                         interruption: {
                             duration: sessionStatus.interruption_time,
@@ -204,7 +203,6 @@ const Sessions = () => {
                 navigate(`/sessions/${session.id}/art-exploration`, {
                     state: {
                         sessionId: sessionStatus.session_id,
-                        artExplorationId: sessionStatus.art_exploration_id,
                         interruptionTime: sessionStatus.interruption_time,
                         mode: sessionStatus.mode
                     }

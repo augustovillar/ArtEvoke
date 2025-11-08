@@ -28,7 +28,6 @@ const ArtExplorationSession = () => {
     const [interruptionTime, setInterruptionTime] = useState(10);
     
     const [loadingSession, setLoadingSession] = useState(false);
-    const [artExplorationId, setArtExplorationId] = useState(null);
 
     const { t, i18n } = useTranslation('common');
 
@@ -58,12 +57,10 @@ const ArtExplorationSession = () => {
             
             if (stateData) {
                 // Check if data is passed directly or wrapped in sessionData
-                const artExpId = stateData.artExplorationId || (stateData.sessionData && stateData.sessionData.artExplorationId);
                 const intTime = stateData.interruptionTime || (stateData.sessionData && stateData.sessionData.interruption && stateData.sessionData.interruption.duration);
                 
-                if (artExpId && intTime) {
+                if (intTime) {
                     // Data was passed via navigation state - use it directly!
-                    setArtExplorationId(artExpId);
                     setInterruptionTime(intTime);
                     setLoadingSession(false);
                     return;
@@ -88,7 +85,6 @@ const ArtExplorationSession = () => {
 
                 const data = await sessionResponse.json();
                 setInterruptionTime(data.interruption_time || 10);
-                setArtExplorationId(data.art_exploration_id);
 
             } catch (error) {
                 console.error('Error loading session data:', error);
@@ -116,7 +112,7 @@ const ArtExplorationSession = () => {
     };
 
     const handleSave = async () => {
-        await saveStory(responseText, selectedImages, dataset, language, artExplorationId); 
+        await saveStory(responseText, selectedImages, dataset, language, sessionId); 
     };
 
     const handleContinue = async () => {
@@ -136,7 +132,6 @@ const ArtExplorationSession = () => {
     const handleProceedToNextStep = () => {
         const sessionData = {
             sessionId,
-            artExplorationId,
             mode: 'session',
             phase1: {
                 query: storyText || '',
