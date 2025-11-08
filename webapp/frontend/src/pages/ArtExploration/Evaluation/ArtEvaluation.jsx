@@ -13,9 +13,6 @@ const ArtEvaluation = () => {
   const { t } = useTranslation('common');
   const { sessionData } = location.state || {};
 
-  console.log('ArtEvaluation - location.state:', location.state);
-  console.log('ArtEvaluation - sessionData:', sessionData);
-
   const [currentStep, setCurrentStep] = useState(0);
   const [evaluationData, setEvaluationData] = useState({
     storyWriting: null,
@@ -49,7 +46,6 @@ const ArtEvaluation = () => {
   const totalSteps = 2 + objectiveQuestions.length; // 1 story writing + 1 chronology + objective questions
 
   useEffect(() => {
-    console.log('ArtEvaluation useEffect - checking sessionData');
     if (!sessionData) {
       console.error('No sessionData found in location.state');
       alert('Dados da sessão não encontrados. Redirecionando...');

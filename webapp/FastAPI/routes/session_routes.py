@@ -427,5 +427,4 @@ async def get_session_evaluation(
             }
 
     # Return empty dict if no evaluation data exists yet (session not started)
-    # This is expected behavior now - evaluations are created when the patient starts the session
     return evaluation_data
