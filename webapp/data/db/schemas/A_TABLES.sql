@@ -134,21 +134,19 @@ CREATE TABLE IF NOT EXISTS CatalogItem (
 
 
 /*  ====================================================== */
-/*  Art Exploration (FK to Session added later) */
+/*  Art Exploration */
 /*  ====================================================== */
 CREATE TABLE IF NOT EXISTS ArtExploration (
   id              CHAR(36)    NOT NULL,
   patient_id      CHAR(36)    NOT NULL,
-  session_id      CHAR(36)    NULL,
-  story_generated TEXT        NULL,
-  dataset         ENUM('ipiranga', 'wikiart','semart') NULL,
-  language        ENUM('en','pt') NULL,
+  story_generated TEXT        NOT NULL,
+  dataset         ENUM('ipiranga', 'wikiart','semart') NOT NULL,
+  language        ENUM('en','pt') NOT NULL,
   created_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_art_exploration PRIMARY KEY (id),
   CONSTRAINT fk_artexp_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   INDEX idx_artexp_patient (patient_id),
-  INDEX idx_artexp_session (session_id),
   INDEX idx_artexp_dataset (dataset),
   INDEX idx_artexp_language (language)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -228,11 +226,11 @@ CREATE TABLE IF NOT EXISTS `Session` (
   id                        CHAR(36)  NOT NULL,
   patient_id                CHAR(36)  NOT NULL,
   doctor_id                 CHAR(36)  NOT NULL,
-  memory_reconstruction_id  CHAR(36)  NULL,
-  art_exploration_id        CHAR(36)  NULL,
+  memory_reconstruction_id  CHAR(36)  NULL,  -- ID created when activity is saved
+  art_exploration_id        CHAR(36)  NULL,  -- ID created when activity is saved
   mode ENUM('art_exploration','memory_reconstruction') NOT NULL,
   interruption_time         SMALLINT  NOT NULL DEFAULT 10 CHECK (interruption_time BETWEEN 1 AND 300),
-  status ENUM('pending','in_progress','completed') NOT NULL DEFAULT 'pending',
+  status ENUM('pending','in_progress','in_evaluation','completed') NOT NULL DEFAULT 'pending',
   started_at DATE NULL,
   ended_at   DATE NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -245,11 +243,7 @@ CREATE TABLE IF NOT EXISTS `Session` (
   CONSTRAINT fk_session_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_session_doctor FOREIGN KEY (doctor_id)  REFERENCES Doctor(id)
-    ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT fk_session_mr FOREIGN KEY (memory_reconstruction_id) REFERENCES MemoryReconstruction(id)
-    ON UPDATE CASCADE ON DELETE SET NULL,
-  CONSTRAINT fk_session_ae FOREIGN KEY (art_exploration_id) REFERENCES ArtExploration(id)
-    ON UPDATE CASCADE ON DELETE SET NULL
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -399,11 +393,6 @@ CREATE TABLE IF NOT EXISTS PosEvaluation (
 /*  ====================================================== */
 /*  Add Foreign Keys for session_id (after Session exists) */
 /*  ====================================================== */
-ALTER TABLE ArtExploration 
-  ADD CONSTRAINT fk_artexp_session 
-  FOREIGN KEY (session_id) REFERENCES `Session`(id)
-  ON UPDATE CASCADE ON DELETE SET NULL;
-
 ALTER TABLE MemoryReconstruction 
   ADD CONSTRAINT fk_memrec_session 
   FOREIGN KEY (session_id) REFERENCES `Session`(id)

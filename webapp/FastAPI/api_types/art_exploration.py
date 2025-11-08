@@ -16,9 +16,9 @@ class SaveArtExplorationRequestDTO(BaseModel):
 
 class ArtExplorationResponse(BaseModel):
     id: str
-    story_generated: Optional[str] = None
-    dataset: Optional[Dataset] = None
-    language: Optional[Language] = None
+    story_generated: str
+    dataset: Dataset
+    language: Language
     created_at: datetime
     images: List[ImagesItem]
 

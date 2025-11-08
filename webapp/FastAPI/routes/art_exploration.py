@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from orm.session_models import Session as SessionModel
 from sqlalchemy.orm import Session, joinedload
 from orm import get_db, ArtExploration, Images, CatalogItem
 from api_types.art_exploration import (
@@ -16,10 +17,10 @@ from api_types.common import (
 from utils.auth import get_current_user
 from clients import get_maritaca_client
 import uuid
+from typing import List, Optional
 import os
 import json
 import re
-from typing import List
 
 router = APIRouter()
 
@@ -38,37 +39,55 @@ def load_prompt(language: Language) -> str:
 
 
 @router.post("/save")
-async def save_art_exploration(
+async def create_art_exploration(
     request: SaveArtExplorationRequestDTO,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
+    session_id: Optional[str] = Query(None, description="Optional session ID for session mode. If provided, links art exploration to this session."),
 ):
+    """
+    Create a new art exploration record.
+    
+    - **Free mode**: No session_id provided, generates new UUID
+    - **Session mode**: session_id provided, generates UUID and links to session
+    """
+    
     art_exploration = ArtExploration(
         id=str(uuid.uuid4()),
         patient_id=current_user["id"],
         story_generated=request.story_generated,
         dataset=request.dataset,  
-        language=request.language,
+        language=request.language
     )
 
     db.add(art_exploration)
     db.flush() 
 
     for i, image in enumerate(request.images_selected):
-        section = Images(
+        image_record = Images(
             id=str(uuid.uuid4()),
             art_exploration_id=art_exploration.id,
             catalog_id=image.id,
             display_order=i + 1, 
         )
         
-        db.add(section)
+        db.add(image_record)
+
+    # If this is session mode, update session with art_exploration_id and change status
+    if session_id:
+        session = db.query(SessionModel).filter(
+            SessionModel.id == session_id
+        ).first()
+        
+        if session:
+            session.art_exploration_id = art_exploration.id
+            session.status = "in_evaluation"
+            db.add(session)
 
     db.commit()
     db.refresh(art_exploration)
 
-
-    return {"message": "Art exploration saved successfully"}
+    return {"message": "Art exploration saved successfully", "id": art_exploration.id}
 
 
 @router.get("/retrieve", response_model=RetrieveArtExplorationResponseDTO)
@@ -79,13 +98,10 @@ async def get_art_explorations(
     db: Session = Depends(get_db),
 ):
     total_count = db.query(ArtExploration).filter(
-        ArtExploration.patient_id == current_user["id"],
-        ArtExploration.session_id.is_(None)
+        ArtExploration.patient_id == current_user["id"]
     ).count()
-
     art_exploration_query: List[ArtExploration] = db.query(ArtExploration).filter(
-        ArtExploration.patient_id == current_user["id"],
-        ArtExploration.session_id.is_(None)
+        ArtExploration.patient_id == current_user["id"]
     ).order_by(ArtExploration.created_at.desc()).offset(offset).limit(limit).all()
 
     art_explorations = []
@@ -125,19 +141,21 @@ async def delete_art_exploration(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    memory_reconstruction = db.query(ArtExploration).filter(
+    """Delete an art exploration and its associated images"""
+    # Find the art exploration
+    art_exploration = db.query(ArtExploration).filter(
         ArtExploration.id == art_exploration_id,
         ArtExploration.patient_id == current_user["id"]
     ).first()
 
-    if not memory_reconstruction:
+    if not art_exploration:
         raise HTTPException(status_code=404, detail="Art exploration not found")
 
     db.query(Images).filter(
         Images.art_exploration_id == art_exploration_id
     ).delete()
 
-    db.delete(memory_reconstruction)
+    db.delete(art_exploration)
     db.commit()
 
     return {"message": "Art exploration deleted successfully"}

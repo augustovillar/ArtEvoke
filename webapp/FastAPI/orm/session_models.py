@@ -64,10 +64,9 @@ class Session(Base):
         SmallInteger, 
         nullable=False, 
         default=10,
-        # Aligns with CHECK constraint in SQL: interruption_time BETWEEN 1 AND 300
     )
     status = Column(
-        Enum("pending", "in_progress", "completed", name="session_status"),
+        Enum("pending", "in_progress", "in_evaluation", "completed", name="session_status"),
         nullable=False,
         default="pending",
     )
@@ -83,9 +82,9 @@ class Session(Base):
         back_populates="sessions",
         foreign_keys="[Session.memory_reconstruction_id]"
     )
+
     art_exploration = relationship(
-        "ArtExploration", 
-        back_populates="sessions",
+        "ArtExploration",
         foreign_keys="[Session.art_exploration_id]"
     )
     pre_evaluation = relationship(
@@ -132,7 +131,6 @@ class PreEvaluation(Base):
     any_recent_conditions = Column(String(100), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
-    # Relationships
     session = relationship("Session", back_populates="pre_evaluation")
 
     def __repr__(self):

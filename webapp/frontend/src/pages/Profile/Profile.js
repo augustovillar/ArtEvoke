@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts';
 import './Profile.css';
@@ -65,7 +65,7 @@ const Profile = () => {
         }
     }, [expandedItem]);
 
-    const fetchUserProfile = async () => {
+    const fetchUserProfile = useCallback(async () => {
         if (!user || userType !== 'patient') return;
 
         // Fetch memory reconstructions
@@ -105,13 +105,13 @@ const Profile = () => {
         } catch (error) {
             console.error('Error fetching art explorations:', error);
         }
-    };
+    }, [user, userType]);
 
     useEffect(() => {
         if (user && userType === 'patient') {
             fetchUserProfile();
         }
-    }, [user, userType]);
+    }, [user, userType, fetchUserProfile]);
 
     const handleItemClick = (item) => {
         setExpandedItem(item);

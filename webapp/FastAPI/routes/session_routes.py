@@ -33,8 +33,6 @@ async def create_session(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    """Create a new session for a patient (doctor only)"""
-    # Validate mode (only 'memory_reconstruction' or 'art_exploration', NOT 'both')
     if session_data.mode not in ["memory_reconstruction", "art_exploration"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -73,56 +71,19 @@ async def create_session(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this patient",
         )
-
-    memory_reconstruction_id = None
-    art_exploration_id = None
-
-    # Create new session first to get session_id
+    
     new_session = SessionModel(
         id=str(uuid.uuid4()),
         patient_id=session_data.patient_id,
         doctor_id=doctor_id,
         mode=session_data.mode,
-        memory_reconstruction_id=None,  # Will be set after creating evaluation object
-        art_exploration_id=None,  # Will be set after creating evaluation object
+        memory_reconstruction_id=None,
+        art_exploration_id=None,
         interruption_time=interruption_time,
         status="pending",
         created_at=datetime.utcnow(),
     )
     db.add(new_session)
-    db.flush()  # Get session ID without committing
-
-    # Create evaluation instance based on session mode
-    # Fields will be filled by patient during session (dataset, language, story, etc)
-    if session_data.mode == "memory_reconstruction":
-        mr_instance = MemoryReconstruction(
-            id=str(uuid.uuid4()),
-            patient_id=session_data.patient_id,
-            session_id=new_session.id,
-            story=None,  # Filled when patient starts session
-            dataset=None,  # Selected during session by patient
-            language=None,  # Selected during session by patient
-            segmentation_strategy=None,  # Selected during session by patient
-            created_at=datetime.utcnow(),
-        )
-        db.add(mr_instance)
-        db.flush()
-        new_session.memory_reconstruction_id = mr_instance.id
-
-    elif session_data.mode == "art_exploration":
-        ae_instance = ArtExploration(
-            id=str(uuid.uuid4()),
-            patient_id=session_data.patient_id,
-            session_id=new_session.id,
-            story_generated=None,  # Generated when patient completes session
-            dataset=None,  # Selected during session by patient
-            language=None,  # Selected during session by patient
-            created_at=datetime.utcnow(),
-        )
-        db.add(ae_instance)
-        db.flush()
-        new_session.art_exploration_id = ae_instance.id
-
     db.commit()
     db.refresh(new_session)
 
@@ -191,7 +152,7 @@ async def get_my_sessions(
     sessions = (
         db.query(SessionModel)
         .filter(SessionModel.patient_id == current_user["id"])
-        .filter(SessionModel.status.in_(["pending", "in_progress"]))
+        .filter(SessionModel.status.in_(["pending", "in_progress", "in_evaluation"]))
         .order_by(SessionModel.created_at.desc())
         .all()
     )
@@ -336,6 +297,40 @@ async def complete_session(
     return session
 
 
+@router.get("/{session_id}/status")
+async def get_session_status(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get session status to determine appropriate redirection"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
+
+    # Verify authorization
+    if (
+        current_user["id"] != session.patient_id
+        and current_user["id"] != session.doctor_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this session",
+        )
+
+    return {
+        "session_id": session.id,
+        "mode": session.mode,
+        "status": session.status,
+        "art_exploration_id": session.art_exploration_id,
+        "memory_reconstruction_id": session.memory_reconstruction_id,
+        "interruption_time": session.interruption_time
+    }
+
+
 @router.get("/{session_id}/evaluation")
 async def get_session_evaluation(
     session_id: str,
@@ -420,10 +415,5 @@ async def get_session_evaluation(
                 ],
             }
 
-    if not evaluation_data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No evaluation data found for this session",
-        )
-
+    # Return empty dict if no evaluation data exists yet (session not started)
     return evaluation_data

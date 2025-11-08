@@ -117,6 +117,11 @@
     color: #1e40af;
 }
 
+.status-in-evaluation {
+    background-color: #fde68a;
+    color: #92400e;
+}
+
 .status-completed {
     background-color: #dcfce7;
     color: #166534;

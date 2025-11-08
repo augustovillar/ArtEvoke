@@ -215,7 +215,15 @@
     "saveFailed": "Failed to save the story. Please try again.",
     "confirmClearSelections": "Are you sure you want to clear all selections?",
     "generatedImageAlt": "Generated Image {{name}}",
-    "selectedImageAlt": "Selected Image {{name}}"
+    "selectedImageAlt": "Selected Image {{name}}",
+    "sessionModeBanner": {
+      "title": "Session Mode Active",
+      "description": "This is a formal assessment that will be saved for medical review."
+    },
+    "practiceModeBanner": {
+      "title": "Practice Mode",
+      "description": "You are practicing. Your data will be saved to your profile, but it is not part of a formal session."
+    }
   },
   "signup": {
     "title": "Sign Up",
@@ -447,6 +455,8 @@
     "completedAt": "Completed at",
     "start": "Start",
     "continue": "Continue",
+    "continueEvaluation": "Continue Evaluation",
+    "viewResults": "View Results",
     "view": "View",
     "delete": "Delete",
     "modes": {
@@ -457,6 +467,7 @@
     "statuses": {
       "pending": "Pending",
       "in_progress": "In Progress",
+      "in_evaluation": "In Evaluation",
       "completed": "Completed"
     },
     "create": {
@@ -488,6 +499,7 @@
       "createFailed": "Failed to create session",
       "deleteFailed": "Failed to delete session",
       "startFailed": "Failed to start session",
+      "statusCheckFailed": "Failed to check session status",
       "unauthorized": "You do not have permission to access these sessions",
       "noAccess": "You don't have access to this patient",
       "notFound": "Session not found"

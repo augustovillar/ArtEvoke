@@ -124,27 +124,91 @@ const Sessions = () => {
     const handleStartSession = async (session) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/sessions/${session.id}`, {
-                method: 'PATCH',
+            
+            // First, check the current session status to determine appropriate action
+            const statusResponse = await fetch(`/api/sessions/${session.id}/status`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    status: 'in_progress',
-                    started_at: new Date().toISOString().split('T')[0]
-                })
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
-            if (response.ok) {
-                // Navigate to the appropriate mode based on session mode
-                const mode = session.mode === 'memory_reconstruction' 
-                    ? 'memory-reconstruction' 
-                    : 'art-exploration';
-                navigate(`/${mode}?sessionId=${session.id}&interruptionTime=${session.interruption_time}`);
-            } else {
-                alert(t('sessions.errors.startFailed'));
+            if (!statusResponse.ok) {
+                alert(t('sessions.errors.statusCheckFailed'));
+                return;
             }
+
+            const sessionStatus = await statusResponse.json();
+            
+            // Handle different session states
+            if (sessionStatus.status === 'completed') {
+                // Session already completed, go to results
+                navigate(`/sessions/${session.id}/results`);
+                return;
+            }
+            
+            if (sessionStatus.status === 'in_evaluation') {
+                // Session activity completed, go directly to evaluation
+                if (sessionStatus.mode === 'art_exploration') {
+                    const sessionData = {
+                        sessionId: sessionStatus.session_id,
+                        mode: 'session',
+                        interruption: {
+                            duration: sessionStatus.interruption_time,
+                            completed: true
+                        },
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    navigate(`/sessions/${session.id}/art-exploration/evaluation`, {
+                        state: { sessionData }
+                    });
+                } else if (sessionStatus.mode === 'memory_reconstruction') {
+                    navigate(`/sessions/${session.id}/memory-reconstruction/evaluation`);
+                }
+                return;
+            }
+            
+            // For pending or in_progress status, update to in_progress and continue to activity
+            if (sessionStatus.status === 'pending') {
+                const updateResponse = await fetch(`/api/sessions/${session.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: 'in_progress',
+                        started_at: new Date().toISOString().split('T')[0]
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    alert(t('sessions.errors.startFailed'));
+                    return;
+                }
+            }
+
+            // Navigate to the appropriate mode based on session mode
+            // Pass session data via state to avoid unnecessary fetch
+            if (sessionStatus.mode === 'memory_reconstruction') {
+                navigate(`/sessions/${session.id}/memory-reconstruction`, {
+                    state: {
+                        sessionId: sessionStatus.session_id,
+                        memoryReconstructionId: sessionStatus.memory_reconstruction_id,
+                        interruptionTime: sessionStatus.interruption_time,
+                        mode: sessionStatus.mode
+                    }
+                });
+            } else if (sessionStatus.mode === 'art_exploration') {
+                navigate(`/sessions/${session.id}/art-exploration`, {
+                    state: {
+                        sessionId: sessionStatus.session_id,
+                        interruptionTime: sessionStatus.interruption_time,
+                        mode: sessionStatus.mode
+                    }
+                });
+            }
+            
         } catch (error) {
             alert(t('sessions.errors.startFailed'));
             console.error('Error:', error);
@@ -155,6 +219,7 @@ const Sessions = () => {
         switch (status) {
             case 'pending': return 'status-pending';
             case 'in_progress': return 'status-in-progress';
+            case 'in_evaluation': return 'status-in-evaluation';
             case 'completed': return 'status-completed';
             default: return '';
         }
@@ -238,6 +303,22 @@ const Sessions = () => {
                                         onClick={() => handleStartSession(session)}
                                     >
                                         {t('sessions.continue')}
+                                    </button>
+                                )}
+                                {userType === 'patient' && session.status === 'in_evaluation' && (
+                                    <button 
+                                        className="btn-continue-session"
+                                        onClick={() => handleStartSession(session)}
+                                    >
+                                        {t('sessions.continueEvaluation')}
+                                    </button>
+                                )}
+                                {userType === 'patient' && session.status === 'completed' && (
+                                    <button 
+                                        className="btn-view-session"
+                                        onClick={() => handleStartSession(session)}
+                                    >
+                                        {t('sessions.viewResults')}
                                     </button>
                                 )}
                                 {userType === 'doctor' && (

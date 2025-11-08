@@ -72,7 +72,7 @@ const useSave = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            await response.json();
             setSaveMessage(t('memoryReconstruction.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
             setSavedStoryData(saveData);

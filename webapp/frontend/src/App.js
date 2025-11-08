@@ -3,7 +3,7 @@ import React from 'react';
 import './i18n';
 import { Routes, Route } from 'react-router-dom';
 import { Navbar, Footer, ProtectedRoute } from './components/common';
-import { Home, About, MemoryReconstruction, ArtExploration, SignUp, Login, Profile, Patients, CreatePatient, Sessions, SessionDetails, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages';
+import { Home, About, MemoryReconstruction, SignUp, Login, Profile, Patients, CreatePatient, Sessions, SessionDetails, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin, ArtExplorationFree, ArtExplorationSession } from './pages';
 import MemoryEvaluation from './pages/MemoryReconstruction/Evaluation';
 import ArtEvaluation from './pages/ArtExploration/Evaluation';
 import './styles/App.css';
@@ -34,12 +34,20 @@ function App() {
                                         <MemoryEvaluation />
                                     </ProtectedRoute>
                                 } />
+                                {/* Art Exploration - Free Mode */}
                                 <Route path="/artsearch" element={
                                     <ProtectedRoute>
-                                        <ArtExploration />
+                                        <ArtExplorationFree />
                                     </ProtectedRoute>
                                 } />
-                                <Route path="/art-exploration/evaluation" element={
+                                
+                                {/* Art Exploration - Session Mode */}
+                                <Route path="/sessions/:sessionId/art-exploration" element={
+                                    <ProtectedRoute>
+                                        <ArtExplorationSession />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/sessions/:sessionId/art-exploration/evaluation" element={
                                     <ProtectedRoute>
                                         <ArtEvaluation />
                                     </ProtectedRoute>

@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
-import logo from '../../../assets/images/logepl.jpg';
-import { useTheme } from '../../../contexts';
 import { useAuth } from '../../../contexts';
 import AccessibilityPanel from '../../ui/AccessibilityPanel';
 import LanguageSelector from '../../../components/languageSelector/languageSelector';
@@ -13,7 +11,6 @@ const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-    const { toggleTheme } = useTheme();
     const { isLoggedIn, userType, logout } = useAuth();
 
     const toggleDropdown = () => {
