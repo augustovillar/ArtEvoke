@@ -226,8 +226,8 @@ CREATE TABLE IF NOT EXISTS `Session` (
   id                        CHAR(36)  NOT NULL,
   patient_id                CHAR(36)  NOT NULL,
   doctor_id                 CHAR(36)  NOT NULL,
-  memory_reconstruction_id  CHAR(36)  NULL,  -- Pre-generated ID, record created later
-  art_exploration_id        CHAR(36)  NULL,  -- Pre-generated ID, record created later
+  memory_reconstruction_id  CHAR(36)  NULL,  -- ID created when activity is saved
+  art_exploration_id        CHAR(36)  NULL,  -- ID created when activity is saved
   mode ENUM('art_exploration','memory_reconstruction') NOT NULL,
   interruption_time         SMALLINT  NOT NULL DEFAULT 10 CHECK (interruption_time BETWEEN 1 AND 300),
   status ENUM('pending','in_progress','in_evaluation','completed') NOT NULL DEFAULT 'pending',
@@ -240,11 +240,6 @@ CREATE TABLE IF NOT EXISTS `Session` (
   KEY idx_session_mr (memory_reconstruction_id),
   KEY idx_session_ae (art_exploration_id),
   KEY idx_session_mode (mode),
-  -- Ensure exactly one evaluation ID is set based on mode
-  CONSTRAINT chk_session_mode_consistency CHECK (
-    (mode = 'memory_reconstruction' AND memory_reconstruction_id IS NOT NULL AND art_exploration_id IS NULL) OR
-    (mode = 'art_exploration' AND art_exploration_id IS NOT NULL AND memory_reconstruction_id IS NULL)
-  ),
   CONSTRAINT fk_session_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_session_doctor FOREIGN KEY (doctor_id)  REFERENCES Doctor(id)

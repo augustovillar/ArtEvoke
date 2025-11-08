@@ -5,18 +5,18 @@ import DraggableEventItem from './DraggableEventItem';
 import DropZone from './DropZone';
 import styles from './ChronologyOrderQuestion.module.css';
 
+// Mock data - in final version, this will come from Maritaca AI
+const mockStoryEvents = {
+    correctOrder: [
+        "Ele comeu sorvete",
+        "Ele foi à escola", 
+        "Ele ficou satisfeito"
+    ]
+};
+
 const ChronologyOrderQuestion = ({ onAnswer }) => {
     const { t } = useTranslation();
     const [startTime] = useState(Date.now());
-
-    // Mock data - in final version, this will come from Maritaca AI
-    const mockStoryEvents = {
-        correctOrder: [
-            "Ele comeu sorvete",
-            "Ele foi à escola", 
-            "Ele ficou satisfeito"
-        ]
-    };
 
     const [shuffledEvents, setShuffledEvents] = useState([]);
     const [orderedEvents, setOrderedEvents] = useState([]);
@@ -28,7 +28,7 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
         const shuffled = [...mockStoryEvents.correctOrder].sort(() => Math.random() - 0.5);
         setShuffledEvents(shuffled);
         setOrderedEvents(new Array(mockStoryEvents.correctOrder.length).fill(null));
-    }, [mockStoryEvents.correctOrder]);
+    }, []);
 
     const handleDragStart = (event, eventText) => {
         setDraggedItem(eventText);
