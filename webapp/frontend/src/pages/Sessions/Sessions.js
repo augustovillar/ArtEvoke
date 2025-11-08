@@ -148,6 +148,20 @@ const Sessions = () => {
             
             if (sessionStatus.status === 'in_evaluation') {
                 // Session activity completed, go directly to evaluation
+                // Need to fetch the saved data to reconstruct phase1
+                const evalResponse = await fetch(`/api/sessions/${session.id}/evaluation`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!evalResponse.ok) {
+                    alert(t('sessions.errors.loadEvaluationFailed') || 'Failed to load evaluation data');
+                    return;
+                }
+
+                const evalData = await evalResponse.json();
+
                 if (sessionStatus.mode === 'art_exploration') {
                     const sessionData = {
                         sessionId: sessionStatus.session_id,
@@ -162,8 +176,35 @@ const Sessions = () => {
                     navigate(`/sessions/${session.id}/art-exploration/evaluation`, {
                         state: { sessionData }
                     });
-                } else if (sessionStatus.mode === 'memory_reconstruction') {
-                    navigate(`/sessions/${session.id}/memory-reconstruction/evaluation`);
+                } else if (sessionStatus.mode === 'memory_reconstruction' && evalData.memory_reconstruction) {
+                    const mr = evalData.memory_reconstruction;
+                    
+                    // Reconstruct phase1 data from saved memory reconstruction
+                    const sessionData = {
+                        sessionId: sessionStatus.session_id,
+                        mode: 'session',
+                        phase1: {
+                            story: mr.story,
+                            language: mr.language,
+                            dataset: mr.dataset,
+                            segmentation: mr.segmentation_strategy,
+                            sections: mr.sections.map((section) => ({
+                                sectionId: section.id,
+                                sectionText: section.section_content,
+                                imagesShown: section.images.filter(img => img !== null),
+                                selectedImage: section.fav_image || {}
+                            }))
+                        },
+                        interruption: {
+                            duration: sessionStatus.interruption_time,
+                            completed: true
+                        },
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    navigate(`/sessions/${session.id}/memory-reconstruction/evaluation`, {
+                        state: { sessionData }
+                    });
                 }
                 return;
             }
@@ -316,7 +357,8 @@ const Sessions = () => {
                                 {userType === 'patient' && session.status === 'completed' && (
                                     <button 
                                         className="btn-view-session"
-                                        onClick={() => handleStartSession(session)}
+                                        disabled={true}
+                                        title={t('sessions.resultsComingSoon') || 'Página de resultados em desenvolvimento'}
                                     >
                                         {t('sessions.viewResults')}
                                     </button>

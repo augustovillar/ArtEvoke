@@ -92,12 +92,29 @@ const MemoryEvaluation = () => {
         };
 
         try {
+            const token = localStorage.getItem('token');
+            
+            const sessionId = sessionData.sessionId;
+            
+            if (sessionId) {
+                await fetch(`/api/sessions/${sessionId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+            
             console.log('Salvando sessão completa:', completeSession);
             
-            // TODO: Implementar chamada à API
-            // const response = await fetch('/api/sessions/memory-reconstruction', {
+            // TODO: Implementar chamada à API para salvar dados da avaliação
+            // const response = await fetch('/api/sessions/memory-reconstruction/evaluation', {
             //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
+            //     headers: { 
+            //         'Content-Type': 'application/json',
+            //         'Authorization': `Bearer ${token}`
+            //     },
             //     body: JSON.stringify(completeSession)
             // });
             // 
@@ -106,7 +123,7 @@ const MemoryEvaluation = () => {
             // }
 
             alert('Sessão salva com sucesso!');
-            navigate('/profile'); // ou página de sucesso
+            navigate('/sessions');
         } catch (error) {
             console.error('Erro ao salvar sessão:', error);
             alert('Erro ao salvar sessão. Tente novamente.');

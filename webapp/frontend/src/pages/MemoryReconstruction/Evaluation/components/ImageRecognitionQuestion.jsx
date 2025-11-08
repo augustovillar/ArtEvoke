@@ -27,10 +27,10 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
 
         // Criar array com todas as imagens mostradas + distratores
         const allImages = [
-            ...section.imagesShown.map(img => ({
+            ...(section.imagesShown || []).map(img => ({
                 ...img,
                 isDistractor: false,
-                isCorrect: img.url === section.selectedImage.url
+                isCorrect: img.url === section.selectedImage?.url
             })),
             ...mockDistractors
         ];

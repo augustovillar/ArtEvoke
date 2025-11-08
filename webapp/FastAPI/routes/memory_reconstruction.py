@@ -65,7 +65,7 @@ async def save_memory_reconstruction(
         session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
         if session:
             session.memory_reconstruction_id = memory_reconstruction.id
-            session.status = "in_progress"
+            session.status = "in_evaluation"
 
     db.commit()
     db.refresh(memory_reconstruction)
