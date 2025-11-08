@@ -458,7 +458,6 @@ async def get_session_evaluation(
                 "story_generated": ae.story_generated,
                 "dataset": ae.dataset,
                 "language": ae.language,
-                "in_session": ae.in_session,
                 "created_at": ae.created_at,
                 "images": [
                     {

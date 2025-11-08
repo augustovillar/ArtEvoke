@@ -81,12 +81,22 @@ async def get_memory_reconstructions(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    # Get memory reconstructions NOT referenced by any session (free mode only)
+    from orm.session_models import Session as SessionModel
+    
+    # Subquery to get all memory_reconstruction_ids that are referenced in sessions
+    session_mr_ids = db.query(SessionModel.memory_reconstruction_id).filter(
+        SessionModel.memory_reconstruction_id.isnot(None)
+    ).subquery()
+    
     total_count = db.query(MemoryReconstruction).filter(
-        MemoryReconstruction.patient_id == current_user["id"]
+        MemoryReconstruction.patient_id == current_user["id"],
+        ~MemoryReconstruction.id.in_(session_mr_ids)
     ).count()
 
     memory_reconstructions_query = db.query(MemoryReconstruction).filter(
-        MemoryReconstruction.patient_id == current_user["id"]
+        MemoryReconstruction.patient_id == current_user["id"],
+        ~MemoryReconstruction.id.in_(session_mr_ids)
     ).order_by(MemoryReconstruction.created_at.desc()).offset(offset).limit(limit).all()
 
     memory_reconstructions = []

@@ -97,11 +97,22 @@ async def get_art_explorations(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    # Get art explorations NOT referenced by any session (free mode only)
+    from orm.session_models import Session as SessionModel
+    
+    # Subquery to get all art_exploration_ids that are referenced in sessions
+    session_ae_ids = db.query(SessionModel.art_exploration_id).filter(
+        SessionModel.art_exploration_id.isnot(None)
+    ).subquery()
+    
     total_count = db.query(ArtExploration).filter(
-        ArtExploration.patient_id == current_user["id"]
+        ArtExploration.patient_id == current_user["id"],
+        ~ArtExploration.id.in_(session_ae_ids)
     ).count()
+    
     art_exploration_query: List[ArtExploration] = db.query(ArtExploration).filter(
-        ArtExploration.patient_id == current_user["id"]
+        ArtExploration.patient_id == current_user["id"],
+        ~ArtExploration.id.in_(session_ae_ids)
     ).order_by(ArtExploration.created_at.desc()).offset(offset).limit(limit).all()
 
     art_explorations = []
