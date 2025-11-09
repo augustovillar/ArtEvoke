@@ -23,7 +23,6 @@ class MemoryReconstruction(Base):
 
     __tablename__ = "MemoryReconstruction"
     __table_args__ = (
-        Index("idx_memrec_session", "session_id"),
         {
             "mysql_engine": "InnoDB",
             "mysql_charset": "utf8mb4",
@@ -37,23 +36,18 @@ class MemoryReconstruction(Base):
         ForeignKey("Patient.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
     )
-    session_id = Column(
-        String(36),
-        ForeignKey("Session.id", onupdate="CASCADE", ondelete="SET NULL"),
-        nullable=True,
-    )
-    story = Column(Text, nullable=True)  # Filled when patient starts session
+    story = Column(Text, nullable=False)
     dataset = Column(
         Enum(Dataset, name="memory_reconstruction_dataset"),
-        nullable=True,  # Selected during session by patient
+        nullable=False,
     )
     language = Column(
         Enum(Language, name="memory_reconstruction_language"), 
-        nullable=True  # Selected during session by patient
+        nullable=False
     )
     segmentation_strategy = Column(
         Enum(SegmentationStrategy, name="segmentation_strategy"), 
-        nullable=True  # Selected during session by patient
+        nullable=False
     )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
@@ -61,11 +55,6 @@ class MemoryReconstruction(Base):
     patient = relationship("Patient", back_populates="memory_reconstructions")
     sections = relationship(
         "Sections", back_populates="memory_reconstruction", cascade="all, delete-orphan"
-    )
-    sessions = relationship(
-        "Session", 
-        back_populates="memory_reconstruction",
-        foreign_keys="[Session.memory_reconstruction_id]"
     )
     mr_questions = relationship(
         "MRQuestion",

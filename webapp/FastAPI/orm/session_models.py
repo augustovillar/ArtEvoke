@@ -78,8 +78,7 @@ class Session(Base):
     patient = relationship("Patient", back_populates="sessions")
     doctor = relationship("Doctor", back_populates="sessions")
     memory_reconstruction = relationship(
-        "MemoryReconstruction", 
-        back_populates="sessions",
+        "MemoryReconstruction",
         foreign_keys="[Session.memory_reconstruction_id]"
     )
 

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from orm import get_db, MemoryReconstruction, Sections
+from orm.session_models import Session as SessionModel
 from api_types.memory_reconstruction import (
     SaveMemoryReconstructionRequestDTO,
     RetrieveMemoryReconstructionsResponseDTO,
@@ -10,6 +11,7 @@ from api_types.memory_reconstruction import (
 from utils.auth import (
     get_current_user,
 )
+from typing import Optional
 import uuid
 
 router = APIRouter()
@@ -20,7 +22,15 @@ async def save_memory_reconstruction(
     request: SaveMemoryReconstructionRequestDTO,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
+    session_id: Optional[str] = Query(None, description="Optional session ID for session mode. If provided, links memory reconstruction to this session."),
 ):
+    """
+    Create a new memory reconstruction record.
+    
+    - **Free mode**: No session_id provided, generates new UUID
+    - **Session mode**: session_id provided, generates UUID and links to session
+    """
+    
     memory_reconstruction = MemoryReconstruction(
         id=str(uuid.uuid4()),
         patient_id=current_user["id"],
@@ -50,11 +60,18 @@ async def save_memory_reconstruction(
         
         db.add(section)
 
+    # If this is session mode, update session with memory_reconstruction_id and change status
+    if session_id:
+        session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if session:
+            session.memory_reconstruction_id = memory_reconstruction.id
+            session.status = "in_evaluation"
+
     db.commit()
     db.refresh(memory_reconstruction)
 
 
-    return {"message": "Memory reconstruction saved successfully"}
+    return {"message": "Memory reconstruction saved successfully", "id": memory_reconstruction.id}
 
 
 @router.get("/retrieve", response_model=RetrieveMemoryReconstructionsResponseDTO)
@@ -64,16 +81,22 @@ async def get_memory_reconstructions(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Get total count (only items not in session - session_id is NULL)
+    # Get memory reconstructions NOT referenced by any session (free mode only)
+    from orm.session_models import Session as SessionModel
+    
+    # Subquery to get all memory_reconstruction_ids that are referenced in sessions
+    session_mr_ids = db.query(SessionModel.memory_reconstruction_id).filter(
+        SessionModel.memory_reconstruction_id.isnot(None)
+    ).subquery()
+    
     total_count = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.patient_id == current_user["id"],
-        MemoryReconstruction.session_id.is_(None)
+        ~MemoryReconstruction.id.in_(session_mr_ids)
     ).count()
 
-    # Get memory reconstructions with pagination (only items not in session)
     memory_reconstructions_query = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.patient_id == current_user["id"],
-        MemoryReconstruction.session_id.is_(None)
+        ~MemoryReconstruction.id.in_(session_mr_ids)
     ).order_by(MemoryReconstruction.created_at.desc()).offset(offset).limit(limit).all()
 
     memory_reconstructions = []

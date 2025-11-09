@@ -3,7 +3,8 @@ import React from 'react';
 import './i18n';
 import { Routes, Route } from 'react-router-dom';
 import { Navbar, Footer, ProtectedRoute } from './components/common';
-import { Home, About, MemoryReconstruction, SignUp, Login, Profile, Patients, CreatePatient, Sessions, SessionDetails, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin, ArtExplorationFree, ArtExplorationSession } from './pages';
+import { Home, About, Profile, Patients, CreatePatient, Sessions, SessionDetails, ArtExplorationFree, ArtExplorationSession, MemoryReconstructionFree, MemoryReconstructionSession } from './pages';
+import { Login, SignUp, RoleSelection, DoctorSignUp, DoctorLogin, PatientComplete, PatientLogin } from './pages/Auth';
 import MemoryEvaluation from './pages/MemoryReconstruction/Evaluation';
 import ArtEvaluation from './pages/ArtExploration/Evaluation';
 import './styles/App.css';
@@ -23,17 +24,25 @@ function App() {
                                 <Route path="/" element={<Home />} />
                                 <Route path="/about" element={<About />} />
                                 
-                                {/* Protected Routes - Only accessible when logged in */}
+                                {/* Memory Reconstruction - Free Mode */}
                                 <Route path='/story' element={
                                     <ProtectedRoute>
-                                        <MemoryReconstruction />
+                                        <MemoryReconstructionFree />
                                     </ProtectedRoute>
                                 } />
-                                <Route path='/memory-reconstruction/evaluation' element={
+                                
+                                {/* Memory Reconstruction - Session Mode */}
+                                <Route path="/sessions/:sessionId/memory-reconstruction" element={
+                                    <ProtectedRoute>
+                                        <MemoryReconstructionSession />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/sessions/:sessionId/memory-reconstruction/evaluation" element={
                                     <ProtectedRoute>
                                         <MemoryEvaluation />
                                     </ProtectedRoute>
                                 } />
+                                
                                 {/* Art Exploration - Free Mode */}
                                 <Route path="/artsearch" element={
                                     <ProtectedRoute>

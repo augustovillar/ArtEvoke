@@ -15,9 +15,8 @@ const useSave = () => {
         language,
         dataset,
         segmentation,
-        // Can be used both in-session and out-of-session
+        sessionId = null
     ) => {
-        // Prevent multiple saves - set saving state immediately
         if (isSaving) return;
         
         setIsSaving(true);
@@ -59,7 +58,11 @@ const useSave = () => {
             }))
         };
         try {
-            const response = await fetch(`/api/memory/save`, {
+            const url = sessionId 
+                ? `/api/memory/save?session_id=${sessionId}`
+                : `/api/memory/save`;
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,7 +79,7 @@ const useSave = () => {
             setSaveMessage(t('memoryReconstruction.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
             setSavedStoryData(saveData);
-            setHasSaved(true); // Mark as saved successfully
+            setHasSaved(true);
         } catch (error) {
             console.error('Error saving:', error);
             setSaveMessage(t('memoryReconstruction.messages.saveFailed'));

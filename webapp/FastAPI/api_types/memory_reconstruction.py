@@ -31,10 +31,10 @@ class SectionResponse(SectionMemoryReconstruction):
 
 class MemoryReconstructionResponse(BaseModel):
     id: str
-    story: Optional[str] = None
-    dataset: Optional[Dataset] = None
-    language: Optional[Language] = None
-    segmentation_strategy: Optional[SegmentationStrategy] = None
+    story: str
+    dataset: Dataset
+    language: Language
+    segmentation_strategy: SegmentationStrategy
     created_at: datetime
     sections: List[SectionResponse]
 

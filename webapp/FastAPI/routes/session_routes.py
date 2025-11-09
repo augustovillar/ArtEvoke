@@ -11,8 +11,11 @@ from orm import (
     Doctor,
     PatientDoctor,
     MemoryReconstruction,
+    Sections,
     ArtExploration,
+    CatalogItem,
 )
+from api_types.common import Dataset
 from utils.auth import get_current_user, verify_doctor_role
 from api_types.session import SessionCreate, SessionUpdate, SessionResponse
 
@@ -152,7 +155,7 @@ async def get_my_sessions(
     sessions = (
         db.query(SessionModel)
         .filter(SessionModel.patient_id == current_user["id"])
-        .filter(SessionModel.status.in_(["pending", "in_progress", "in_evaluation"]))
+        .filter(SessionModel.status.in_(["pending", "in_progress", "in_evaluation", "completed"]))
         .order_by(SessionModel.created_at.desc())
         .all()
     )
@@ -365,26 +368,81 @@ async def get_session_evaluation(
             .first()
         )
         if mr:
+            sections_list = db.query(Sections).filter(
+                Sections.memory_reconstruction_id == mr.id
+            ).order_by(Sections.display_order).all()
+            
+            def get_image_info(image_id):
+                """Helper to get image URL and metadata from CatalogItem"""
+                if not image_id:
+                    return None
+                catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
+                if not catalog_item:
+                    return None
+                
+                # Get the source-specific data and build image URL
+                image_url = None
+                art_name = None
+                artist_name = None
+                title = None
+                
+                if catalog_item.source == Dataset.semart and catalog_item.semart:
+                    source_data = catalog_item.semart
+                    image_url = f"/art-images/semart/{source_data.image_file}"
+                    title = source_data.title
+                    artist_name = source_data.artist_name
+                    art_name = title or artist_name or "Untitled"
+                elif catalog_item.source == Dataset.wikiart and catalog_item.wikiart:
+                    source_data = catalog_item.wikiart
+                    image_url = f"/art-images/wikiart/{source_data.image_file}"
+                    artist_name = source_data.artist_name
+                    # WikiArt doesn't have a title field, use artist_name
+                    art_name = artist_name or "Unknown Artist"
+                    title = None  # WikiArt doesn't have title
+                elif catalog_item.source == Dataset.ipiranga and catalog_item.ipiranga:
+                    source_data = catalog_item.ipiranga
+                    image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{source_data.image_file}"
+                    title = source_data.title
+                    artist_name = source_data.artist_name
+                    art_name = title or artist_name or "Untitled"
+                
+                if not image_url:
+                    return None
+                
+                return {
+                    "id": catalog_item.id,
+                    "url": image_url,
+                    "name": art_name,
+                    "artist": artist_name,
+                    "title": title
+                }
+            
+            sections_data = []
+            for section in sections_list:
+                section_dict = {
+                    "id": section.id,
+                    "display_order": section.display_order,
+                    "section_content": section.section_content,
+                    "images": [
+                        get_image_info(section.image1_id),
+                        get_image_info(section.image2_id),
+                        get_image_info(section.image3_id),
+                        get_image_info(section.image4_id),
+                        get_image_info(section.image5_id),
+                        get_image_info(section.image6_id),
+                    ],
+                    "fav_image": get_image_info(section.fav_image_id) if section.fav_image_id else None,
+                }
+                sections_data.append(section_dict)
+            
             evaluation_data["memory_reconstruction"] = {
                 "id": mr.id,
                 "story": mr.story,
-                "dataset": mr.dataset,
-                "language": mr.language,
-                "segmentation_strategy": mr.segmentation_strategy,
-                "in_session": mr.in_session,
-                "created_at": mr.created_at,
-                "sections": [
-                    {
-                        "id": section.id,
-                        "section_number": section.section_number,
-                        "content": section.content,
-                        "catalog_item_id": section.catalog_item_id,
-                        "title": section.title,
-                        "author": section.author,
-                        "year": section.year,
-                    }
-                    for section in mr.sections
-                ],
+                "dataset": mr.dataset.value if mr.dataset else None,
+                "language": mr.language.value if mr.language else None,
+                "segmentation_strategy": mr.segmentation_strategy.value if mr.segmentation_strategy else None,
+                "created_at": mr.created_at.isoformat() if mr.created_at else None,
+                "sections": sections_data,
             }
 
     # Get ArtExploration data if present
@@ -400,7 +458,6 @@ async def get_session_evaluation(
                 "story_generated": ae.story_generated,
                 "dataset": ae.dataset,
                 "language": ae.language,
-                "in_session": ae.in_session,
                 "created_at": ae.created_at,
                 "images": [
                     {
