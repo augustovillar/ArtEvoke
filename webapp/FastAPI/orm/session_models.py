@@ -98,6 +98,11 @@ class Session(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
+    evaluations = relationship(
+        "Evaluation",
+        back_populates="session",
+        cascade="all, delete-orphan",
+    )
     ae_questions = relationship(
         "AEQuestion", back_populates="session", cascade="all, delete-orphan"
     )

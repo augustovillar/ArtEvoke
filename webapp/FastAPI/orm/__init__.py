@@ -21,6 +21,15 @@ from .memory_reconstruction_models import MemoryReconstruction, Sections
 # Session models
 from .session_models import Session, PreEvaluation, PosEvaluation
 
+# Evaluation models
+from .evaluation_models import (
+    Evaluation,
+    SelectImageQuestion,
+    StoryOpenQuestion,
+    ChronologicalOrderQuestion,
+    ObjectiveQuestion,
+)
+
 # Art Exploration question models
 from .ae_question_models import (
     AEQuestion,
@@ -63,6 +72,12 @@ __all__ = [
     "Session",
     "PreEvaluation",
     "PosEvaluation",
+    # Evaluation
+    "Evaluation",
+    "SelectImageQuestion",
+    "StoryOpenQuestion",
+    "ChronologicalOrderQuestion",
+    "ObjectiveQuestion",
     # Art Exploration Questions
     "AEQuestion",
     "AEQuestionItem",

@@ -246,114 +246,7 @@ CREATE TABLE IF NOT EXISTS `Session` (
 
 
 
-/*  ====================== ART EXPLORATION ====================== */
-/*  Q1a: ordem em TEXTO; Q1b: ordenar cartões (com distratores); Q2: dicotômicas */
-CREATE TABLE IF NOT EXISTS AEQuestion (
-  id                 CHAR(36) NOT NULL,
-  art_exploration_id CHAR(36) NOT NULL,
-  session_id         CHAR(36) NOT NULL,
-  qtype ENUM('order_free_text','order_cards','binary') NOT NULL,
-  prompt             TEXT NOT NULL,
-  correct_text       VARCHAR(100) NULL,  
-  created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT pk_aequestions PRIMARY KEY (id),
-  INDEX idx_aeq_parent (art_exploration_id, qtype),
-  CONSTRAINT fk_aeq_parent FOREIGN KEY (art_exploration_id) REFERENCES ArtExploration(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_session_id FOREIGN KEY (session_id) REFERENCES Session(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-/*  Itens que compõem a pergunta (cartões/ações ou opções binárias) */
-CREATE TABLE IF NOT EXISTS AEQuestionItem (
-  id               CHAR(36) PRIMARY KEY,
-  question_id      CHAR(36) NOT NULL,
-  content_text     TEXT NOT NULL,    
-  is_distractor    BOOLEAN NOT NULL DEFAULT FALSE,
-  correct_position INT NULL,          
-  CONSTRAINT fk_aeqi_q FOREIGN KEY (question_id) REFERENCES AEQuestion(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*  Resposta do usuário + tempos */
-CREATE TABLE IF NOT EXISTS AEAnswer (
-  id             CHAR(36) PRIMARY KEY,
-  question_id    CHAR(36) NOT NULL,
-  user_text      TEXT NULL,           
-  started_at     DATETIME NULL,
-  ended_at       DATETIME NULL,
-  is_correct     BOOLEAN NULL,
-  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_aea_q FOREIGN KEY (question_id) REFERENCES AEQuestion(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*  Seleção/ordem escolhida pelo usuário para cada item */
-CREATE TABLE IF NOT EXISTS AEAnswerSelectedItem (
-  answer_id     CHAR(36) NOT NULL,
-  item_id       CHAR(36) NOT NULL,
-  user_position INT NULL,             /* posição escolhida (para 'order_cards'); NULL em binária */
-  PRIMARY KEY (answer_id, item_id),
-  CONSTRAINT fk_aeasi_a FOREIGN KEY (answer_id) REFERENCES AEAnswer(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_aeasi_i FOREIGN KEY (item_id)   REFERENCES AEQuestionItem(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*  ====================== MEMORY RECONSTRUCTION ====================== */
-/*  MR Q1: texto aberto por seção; MR Q2: selecionar imagens (verdadeiras + distratores) */
-CREATE TABLE IF NOT EXISTS MRQuestion (
-  id                         CHAR(36) PRIMARY KEY,
-  memory_reconstruction_id   CHAR(36) NOT NULL,
-  section_id                 CHAR(36) NOT NULL,  /* você já tem esse ID da seção */
-  qtype ENUM('free_text','multi_select') NOT NULL,
-  prompt                     TEXT NOT NULL,
-  created_at                 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_mrq_parent FOREIGN KEY (memory_reconstruction_id) REFERENCES MemoryReconstruction(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_section_id FOREIGN KEY (section_id) REFERENCES Sections(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*  Itens exibidos na MR (imagens verdadeiras e distratoras) */
-CREATE TABLE IF NOT EXISTS MRQuestionItem (
-  id            CHAR(36) PRIMARY KEY,
-  question_id   CHAR(36) NOT NULL,
-  image_id      CHAR(36) NOT NULL,  
-  section_id    CHAR(36) NOT NULL,  
-  is_distractor BOOLEAN NOT NULL DEFAULT FALSE,
-  CONSTRAINT fk_mrqi_q FOREIGN KEY (question_id) REFERENCES MRQuestion(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_image_id FOREIGN KEY (image_id) REFERENCES CatalogItem(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_section_id_item FOREIGN KEY (section_id) REFERENCES Sections(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*  Resposta e tempos */
-CREATE TABLE IF NOT EXISTS MRAnswer (
-  id             CHAR(36) PRIMARY KEY,
-  question_id    CHAR(36) NOT NULL,
-  user_text      TEXT NULL,           
-  started_at     DATETIME NULL,
-  ended_at       DATETIME NULL,
-  is_correct     BOOLEAN NULL,         
-  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_mra_q (question_id),
-  CONSTRAINT fk_mra_q FOREIGN KEY (question_id) REFERENCES MRQuestion(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*  Quais imagens o usuário selecionou na MR Q2 */
-CREATE TABLE IF NOT EXISTS MRAnswerSelectedItem (
-  answer_id   CHAR(36) NOT NULL,
-  item_id     CHAR(36) NOT NULL,        /* FK -> MR_QuestionItem.id */
-  PRIMARY KEY (answer_id, item_id),
-  CONSTRAINT fk_mrasi_a FOREIGN KEY (answer_id) REFERENCES MRAnswer(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_mrasi_i FOREIGN KEY (item_id)   REFERENCES MRQuestionItem(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 /*  ====================== */
@@ -386,4 +279,120 @@ CREATE TABLE IF NOT EXISTS PosEvaluation (
   CONSTRAINT fk_pos_session
     FOREIGN KEY (session_id) REFERENCES Session(id)
       ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+/*  ====================================================== */
+/*  Evaluation Questions */
+/*  ====================================================== */
+
+/*  ====================== */
+/*  Evaluation */
+/*  ====================== */
+CREATE TABLE IF NOT EXISTS Evaluation (
+  id          CHAR(36)  NOT NULL,
+  session_id  CHAR(36)  NOT NULL,
+  mode        ENUM('art_exploration','memory_reconstruction') NOT NULL,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT pk_evaluation PRIMARY KEY (id),
+  CONSTRAINT fk_eval_session
+    FOREIGN KEY (session_id) REFERENCES Session(id)
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX idx_eval_session (session_id),
+  INDEX idx_eval_mode (mode)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*  ====================== */
+/*  SelectImageQuestion */
+/*  ====================== */
+CREATE TABLE IF NOT EXISTS SelectImageQuestion (
+  id                   CHAR(36)  NOT NULL,
+  eval_id              CHAR(36)  NOT NULL,
+  elapsed_time         TIME      NULL,
+  image_selected_id    CHAR(36)  NULL,
+  section_id           CHAR(36)  NULL,
+  image_distractor_0_id CHAR(36) NULL,
+  image_distractor_1_id CHAR(36) NULL,
+  created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT pk_select_image_question PRIMARY KEY (id),
+  CONSTRAINT fk_siq_eval
+    FOREIGN KEY (eval_id) REFERENCES Evaluation(id)
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_siq_section
+    FOREIGN KEY (section_id) REFERENCES Sections(id)
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_siq_selected
+    FOREIGN KEY (image_selected_id) REFERENCES CatalogItem(id)
+      ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_siq_distractor0
+    FOREIGN KEY (image_distractor_0_id) REFERENCES CatalogItem(id)
+      ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_siq_distractor1
+    FOREIGN KEY (image_distractor_1_id) REFERENCES CatalogItem(id)
+      ON DELETE SET NULL ON UPDATE CASCADE,
+  INDEX idx_siq_eval (eval_id),
+  INDEX idx_siq_section (section_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*  ====================== */
+/*  StoryOpenQuestion */
+/*  ====================== */
+CREATE TABLE IF NOT EXISTS StoryOpenQuestion (
+  id           CHAR(36)  NOT NULL,
+  eval_id      CHAR(36)  NOT NULL,
+  elapsed_time TIME      NULL,
+  text         TEXT      NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT pk_story_open_question PRIMARY KEY (id),
+  CONSTRAINT fk_soq_eval
+    FOREIGN KEY (eval_id) REFERENCES Evaluation(id)
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX idx_soq_eval (eval_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*  ====================== */
+/*  ChronologicalOrderQuestion */
+/*  ====================== */
+CREATE TABLE IF NOT EXISTS ChronologicalOrderQuestion (
+  id                CHAR(36)     NOT NULL,
+  eval_id           CHAR(36)     NOT NULL,
+  elapsed_time      TIME         NULL,
+  correct_option_0  CHAR(100)    NULL,
+  correct_option_1  CHAR(100)    NULL,
+  correct_option_2  CHAR(100)    NULL,
+  correct_option_3  CHAR(100)    NULL,
+  selected_option_0 CHAR(100)    NULL,
+  selected_option_1 CHAR(100)    NULL,
+  selected_option_2 CHAR(100)    NULL,
+  selected_option_3 CHAR(100)    NULL,
+  created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT pk_chronological_order_question PRIMARY KEY (id),
+  CONSTRAINT fk_coq_eval
+    FOREIGN KEY (eval_id) REFERENCES Evaluation(id)
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX idx_coq_eval (eval_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*  ====================== */
+/*  ObjectiveQuestion */
+/*  ====================== */
+CREATE TABLE IF NOT EXISTS ObjectiveQuestion (
+  id              CHAR(36)  NOT NULL,
+  eval_id         CHAR(36)  NOT NULL,
+  elapsed_time    TIME      NULL,
+  type            ENUM('period','environment', 'emotion') NOT NULL,
+  option_0        CHAR(100) NULL,
+  option_1        CHAR(100) NULL,
+  option_2        CHAR(100) NULL,
+  option_3        CHAR(100) NULL,
+  option_4        CHAR(100) NULL,
+  selected_option CHAR(100) NULL,
+  correct_option  CHAR(100) NULL,
+  created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT pk_objective_question PRIMARY KEY (id),
+  CONSTRAINT fk_oq_eval
+    FOREIGN KEY (eval_id) REFERENCES Evaluation(id)
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX idx_oq_eval (eval_id),
+  INDEX idx_oq_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
