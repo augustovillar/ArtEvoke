@@ -157,6 +157,9 @@ class Sections(Base):
     mr_question_items = relationship(
         "MRQuestionItem", back_populates="section", cascade="all, delete-orphan"
     )
+    select_image_questions = relationship(
+        "SelectImageQuestion", back_populates="section", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Sections(id={self.id}, memory_reconstruction_id={self.memory_reconstruction_id}, order={self.display_order})>"

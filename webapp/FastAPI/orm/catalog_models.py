@@ -171,5 +171,22 @@ class CatalogItem(Base):
     )
     mr_question_items = relationship("MRQuestionItem", back_populates="catalog_item")
 
+    # SelectImageQuestion relationships
+    select_image_questions_selected = relationship(
+        "SelectImageQuestion",
+        foreign_keys="SelectImageQuestion.image_selected_id",
+        back_populates="image_selected",
+    )
+    select_image_questions_distractor_0 = relationship(
+        "SelectImageQuestion",
+        foreign_keys="SelectImageQuestion.image_distractor_0_id",
+        back_populates="image_distractor_0",
+    )
+    select_image_questions_distractor_1 = relationship(
+        "SelectImageQuestion",
+        foreign_keys="SelectImageQuestion.image_distractor_1_id",
+        back_populates="image_distractor_1",
+    )
+
     def __repr__(self):
         return f"<CatalogItem(id={self.id}, source={self.source})>"

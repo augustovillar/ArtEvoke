@@ -86,3 +86,4 @@ webapp/env/.nginx.env
 
 # Ignore specific internal instructions file
 /.github/instructions/intructions.instructions.md
+project_assets/scripts/.cache/*
