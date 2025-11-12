@@ -169,7 +169,6 @@ class CatalogItem(Base):
     sections_fav = relationship(
         "Sections", foreign_keys="Sections.fav_image_id", back_populates="fav_image"
     )
-    mr_question_items = relationship("MRQuestionItem", back_populates="catalog_item")
 
     # SelectImageQuestion relationships
     select_image_questions_selected = relationship(
