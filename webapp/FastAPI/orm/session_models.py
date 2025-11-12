@@ -103,9 +103,6 @@ class Session(Base):
         back_populates="session",
         cascade="all, delete-orphan",
     )
-    ae_questions = relationship(
-        "AEQuestion", back_populates="session", cascade="all, delete-orphan"
-    )
 
     def __repr__(self):
         return (

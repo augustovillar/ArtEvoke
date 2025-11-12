@@ -54,9 +54,6 @@ class ArtExploration(Base):
     images = relationship(
         "Images", back_populates="art_exploration", cascade="all, delete-orphan"
     )
-    ae_questions = relationship(
-        "AEQuestion", back_populates="art_exploration", cascade="all, delete-orphan"
-    )
 
     def __repr__(self):
         return f"<ArtExploration(id={self.id}, patient_id={self.patient_id}, dataset={self.dataset})>"

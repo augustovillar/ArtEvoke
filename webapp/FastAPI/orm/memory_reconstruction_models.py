@@ -56,11 +56,6 @@ class MemoryReconstruction(Base):
     sections = relationship(
         "Sections", back_populates="memory_reconstruction", cascade="all, delete-orphan"
     )
-    mr_questions = relationship(
-        "MRQuestion",
-        back_populates="memory_reconstruction",
-        cascade="all, delete-orphan",
-    )
 
     def __repr__(self):
         return f"<MemoryReconstruction(id={self.id}, patient_id={self.patient_id}, strategy={self.segmentation_strategy})>"
@@ -150,12 +145,6 @@ class Sections(Base):
     )
     fav_image = relationship(
         "CatalogItem", foreign_keys=[fav_image_id], back_populates="sections_fav"
-    )
-    mr_questions = relationship(
-        "MRQuestion", back_populates="section", cascade="all, delete-orphan"
-    )
-    mr_question_items = relationship(
-        "MRQuestionItem", back_populates="section", cascade="all, delete-orphan"
     )
     select_image_questions = relationship(
         "SelectImageQuestion", back_populates="section", cascade="all, delete-orphan"
