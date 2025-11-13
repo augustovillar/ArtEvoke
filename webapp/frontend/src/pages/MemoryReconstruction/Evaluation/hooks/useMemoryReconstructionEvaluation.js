@@ -6,8 +6,32 @@ import { useState, useEffect } from 'react';
 export const useMemoryReconstructionEvaluation = (sessionId) => {
     const [evaluationId, setEvaluationId] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [progress, setProgress] = useState(null);
 
-    // Initialize evaluation on mount
+    // Function to fetch progress
+    const fetchProgress = async () => {
+        if (!sessionId) return null;
+        
+        const token = localStorage.getItem('token');
+        const progressResponse = await fetch(
+            `/api/evaluation/memory-reconstruction/progress/${sessionId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!progressResponse.ok) {
+            throw new Error(`HTTP error! status: ${progressResponse.status}`);
+        }
+
+        const progressData = await progressResponse.json();
+        setProgress(progressData);
+        return progressData;
+    };
+
+    // Initialize evaluation and get progress on mount
     useEffect(() => {
         if (!sessionId) {
             setLoading(false);
@@ -19,24 +43,32 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
                 setLoading(true);
                 const token = localStorage.getItem('token');
                 
-                // Create evaluation record
-                const response = await fetch(
-                    `/api/evaluation/memory-reconstruction/start/${sessionId}`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                // First, get current progress
+                const progressData = await fetchProgress();
+
+                // If evaluation already started, use existing eval_id
+                if (progressData.evaluation_started) {
+                    setEvaluationId(progressData.eval_id);
+                } else {
+                    // Create evaluation record if not started
+                    const startResponse = await fetch(
+                        `/api/evaluation/memory-reconstruction/start/${sessionId}`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            }
                         }
+                    );
+
+                    if (!startResponse.ok) {
+                        throw new Error(`HTTP error! status: ${startResponse.status}`);
                     }
-                );
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const startData = await startResponse.json();
+                    setEvaluationId(startData.eval_id);
                 }
-
-                const data = await response.json();
-                setEvaluationId(data.eval_id);
             } catch (err) {
                 console.error('[Evaluation Hook] Error initializing evaluation:', err);
             } finally {
@@ -76,7 +108,12 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+        
+        // Refresh progress after saving
+        await fetchProgress();
+        
+        return result;
     };
 
     /**
@@ -108,7 +145,12 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+        
+        // Refresh progress after saving
+        await fetchProgress();
+        
+        return result;
     };
 
     /**
@@ -138,6 +180,8 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
     return {
         evaluationId,
         loading,
+        progress,
+        refreshProgress: fetchProgress,
         saveSelectImageAnswer,
         saveObjectiveAnswer,
         completeEvaluation,

@@ -295,6 +295,88 @@ async def get_distractor_images(
     return {"distractors": distractors}
 
 
+@router.get("/memory-reconstruction/progress/{session_id}")
+async def get_memory_reconstruction_progress(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get the current progress of Memory Reconstruction evaluation.
+    Returns which questions have been answered and what's next.
+    """
+    # Verify session belongs to user
+    session = db.query(SessionModel).filter(
+        SessionModel.id == session_id,
+        SessionModel.patient_id == current_user["id"]
+    ).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    # Get evaluation
+    evaluation = db.query(Evaluation).filter(
+        Evaluation.session_id == session_id
+    ).first()
+    
+    if not evaluation:
+        # No evaluation started yet
+        return {
+            "evaluation_started": False,
+            "current_step": 0,
+            "total_image_questions": 0,
+            "total_objective_questions": 3,  # Fixed number of objective questions
+            "answered_image_questions": [],
+            "answered_objective_questions": [],
+        }
+    
+    # Get memory reconstruction to count sections
+    memory_reconstruction = db.query(MemoryReconstruction).filter(
+        MemoryReconstruction.id == session.memory_reconstruction_id
+    ).first()
+    
+    if not memory_reconstruction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Memory Reconstruction not found"
+        )
+    
+    # Count total sections (image questions)
+    total_sections = db.query(Sections).filter(
+        Sections.memory_reconstruction_id == memory_reconstruction.id
+    ).count()
+    
+    # Get answered image questions
+    answered_image_questions = db.query(SelectImageQuestion.section_id).filter(
+        SelectImageQuestion.eval_id == evaluation.id
+    ).all()
+    answered_image_section_ids = [q.section_id for q in answered_image_questions]
+    
+    # Get answered objective questions
+    answered_objective_questions = db.query(ObjectiveQuestion.type).filter(
+        ObjectiveQuestion.eval_id == evaluation.id
+    ).all()
+    answered_objective_types = [q.type for q in answered_objective_questions]
+    
+    # Calculate current step
+    # Step = number of answered image questions + number of answered objective questions
+    current_step = len(answered_image_section_ids) + len(answered_objective_types)
+    
+    return {
+        "evaluation_started": True,
+        "eval_id": evaluation.id,
+        "current_step": current_step,
+        "total_image_questions": total_sections,
+        "total_objective_questions": 3,
+        "answered_image_questions": answered_image_section_ids,
+        "answered_objective_questions": answered_objective_types,
+        "is_completed": session.status == "completed",
+    }
+
+
 @router.post("/memory-reconstruction/complete/{session_id}")
 async def complete_memory_reconstruction_evaluation(
     session_id: str,

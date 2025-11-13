@@ -19,6 +19,7 @@ const MemoryEvaluation = () => {
     // Use Memory Reconstruction evaluation hook
     const {
         loading: evaluationLoading,
+        progress,
         saveSelectImageAnswer,
         saveObjectiveAnswer,
         completeEvaluation,
@@ -55,6 +56,19 @@ const MemoryEvaluation = () => {
 
     const totalSteps = (sessionData?.phase1?.sections?.length || 0) + objectiveQuestions.length;
 
+    // Set current step based on progress when it loads
+    useEffect(() => {
+        if (progress && !evaluationLoading) {
+            // If evaluation is already completed, go to completion screen
+            if (progress.is_completed) {
+                setCurrentStep(totalSteps);
+            } else {
+                // Set to current progress step
+                setCurrentStep(progress.current_step);
+            }
+        }
+    }, [progress, evaluationLoading, totalSteps]);
+
     useEffect(() => {
         // Verificar se temos dados da sessão
         if (!sessionData) {
@@ -73,13 +87,13 @@ const MemoryEvaluation = () => {
                 distractor1Id,
                 timeSpent
             );
-            setCurrentStep(prev => prev + 1);
+            // Progress is automatically refreshed by saveSelectImageAnswer
+            // The component will re-render with updated progress
         } catch (error) {
             console.error('Error saving answer:', error);
             if (error.response?.status === 409) {
                 // Already answered, just move to next
                 alert(t('evaluation.alreadyAnswered') || 'Esta questão já foi respondida anteriormente.');
-                setCurrentStep(prev => prev + 1);
             } else {
                 alert(t('evaluation.errorSaving') || 'Erro ao salvar resposta. Tente novamente.');
             }
@@ -98,7 +112,8 @@ const MemoryEvaluation = () => {
                 correctOption,
                 timeSpent
             );
-            setCurrentStep(prev => prev + 1);
+            // Progress is automatically refreshed by saveObjectiveAnswer
+            // The component will re-render with updated progress
         } catch (error) {
             console.error('Error saving answer:', error);
             alert(t('evaluation.errorSaving') || 'Erro ao salvar resposta. Tente novamente.');
@@ -123,7 +138,7 @@ const MemoryEvaluation = () => {
     };
 
     const renderCurrentStep = () => {
-        if (!sessionData?.phase1?.sections) {
+        if (!sessionData?.phase1?.sections || !progress) {
             return <div>{t('evaluation.loading') || 'Carregando...'}</div>;
         }
 
@@ -131,11 +146,25 @@ const MemoryEvaluation = () => {
 
         // Fase 1: Perguntas de reconhecimento de imagem
         if (currentStep < numImageQuestions) {
-            const section = sessionData.phase1.sections[currentStep];
+            // Find first unanswered section
+            const unansweredSection = sessionData.phase1.sections.find(
+                section => !progress.answered_image_questions.includes(section.sectionId)
+            );
+
+            if (!unansweredSection) {
+                // All image questions answered, move to objective questions
+                setCurrentStep(numImageQuestions);
+                return null;
+            }
+
+            const sectionIndex = sessionData.phase1.sections.findIndex(
+                section => section.sectionId === unansweredSection.sectionId
+            );
+
             return (
                 <ImageRecognitionQuestion
-                    section={section}
-                    sectionNumber={currentStep + 1}
+                    section={unansweredSection}
+                    sectionNumber={sectionIndex + 1}
                     totalSections={numImageQuestions}
                     onAnswer={handleImageRecognitionAnswer}
                 />
@@ -145,11 +174,25 @@ const MemoryEvaluation = () => {
         // Fase 2: Perguntas objetivas
         const questionIndex = currentStep - numImageQuestions;
         if (questionIndex < objectiveQuestions.length) {
-            const question = objectiveQuestions[questionIndex];
+            // Find first unanswered objective question
+            const unansweredQuestion = objectiveQuestions.find(
+                q => !progress.answered_objective_questions.includes(q.type)
+            );
+
+            if (!unansweredQuestion) {
+                // All questions answered, move to completion
+                setCurrentStep(totalSteps);
+                return null;
+            }
+
+            const questionNumber = objectiveQuestions.findIndex(
+                q => q.type === unansweredQuestion.type
+            ) + 1;
+
             return (
                 <ObjectiveQuestions
-                    question={question}
-                    questionNumber={questionIndex + 1}
+                    question={unansweredQuestion}
+                    questionNumber={questionNumber}
                     totalQuestions={objectiveQuestions.length}
                     onAnswer={handleObjectiveAnswer}
                 />
