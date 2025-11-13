@@ -186,10 +186,6 @@ class ChronologicalOrderQuestion(Base):
         nullable=False,
     )
     elapsed_time = Column(Time, nullable=True)
-    correct_option_0 = Column(String(100), nullable=True)
-    correct_option_1 = Column(String(100), nullable=True)
-    correct_option_2 = Column(String(100), nullable=True)
-    correct_option_3 = Column(String(100), nullable=True)
     selected_option_0 = Column(String(100), nullable=True)
     selected_option_1 = Column(String(100), nullable=True)
     selected_option_2 = Column(String(100), nullable=True)

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { StoryWritingQuestion, ChronologyOrderQuestion } from './components';
-// Reuse shared components from Memory Reconstruction evaluation
+import { useEvaluationSubmit } from './hooks';
 import ObjectiveQuestions from '../../MemoryReconstruction/Evaluation/components/ObjectiveQuestions';
 import ProgressBar from '../../MemoryReconstruction/Evaluation/components/ProgressBar';
 import styles from './ArtEvaluation.module.css';
@@ -12,8 +12,12 @@ const ArtEvaluation = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { sessionData } = location.state || {};
+  const { createEvaluation, submitStoryOpenQuestion, fetchChronologyEvents, submitChronologicalOrderQuestion, isLoading } = useEvaluationSubmit();
+  const hasInitialized = useRef(false);
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [evalId, setEvalId] = useState(null);
+  const [chronologyEvents, setChronologyEvents] = useState(null);
   const [evaluationData, setEvaluationData] = useState({
     storyWriting: null,
     chronologyOrder: null,
@@ -21,7 +25,6 @@ const ArtEvaluation = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Example objective questions (can be adapted per UX research)
   const objectiveQuestions = [
     {
       id: 'q1',
@@ -43,28 +46,75 @@ const ArtEvaluation = () => {
     }
   ];
 
-  const totalSteps = 2 + objectiveQuestions.length; // 1 story writing + 1 chronology + objective questions
+  const totalSteps = 2 + objectiveQuestions.length;
 
   useEffect(() => {
+    const initializeEvaluation = async () => {
+      if (hasInitialized.current) return;
+      hasInitialized.current = true;
+
+      try {
+        const sessionId = sessionData.sessionId;
+        const evaluationId = await createEvaluation(sessionId);
+        setEvalId(evaluationId);
+      } catch (err) {
+        console.error('Error creating evaluation:', err);
+        alert(t('evaluation.errorInitializing'));
+        navigate('/sessions');
+      }
+    };
+
     if (!sessionData) {
       console.error('No sessionData found in location.state');
-      alert('Dados da sessão não encontrados. Redirecionando...');
+      alert(t('evaluation.sessionDataNotFound'));
       navigate('/sessions');
     } else {
-      console.log('SessionData found, proceeding with evaluation');
+      initializeEvaluation();
     }
-  }, [sessionData, navigate]);
+  }, [sessionData, navigate, createEvaluation, t]);
 
-  const handleStoryWritingAnswer = (questionId, story, timeSpent) => {
-    const storyAnswer = { questionId, story, timeSpent };
-    setEvaluationData(prev => ({ ...prev, storyWriting: storyAnswer }));
-    setCurrentStep(prev => prev + 1);
+  const handleStoryWritingAnswer = async (questionId, story, timeSpent) => {
+    try {
+      const elapsedTimeFormatted = formatElapsedTime(timeSpent);
+      const savedQuestionId = await submitStoryOpenQuestion(evalId, story, elapsedTimeFormatted);
+      
+      const storyAnswer = { questionId: savedQuestionId, story, timeSpent };
+      setEvaluationData(prev => ({ ...prev, storyWriting: storyAnswer }));
+      
+      const events = await fetchChronologyEvents(evalId);
+      setChronologyEvents(events);
+      
+      setCurrentStep(prev => prev + 1);
+    } catch (err) {
+      console.error('Error submitting story:', err);
+      alert(t('evaluation.errorSavingStory'));
+    }
   };
 
-  const handleChronologyOrderAnswer = (questionId, answer, timeSpent) => {
-    const chronologyAnswer = { questionId, ...answer, timeSpent };
-    setEvaluationData(prev => ({ ...prev, chronologyOrder: chronologyAnswer }));
-    setCurrentStep(prev => prev + 1);
+  const formatElapsedTime = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const handleChronologyOrderAnswer = async (questionId, answer, timeSpent) => {
+    try {
+      const elapsedTimeFormatted = formatElapsedTime(timeSpent);
+      const savedQuestionId = await submitChronologicalOrderQuestion(
+        evalId, 
+        answer.userOrder, 
+        elapsedTimeFormatted
+      );
+      
+      const chronologyAnswer = { questionId: savedQuestionId, ...answer, timeSpent };
+      setEvaluationData(prev => ({ ...prev, chronologyOrder: chronologyAnswer }));
+      setCurrentStep(prev => prev + 1);
+    } catch (err) {
+      console.error('Error submitting chronological order question:', err);
+      alert(t('evaluation.errorSavingQuestion'));
+    }
   };
 
   const handleObjectiveAnswer = (questionId, answer, timeSpent) => {
@@ -96,33 +146,43 @@ const ArtEvaluation = () => {
       // TODO: Implement API call to persist Art Exploration evaluation data
       // await fetch('/api/sessions/art-exploration/evaluation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(completeSession) });
       console.log('Saving Art Exploration session:', completeSession);
-      alert('Sessão salva com sucesso!');
+      alert(t('evaluation.completed'));
       navigate('/sessions');
     } catch (err) {
       console.error('Erro ao salvar sessão de Art Exploration:', err);
-      alert('Erro ao salvar sessão. Tente novamente.');
+      alert(t('evaluation.errorSavingStory'));
     } finally {
       setIsSaving(false);
     }
   };
 
   const renderCurrentStep = () => {
-    if (!sessionData) { return <div>Carregando...</div>; }
+    if (!sessionData) { return <div>{t('evaluation.loading')}</div>; }
 
-    // Step 1: Story Writing
+    if (!evalId) {
+      return <div>{t('evaluation.loading')}</div>;
+    }
+
     if (currentStep === 0) {
       return (
         <StoryWritingQuestion
           onAnswer={handleStoryWritingAnswer}
+          isSubmitting={isLoading}
         />
       );
     }
 
     // Step 2: Chronology Order
     if (currentStep === 1) {
+      if (!chronologyEvents) {
+        return <div>{t('evaluation.loading')}</div>;
+      }
+      
       return (
         <ChronologyOrderQuestion
+          events={chronologyEvents}
           onAnswer={handleChronologyOrderAnswer}
+          isSubmitting={isLoading}
         />
       );
     }
@@ -143,10 +203,10 @@ const ArtEvaluation = () => {
     return (
       <div className={styles.completion}>
         <div className={styles.completionCard}>
-          <h2>{t('evaluation.completed') || 'Recapitulação Completa!'}</h2>
-          <p>{t('evaluation.completedMessage') || 'Obrigado por completar a recapitulação. Clique no botão abaixo para salvar sua sessão.'}</p>
+          <h2>{t('evaluation.completed')}</h2>
+          <p>{t('evaluation.completedMessage')}</p>
           <button onClick={handleSaveSession} className={styles.saveButton} disabled={isSaving}>
-            {isSaving ? (t('evaluation.saving') || 'Salvando...') : (t('evaluation.saveSession') || 'Salvar Sessão')}
+            {isSaving ? t('evaluation.saving') : t('evaluation.saveSession')}
           </button>
         </div>
       </div>
@@ -158,7 +218,7 @@ const ArtEvaluation = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>{t('evaluation.titleArtExploration') || 'Recapitulação - Art Exploration'}</h1>
+        <h1>{t('evaluation.titleArtExploration')}</h1>
         <ProgressBar current={currentStep + 1} total={totalSteps} />
       </div>
       <div className={styles.content}>{renderCurrentStep()}</div>

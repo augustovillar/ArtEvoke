@@ -313,10 +313,11 @@
     "imageRecallTitle": "Image Question",
     "imageRecallInstruction": "Which of these images did you just select?",
     "storyWritingTitle": "Write Your Story",
-    "storyWritingInstruction": "Based on the images you selected previously, write a story that connects all of them. Be creative and include details about what you see and feel.",
+    "storyWritingInstruction": "Try to retell the story you received earlier in your own words, be as rich in details as possible.",
     "storyPlaceholder": "Start writing your story here...",
     "pleaseWriteStory": "Please write a story before continuing.",
     "continueToQuestions": "Continue to Questions",
+    "submitting": "Submitting...",
     "characters": "characters",
     "chronologyTitle": "Event Order",
     "chronologyInstruction": "Drag the events to organize them in the correct chronological order:",
@@ -324,7 +325,12 @@
     "chronologicalOrder": "Chronological Order:",
     "dropHere": "Drop here",
     "completeOrder": "Complete the ordering to continue.",
-    "removeEvent": "Remove event"
+    "removeEvent": "Remove event",
+    "errorInitializing": "Error initializing evaluation. Please try again.",
+    "errorSavingStory": "Error saving story. Please try again.",
+    "errorSavingQuestion": "Error saving answer. Please try again.",
+    "sessionDataNotFound": "Session data not found. Redirecting...",
+    "loading": "Loading..."
   },
   "roleSelection": {
     "subtitle": "Select whether you are a doctor or a patient",

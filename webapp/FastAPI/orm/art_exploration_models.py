@@ -47,6 +47,10 @@ class ArtExploration(Base):
         Enum(Language, name="art_exploration_language"), 
         nullable=False
     )
+    correct_option_0 = Column(String(100), nullable=True)
+    correct_option_1 = Column(String(100), nullable=True)
+    correct_option_2 = Column(String(100), nullable=True)
+    correct_option_3 = Column(String(100), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships

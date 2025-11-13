@@ -40,7 +40,7 @@ const ArtExplorationSession = () => {
 
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
-    const { generateLoading, responseText, generateStory } = useStoryGeneration();
+    const { generateLoading, responseText, storyData, generateStory } = useStoryGeneration();
     const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
 
     // Load session data on mount
@@ -112,7 +112,7 @@ const ArtExplorationSession = () => {
     };
 
     const handleSave = async () => {
-        await saveStory(responseText, selectedImages, dataset, language, sessionId); 
+        await saveStory(responseText, selectedImages, dataset, language, storyData, sessionId); 
     };
 
     const handleContinue = async () => {

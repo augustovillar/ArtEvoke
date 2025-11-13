@@ -57,7 +57,11 @@ async def create_art_exploration(
         patient_id=current_user["id"],
         story_generated=request.story_generated,
         dataset=request.dataset,  
-        language=request.language
+        language=request.language,
+        correct_option_0=request.correct_option_0,
+        correct_option_1=request.correct_option_1,
+        correct_option_2=request.correct_option_2,
+        correct_option_3=request.correct_option_3,
     )
 
     db.add(art_exploration)
