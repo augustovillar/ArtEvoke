@@ -20,8 +20,8 @@ const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer
 
     const handleSubmit = () => {
         const isValid = (() => {
-            if (question.type === 'text') return typeof answer === 'string' && answer.trim() !== '';
-            if (question.type === 'multi-select') return Array.isArray(answer) && answer.length > 0;
+            if (question.questionType === 'text') return typeof answer === 'string' && answer.trim() !== '';
+            if (question.questionType === 'multi-select') return Array.isArray(answer) && answer.length > 0;
             if (typeof answer === 'string') return answer.trim() !== '';
             return !!answer;
         })();
@@ -32,11 +32,19 @@ const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer
         }
 
         const timeSpent = Date.now() - startTime;
-        onAnswer(question.id, answer, timeSpent);
+        
+        // Call onAnswer with the format expected by the API
+        onAnswer(
+            question.type,  // question type (environment, period, emotion)
+            question.options,  // all options
+            answer,  // selected option
+            question.correctOption,  // correct option
+            timeSpent
+        );
     };
 
     const renderQuestionInput = () => {
-        switch (question.type) {
+        switch (question.questionType) {
             case 'scale':
                 return (
                     <div className={styles.scaleContainer}>
@@ -186,8 +194,8 @@ const ObjectiveQuestions = ({ question, questionNumber, totalQuestions, onAnswer
                     onClick={handleSubmit}
                     className={styles.submitButton}
                     disabled={(() => {
-                        if (question.type === 'text') return !(typeof answer === 'string' && answer.trim() !== '');
-                        if (question.type === 'multi-select') return !(Array.isArray(answer) && answer.length > 0);
+                        if (question.questionType === 'text') return !(typeof answer === 'string' && answer.trim() !== '');
+                        if (question.questionType === 'multi-select') return !(Array.isArray(answer) && answer.length > 0);
                         if (typeof answer === 'string') return answer.trim() === '';
                         return !answer;
                     })()}

@@ -8,40 +8,67 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
     const [selectedImage, setSelectedImage] = useState(null);
     const [startTime] = useState(Date.now());
     const [shuffledImages, setShuffledImages] = useState([]);
+    const [distractor0, setDistractor0] = useState(null);
+    const [distractor1, setDistractor1] = useState(null);
+    const [loadingDistractors, setLoadingDistractors] = useState(true);
 
     useEffect(() => {
-        // Adicionar 2 imagens distratoras
-        // TODO: Buscar distratores reais da API
-        const mockDistractors = [
-            {
-                url: '/api/placeholder/distractor1.jpg',
-                name: 'Distrator 1',
-                isDistractor: true
-            },
-            {
-                url: '/api/placeholder/distractor2.jpg',
-                name: 'Distrator 2',
-                isDistractor: true
+        const fetchDistractors = async () => {
+            try {
+                setLoadingDistractors(true);
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(
+                    `/api/evaluation/memory-reconstruction/distractor-images/${section.sectionId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                const distractors = data.distractors.map((d, index) => ({
+                    id: d.id,
+                    url: d.url,
+                    name: d.title || `Distractor ${index + 1}`,
+                    isDistractor: true
+                }));
+
+                setDistractor0(distractors[0]);
+                setDistractor1(distractors[1]);
+
+                // Criar array com todas as imagens mostradas + distratores
+                const allImages = [
+                    ...(section.imagesShown || []).map(img => ({
+                        ...img,
+                        isDistractor: false,
+                        isCorrect: img.id === section.selectedImage?.id
+                    })),
+                    ...distractors
+                ];
+
+                // Embaralhar as imagens
+                const shuffled = allImages.sort(() => Math.random() - 0.5);
+                setShuffledImages(shuffled);
+            } catch (error) {
+                console.error('Error fetching distractors:', error);
+                alert(t('evaluation.errorLoadingDistractors') || 'Erro ao carregar imagens distratoras.');
+            } finally {
+                setLoadingDistractors(false);
             }
-        ];
+        };
 
-        // Criar array com todas as imagens mostradas + distratores
-        const allImages = [
-            ...(section.imagesShown || []).map(img => ({
-                ...img,
-                isDistractor: false,
-                isCorrect: img.url === section.selectedImage?.url
-            })),
-            ...mockDistractors
-        ];
-
-        // Embaralhar as imagens
-        const shuffled = allImages.sort(() => Math.random() - 0.5);
-        setShuffledImages(shuffled);
-    }, [section]);
+        fetchDistractors();
+    }, [section, t]);
 
     const handleImageSelect = (image) => {
-        setSelectedImage(image.url);
+        setSelectedImage(image);
     };
 
     const handleSubmitAnswer = () => {
@@ -51,10 +78,25 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
         }
 
         const timeSpent = Date.now() - startTime;
-        const isCorrect = selectedImage === section.selectedImage.url;
 
-        onAnswer(section.sectionId, selectedImage, isCorrect, timeSpent);
+        onAnswer(
+            section.sectionId,
+            selectedImage.id,
+            distractor0.id,
+            distractor1.id,
+            timeSpent
+        );
     };
+
+    if (loadingDistractors) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.loading}>
+                    {t('evaluation.loadingQuestion') || 'Carregando pergunta...'}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container}>
@@ -81,7 +123,7 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
                     <div
                         key={index}
                         className={`${styles.imageContainer} ${
-                            selectedImage === image.url ? styles.selected : ''
+                            selectedImage?.id === image.id ? styles.selected : ''
                         }`}
                         onClick={() => handleImageSelect(image)}
                     >

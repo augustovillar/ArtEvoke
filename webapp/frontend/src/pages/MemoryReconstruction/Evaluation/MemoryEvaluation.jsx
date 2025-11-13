@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useMemoryReconstructionEvaluation } from './hooks/useMemoryReconstructionEvaluation';
 import ImageRecognitionQuestion from './components/ImageRecognitionQuestion';
 import ObjectiveQuestions from './components/ObjectiveQuestions';
 import ProgressBar from './components/ProgressBar';
@@ -13,139 +14,157 @@ const MemoryEvaluation = () => {
     const { sessionData } = location.state || {};
 
     const [currentStep, setCurrentStep] = useState(0);
-    const [evaluationData, setEvaluationData] = useState({
-        imageRecognition: [],
-        objectiveQuestions: []
-    });
     const [isSaving, setIsSaving] = useState(false);
 
-    // Perguntas objetivas mock
+    // Use Memory Reconstruction evaluation hook
+    const {
+        loading: evaluationLoading,
+        progress,
+        saveSelectImageAnswer,
+        saveObjectiveAnswer,
+        completeEvaluation,
+    } = useMemoryReconstructionEvaluation(sessionData?.sessionId);
+
+    // Perguntas objetivas - mapeadas para os tipos do banco
+    // TODO: Perguntas serão geradas por IA futuramente
     const objectiveQuestions = [
         { 
-            id: 'q1', 
+            id: 'environment',
+            type: 'environment', 
             text: 'Como era o ambiente da história?', 
-            type: 'multiple-choice',
-            options: ['Aberto', 'Fechado', 'Urbano', 'Rural' ]
+            questionType: 'multiple-choice',
+            options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
+            correctOption: 'Aberto'
         },
         { 
-            id: 'q2', 
+            id: 'period',
+            type: 'period', 
             text: 'Que parte do dia era?', 
-            type: 'multiple-choice', 
-            options: ['Manhã', 'Tarde', 'Noite']
+            questionType: 'multiple-choice', 
+            options: ['Manhã', 'Tarde', 'Noite'],
+            correctOption: 'Tarde'
         },
         { 
-            id: 'q3', 
+            id: 'emotion',
+            type: 'emotion', 
             text: 'Qual emoção foi predominante na história?', 
-            type: 'multiple-choice',
-            options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo']
+            questionType: 'multiple-choice',
+            options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],
+            correctOption: 'Felicidade'
         }
     ];
 
     const totalSteps = (sessionData?.phase1?.sections?.length || 0) + objectiveQuestions.length;
 
+    // Set current step based on progress when it loads
+    useEffect(() => {
+        if (progress && !evaluationLoading) {
+            // If evaluation is already completed, go to completion screen
+            if (progress.is_completed) {
+                setCurrentStep(totalSteps);
+            } else {
+                // Set to current progress step
+                setCurrentStep(progress.current_step);
+            }
+        }
+    }, [progress, evaluationLoading, totalSteps]);
+
     useEffect(() => {
         // Verificar se temos dados da sessão
         if (!sessionData) {
-            alert('Dados da sessão não encontrados. Redirecionando...');
+            alert(t('evaluation.sessionNotFound') || 'Dados da sessão não encontrados. Redirecionando...');
             navigate('/memory-reconstruction');
         }
-    }, [sessionData, navigate]);
+    }, [sessionData, navigate, t]);
 
-    const handleImageRecognitionAnswer = (sectionId, chosenImageUrl, isCorrect, timeSpent) => {
-        const newAnswer = {
-            sectionId,
-            chosenImageUrl,
-            isCorrect,
-            timeSpent
-        };
-
-        setEvaluationData(prev => ({
-            ...prev,
-            imageRecognition: [...prev.imageRecognition, newAnswer]
-        }));
-
-        setCurrentStep(prev => prev + 1);
+    const handleImageRecognitionAnswer = async (sectionId, chosenImageId, distractor0Id, distractor1Id, timeSpent) => {
+        setIsSaving(true);
+        try {
+            await saveSelectImageAnswer(
+                sectionId,
+                chosenImageId,
+                distractor0Id,
+                distractor1Id,
+                timeSpent
+            );
+            // Progress is automatically refreshed by saveSelectImageAnswer
+            // The component will re-render with updated progress
+        } catch (error) {
+            console.error('Error saving answer:', error);
+            if (error.response?.status === 409) {
+                // Already answered, just move to next
+                alert(t('evaluation.alreadyAnswered') || 'Esta questão já foi respondida anteriormente.');
+            } else {
+                alert(t('evaluation.errorSaving') || 'Erro ao salvar resposta. Tente novamente.');
+            }
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleObjectiveAnswer = (questionId, answer, timeSpent) => {
-        const newAnswer = {
-            questionId,
-            answer,
-            timeSpent
-        };
-
-        setEvaluationData(prev => ({
-            ...prev,
-            objectiveQuestions: [...prev.objectiveQuestions, newAnswer]
-        }));
-
-        setCurrentStep(prev => prev + 1);
+    const handleObjectiveAnswer = async (questionType, options, selectedOption, correctOption, timeSpent) => {
+        setIsSaving(true);
+        try {
+            await saveObjectiveAnswer(
+                questionType,
+                options,
+                selectedOption,
+                correctOption,
+                timeSpent
+            );
+            // Progress is automatically refreshed by saveObjectiveAnswer
+            // The component will re-render with updated progress
+        } catch (error) {
+            console.error('Error saving answer:', error);
+            alert(t('evaluation.errorSaving') || 'Erro ao salvar resposta. Tente novamente.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleSaveSession = async () => {
         setIsSaving(true);
 
-        const completeSession = {
-            ...sessionData,
-            evaluation: evaluationData,
-            completedAt: new Date().toISOString()
-        };
-
         try {
-            const token = localStorage.getItem('token');
-            
-            const sessionId = sessionData.sessionId;
-            
-            if (sessionId) {
-                await fetch(`/api/sessions/${sessionId}/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-            
-            console.log('Salvando sessão completa:', completeSession);
-            
-            // TODO: Implementar chamada à API para salvar dados da avaliação
-            // const response = await fetch('/api/sessions/memory-reconstruction/evaluation', {
-            //     method: 'POST',
-            //     headers: { 
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify(completeSession)
-            // });
-            // 
-            // if (!response.ok) {
-            //     throw new Error('Erro ao salvar sessão');
-            // }
-
-            alert('Sessão salva com sucesso!');
+            await completeEvaluation();
+            alert(t('evaluation.sessionSaved') || 'Sessão salva com sucesso!');
             navigate('/sessions');
         } catch (error) {
             console.error('Erro ao salvar sessão:', error);
-            alert('Erro ao salvar sessão. Tente novamente.');
+            alert(t('evaluation.errorSavingSession') || 'Erro ao salvar sessão. Tente novamente.');
         } finally {
             setIsSaving(false);
         }
     };
 
     const renderCurrentStep = () => {
-        if (!sessionData?.phase1?.sections) {
-            return <div>Carregando...</div>;
+        if (!sessionData?.phase1?.sections || !progress) {
+            return <div>{t('evaluation.loading') || 'Carregando...'}</div>;
         }
 
         const numImageQuestions = sessionData.phase1.sections.length;
 
         // Fase 1: Perguntas de reconhecimento de imagem
         if (currentStep < numImageQuestions) {
-            const section = sessionData.phase1.sections[currentStep];
+            // Find first unanswered section
+            const unansweredSection = sessionData.phase1.sections.find(
+                section => !progress.answered_image_questions.includes(section.sectionId)
+            );
+
+            if (!unansweredSection) {
+                // All image questions answered, move to objective questions
+                setCurrentStep(numImageQuestions);
+                return null;
+            }
+
+            const sectionIndex = sessionData.phase1.sections.findIndex(
+                section => section.sectionId === unansweredSection.sectionId
+            );
+
             return (
                 <ImageRecognitionQuestion
-                    section={section}
-                    sectionNumber={currentStep + 1}
+                    section={unansweredSection}
+                    sectionNumber={sectionIndex + 1}
                     totalSections={numImageQuestions}
                     onAnswer={handleImageRecognitionAnswer}
                 />
@@ -155,10 +174,25 @@ const MemoryEvaluation = () => {
         // Fase 2: Perguntas objetivas
         const questionIndex = currentStep - numImageQuestions;
         if (questionIndex < objectiveQuestions.length) {
+            // Find first unanswered objective question
+            const unansweredQuestion = objectiveQuestions.find(
+                q => !progress.answered_objective_questions.includes(q.type)
+            );
+
+            if (!unansweredQuestion) {
+                // All questions answered, move to completion
+                setCurrentStep(totalSteps);
+                return null;
+            }
+
+            const questionNumber = objectiveQuestions.findIndex(
+                q => q.type === unansweredQuestion.type
+            ) + 1;
+
             return (
                 <ObjectiveQuestions
-                    question={objectiveQuestions[questionIndex]}
-                    questionNumber={questionIndex + 1}
+                    question={unansweredQuestion}
+                    questionNumber={questionNumber}
                     totalQuestions={objectiveQuestions.length}
                     onAnswer={handleObjectiveAnswer}
                 />
@@ -190,6 +224,16 @@ const MemoryEvaluation = () => {
         return null;
     }
 
+    if (evaluationLoading) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.loading}>
+                    {t('evaluation.initializing') || 'Inicializando avaliação...'}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -198,6 +242,11 @@ const MemoryEvaluation = () => {
             </div>
             
             <div className={styles.content}>
+                {isSaving && (
+                    <div className={styles.savingIndicator}>
+                        {t('evaluation.saving') || 'Salvando resposta...'}
+                    </div>
+                )}
                 {renderCurrentStep()}
             </div>
         </div>
