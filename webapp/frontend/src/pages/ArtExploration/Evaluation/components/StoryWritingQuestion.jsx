@@ -57,8 +57,8 @@ const StoryWritingQuestion = ({ onAnswer, isSubmitting = false }) => {
                     disabled={story.trim() === '' || isSubmitting}
                 >
                     {isSubmitting 
-                        ? t('evaluation.submitting')
-                        : t('evaluation.continueToQuestions')
+                        ? (t('evaluation.submitting') || 'Enviando...')
+                        : (t('evaluation.continueToQuestions') || 'Continuar para Perguntas')
                     }
                 </button>
             </div>
