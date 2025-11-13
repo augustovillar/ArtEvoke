@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * Hook to manage Memory Reconstruction evaluation progress and answer submission
@@ -9,7 +9,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
     const [progress, setProgress] = useState(null);
 
     // Function to fetch progress
-    const fetchProgress = async () => {
+    const fetchProgress = useCallback(async () => {
         if (!sessionId) return null;
         
         const token = localStorage.getItem('token');
@@ -29,7 +29,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         const progressData = await progressResponse.json();
         setProgress(progressData);
         return progressData;
-    };
+    }, [sessionId]);
 
     // Initialize evaluation and get progress on mount
     useEffect(() => {
@@ -77,7 +77,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         };
 
         initializeEvaluation();
-    }, [sessionId]);
+    }, [sessionId, fetchProgress]);
 
     /**
      * Save a select image question answer
