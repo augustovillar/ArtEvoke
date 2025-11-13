@@ -81,6 +81,45 @@
     cursor: not-allowed;
 }
 
+.savingIndicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #667eea;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.loading,
+.error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.error {
+    color: #d32f2f;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 1rem;

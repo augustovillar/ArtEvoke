@@ -43,6 +43,7 @@ async def save_memory_reconstruction(
     db.add(memory_reconstruction)
     db.flush() 
 
+    section_ids = []
     for i, section_item in enumerate(request.sections):
         section = Sections(
             id=str(uuid.uuid4()),
@@ -59,6 +60,7 @@ async def save_memory_reconstruction(
         )
         
         db.add(section)
+        section_ids.append(section.id)
 
     # If this is session mode, update session with memory_reconstruction_id and change status
     if session_id:
@@ -71,7 +73,11 @@ async def save_memory_reconstruction(
     db.refresh(memory_reconstruction)
 
 
-    return {"message": "Memory reconstruction saved successfully", "id": memory_reconstruction.id}
+    return {
+        "message": "Memory reconstruction saved successfully", 
+        "id": memory_reconstruction.id,
+        "section_ids": section_ids
+    }
 
 
 @router.get("/retrieve", response_model=RetrieveMemoryReconstructionsResponseDTO)

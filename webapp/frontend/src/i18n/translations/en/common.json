@@ -289,7 +289,8 @@
       "selectAllImages": "Please select an image for every section before saving.",
       "savedSuccessfully": "Saved successfully!",
       "saveFailed": "Failed to save."
-    }
+    },
+    "errorPreparingEvaluation": "Error preparing evaluation. Please try again."
   },
   "evaluation": {
     "title": "Recap - Memory Reconstruction",
@@ -309,6 +310,15 @@
     "completedMessage": "Thank you for completing the Recap. Click the button below to save your session.",
     "saving": "Saving...",
     "saveSession": "Save Session",
+    "initializing": "Initializing evaluation...",
+    "loading": "Loading...",
+    "loadingQuestion": "Loading question...",
+    "errorLoadingDistractors": "Error loading distractor images.",
+    "errorSaving": "Error saving answer. Please try again.",
+    "alreadyAnswered": "This question has already been answered.",
+    "sessionSaved": "Session saved successfully!",
+    "errorSavingSession": "Error saving session. Please try again.",
+    "sessionNotFound": "Session data not found. Redirecting...",
     "titleArtExploration": "Recap - Art Exploration",
     "imageRecallTitle": "Image Question",
     "imageRecallInstruction": "Which of these images did you just select?",

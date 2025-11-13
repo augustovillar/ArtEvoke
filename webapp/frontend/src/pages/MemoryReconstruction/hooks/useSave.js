@@ -5,6 +5,7 @@ const useSave = () => {
     const { t } = useTranslation();
     const [saveMessage, setSaveMessage] = useState('');
     const [savedStoryData, setSavedStoryData] = useState(null);
+    const [sectionIds, setSectionIds] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [hasSaved, setHasSaved] = useState(false);
 
@@ -75,10 +76,11 @@ const useSave = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            await response.json();
+            const result = await response.json();
             setSaveMessage(t('memoryReconstruction.messages.savedSuccessfully'));
             setTimeout(() => setSaveMessage(''), 3000);
             setSavedStoryData(saveData);
+            setSectionIds(result.section_ids || []);
             setHasSaved(true);
         } catch (error) {
             console.error('Error saving:', error);
@@ -96,6 +98,7 @@ const useSave = () => {
     return {
         saveMessage,
         savedStoryData,
+        sectionIds,
         isSaving,
         hasSaved,
         saveStory,
