@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useMemoryReconstructionEvaluation } from './hooks/useMemoryReconstructionEvaluation';
 import ImageRecognitionQuestion from './components/ImageRecognitionQuestion';
 import ObjectiveQuestions from './components/ObjectiveQuestions';
 import ProgressBar from './components/ProgressBar';
@@ -13,31 +14,41 @@ const MemoryEvaluation = () => {
     const { sessionData } = location.state || {};
 
     const [currentStep, setCurrentStep] = useState(0);
-    const [evaluationData, setEvaluationData] = useState({
-        imageRecognition: [],
-        objectiveQuestions: []
-    });
     const [isSaving, setIsSaving] = useState(false);
 
-    // Perguntas objetivas mock
+    // Use Memory Reconstruction evaluation hook
+    const {
+        loading: evaluationLoading,
+        saveSelectImageAnswer,
+        saveObjectiveAnswer,
+        completeEvaluation,
+    } = useMemoryReconstructionEvaluation(sessionData?.sessionId);
+
+    // Perguntas objetivas - mapeadas para os tipos do banco
     const objectiveQuestions = [
         { 
-            id: 'q1', 
+            id: 'environment',
+            type: 'environment', 
             text: 'Como era o ambiente da história?', 
-            type: 'multiple-choice',
-            options: ['Aberto', 'Fechado', 'Urbano', 'Rural' ]
+            questionType: 'multiple-choice',
+            options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
+            correctOption: 'Aberto' // TODO: determinar resposta correta baseada na história
         },
         { 
-            id: 'q2', 
+            id: 'period',
+            type: 'period', 
             text: 'Que parte do dia era?', 
-            type: 'multiple-choice', 
-            options: ['Manhã', 'Tarde', 'Noite']
+            questionType: 'multiple-choice', 
+            options: ['Manhã', 'Tarde', 'Noite'],
+            correctOption: 'Tarde' // TODO: determinar resposta correta baseada na história
         },
         { 
-            id: 'q3', 
+            id: 'emotion',
+            type: 'emotion', 
             text: 'Qual emoção foi predominante na história?', 
-            type: 'multiple-choice',
-            options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo']
+            questionType: 'multiple-choice',
+            options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],
+            correctOption: 'Felicidade' // TODO: determinar resposta correta baseada na história
         }
     ];
 
@@ -51,82 +62,60 @@ const MemoryEvaluation = () => {
         }
     }, [sessionData, navigate]);
 
-    const handleImageRecognitionAnswer = (sectionId, chosenImageUrl, isCorrect, timeSpent) => {
-        const newAnswer = {
-            sectionId,
-            chosenImageUrl,
-            isCorrect,
-            timeSpent
-        };
-
-        setEvaluationData(prev => ({
-            ...prev,
-            imageRecognition: [...prev.imageRecognition, newAnswer]
-        }));
-
-        setCurrentStep(prev => prev + 1);
+    const handleImageRecognitionAnswer = async (sectionId, chosenImageId, distractor0Id, distractor1Id, timeSpent) => {
+        setIsSaving(true);
+        try {
+            await saveSelectImageAnswer(
+                sectionId,
+                chosenImageId,
+                distractor0Id,
+                distractor1Id,
+                timeSpent
+            );
+            setCurrentStep(prev => prev + 1);
+        } catch (error) {
+            console.error('Error saving answer:', error);
+            if (error.response?.status === 409) {
+                // Already answered, just move to next
+                alert(t('evaluation.alreadyAnswered') || 'Esta questão já foi respondida anteriormente.');
+                setCurrentStep(prev => prev + 1);
+            } else {
+                alert(t('evaluation.errorSaving') || 'Erro ao salvar resposta. Tente novamente.');
+            }
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleObjectiveAnswer = (questionId, answer, timeSpent) => {
-        const newAnswer = {
-            questionId,
-            answer,
-            timeSpent
-        };
-
-        setEvaluationData(prev => ({
-            ...prev,
-            objectiveQuestions: [...prev.objectiveQuestions, newAnswer]
-        }));
-
-        setCurrentStep(prev => prev + 1);
+    const handleObjectiveAnswer = async (questionType, options, selectedOption, correctOption, timeSpent) => {
+        setIsSaving(true);
+        try {
+            await saveObjectiveAnswer(
+                questionType,
+                options,
+                selectedOption,
+                correctOption,
+                timeSpent
+            );
+            setCurrentStep(prev => prev + 1);
+        } catch (error) {
+            console.error('Error saving answer:', error);
+            alert(t('evaluation.errorSaving') || 'Erro ao salvar resposta. Tente novamente.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleSaveSession = async () => {
         setIsSaving(true);
 
-        const completeSession = {
-            ...sessionData,
-            evaluation: evaluationData,
-            completedAt: new Date().toISOString()
-        };
-
         try {
-            const token = localStorage.getItem('token');
-            
-            const sessionId = sessionData.sessionId;
-            
-            if (sessionId) {
-                await fetch(`/api/sessions/${sessionId}/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-            
-            console.log('Salvando sessão completa:', completeSession);
-            
-            // TODO: Implementar chamada à API para salvar dados da avaliação
-            // const response = await fetch('/api/sessions/memory-reconstruction/evaluation', {
-            //     method: 'POST',
-            //     headers: { 
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify(completeSession)
-            // });
-            // 
-            // if (!response.ok) {
-            //     throw new Error('Erro ao salvar sessão');
-            // }
-
-            alert('Sessão salva com sucesso!');
+            await completeEvaluation();
+            alert(t('evaluation.sessionSaved') || 'Sessão salva com sucesso!');
             navigate('/sessions');
         } catch (error) {
             console.error('Erro ao salvar sessão:', error);
-            alert('Erro ao salvar sessão. Tente novamente.');
+            alert(t('evaluation.errorSavingSession') || 'Erro ao salvar sessão. Tente novamente.');
         } finally {
             setIsSaving(false);
         }
@@ -155,9 +144,10 @@ const MemoryEvaluation = () => {
         // Fase 2: Perguntas objetivas
         const questionIndex = currentStep - numImageQuestions;
         if (questionIndex < objectiveQuestions.length) {
+            const question = objectiveQuestions[questionIndex];
             return (
                 <ObjectiveQuestions
-                    question={objectiveQuestions[questionIndex]}
+                    question={question}
                     questionNumber={questionIndex + 1}
                     totalQuestions={objectiveQuestions.length}
                     onAnswer={handleObjectiveAnswer}
@@ -190,6 +180,16 @@ const MemoryEvaluation = () => {
         return null;
     }
 
+    if (evaluationLoading) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.loading}>
+                    {t('evaluation.initializing') || 'Inicializando avaliação...'}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -198,6 +198,11 @@ const MemoryEvaluation = () => {
             </div>
             
             <div className={styles.content}>
+                {isSaving && (
+                    <div className={styles.savingIndicator}>
+                        {t('evaluation.saving') || 'Salvando resposta...'}
+                    </div>
+                )}
                 {renderCurrentStep()}
             </div>
         </div>
