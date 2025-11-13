@@ -289,7 +289,8 @@
       "selectAllImages": "Selecione uma imagem para cada seção antes de salvar.",
       "savedSuccessfully": "Salvo com sucesso!",
       "saveFailed": "Falha ao salvar."
-    }
+    },
+    "errorPreparingEvaluation": "Erro ao preparar avaliação. Tente novamente."
   },
   "evaluation": {
     "title": "Recapitulação - Memory Reconstruction",
@@ -310,12 +311,14 @@
     "saving": "Salvando...",
     "saveSession": "Salvar Sessão",
     "initializing": "Inicializando avaliação...",
+    "loading": "Carregando...",
     "loadingQuestion": "Carregando pergunta...",
     "errorLoadingDistractors": "Erro ao carregar imagens distratoras.",
     "errorSaving": "Erro ao salvar resposta. Tente novamente.",
     "alreadyAnswered": "Esta questão já foi respondida anteriormente.",
     "sessionSaved": "Sessão salva com sucesso!",
     "errorSavingSession": "Erro ao salvar sessão. Tente novamente.",
+    "sessionNotFound": "Dados da sessão não encontrados. Redirecionando...",
     "titleArtExploration": "Recapitulação - Art Exploration",
     "imageRecallTitle": "Pergunta sobre a Imagem",
     "imageRecallInstruction": "Qual destas imagens você acabou de selecionar?",

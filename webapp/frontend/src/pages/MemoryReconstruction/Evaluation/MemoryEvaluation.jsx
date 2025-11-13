@@ -25,6 +25,7 @@ const MemoryEvaluation = () => {
     } = useMemoryReconstructionEvaluation(sessionData?.sessionId);
 
     // Perguntas objetivas - mapeadas para os tipos do banco
+    // TODO: Perguntas serão geradas por IA futuramente
     const objectiveQuestions = [
         { 
             id: 'environment',
@@ -32,7 +33,7 @@ const MemoryEvaluation = () => {
             text: 'Como era o ambiente da história?', 
             questionType: 'multiple-choice',
             options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
-            correctOption: 'Aberto' // TODO: determinar resposta correta baseada na história
+            correctOption: 'Aberto'
         },
         { 
             id: 'period',
@@ -40,7 +41,7 @@ const MemoryEvaluation = () => {
             text: 'Que parte do dia era?', 
             questionType: 'multiple-choice', 
             options: ['Manhã', 'Tarde', 'Noite'],
-            correctOption: 'Tarde' // TODO: determinar resposta correta baseada na história
+            correctOption: 'Tarde'
         },
         { 
             id: 'emotion',
@@ -48,7 +49,7 @@ const MemoryEvaluation = () => {
             text: 'Qual emoção foi predominante na história?', 
             questionType: 'multiple-choice',
             options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],
-            correctOption: 'Felicidade' // TODO: determinar resposta correta baseada na história
+            correctOption: 'Felicidade'
         }
     ];
 
@@ -57,10 +58,10 @@ const MemoryEvaluation = () => {
     useEffect(() => {
         // Verificar se temos dados da sessão
         if (!sessionData) {
-            alert('Dados da sessão não encontrados. Redirecionando...');
+            alert(t('evaluation.sessionNotFound') || 'Dados da sessão não encontrados. Redirecionando...');
             navigate('/memory-reconstruction');
         }
-    }, [sessionData, navigate]);
+    }, [sessionData, navigate, t]);
 
     const handleImageRecognitionAnswer = async (sectionId, chosenImageId, distractor0Id, distractor1Id, timeSpent) => {
         setIsSaving(true);
@@ -123,7 +124,7 @@ const MemoryEvaluation = () => {
 
     const renderCurrentStep = () => {
         if (!sessionData?.phase1?.sections) {
-            return <div>Carregando...</div>;
+            return <div>{t('evaluation.loading') || 'Carregando...'}</div>;
         }
 
         const numImageQuestions = sessionData.phase1.sections.length;

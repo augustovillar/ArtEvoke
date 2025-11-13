@@ -56,6 +56,7 @@ const MemoryReconstructionSession = () => {
 
     const { 
         saveMessage,
+        sectionIds,
         isSaving,
         hasSaved,
         saveStory,
@@ -133,6 +134,7 @@ const MemoryReconstructionSession = () => {
     };
 
     const handleProceedToNextStep = () => {
+        // Use section IDs returned from save
         const sessionData = {
             sessionId,
             mode: 'session',
@@ -142,7 +144,7 @@ const MemoryReconstructionSession = () => {
                 dataset,
                 segmentation,
                 sections: sectionsWithImages.map((section, index) => ({
-                    sectionId: index,
+                    sectionId: sectionIds[index], // Use real section ID from save response
                     sectionText: section.section,
                     imagesShown: section.images.map(img => ({
                         url: img.url,
@@ -151,7 +153,8 @@ const MemoryReconstructionSession = () => {
                     })),
                     selectedImage: {
                         url: selectedImagesPerSection[index],
-                        name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name
+                        name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name,
+                        id: section.images.find(img => img.url === selectedImagesPerSection[index])?.id
                     }
                 }))
             },
