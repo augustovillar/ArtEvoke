@@ -133,43 +133,68 @@ const MemoryReconstructionSession = () => {
         handleProceedToNextStep();
     };
 
-    const handleProceedToNextStep = () => {
-        // Use section IDs returned from save
-        const sessionData = {
-            sessionId,
-            mode: 'session',
-            phase1: {
-                story: storyText,
-                language,
-                dataset,
-                segmentation,
-                sections: sectionsWithImages.map((section, index) => ({
-                    sectionId: sectionIds[index], // Use real section ID from save response
-                    sectionText: section.section,
-                    imagesShown: section.images.map(img => ({
-                        url: img.url,
-                        name: img.name,
-                        id: img.id
-                    })),
-                    selectedImage: {
-                        url: selectedImagesPerSection[index],
-                        name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name,
-                        id: section.images.find(img => img.url === selectedImagesPerSection[index])?.id
+    const handleProceedToNextStep = async () => {
+        try {
+            // Create evaluation before navigating
+            const token = localStorage.getItem('token');
+            const createResponse = await fetch(
+                `/api/evaluation/create?session_id=${sessionId}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     }
-                }))
-            },
-            interruption: {
-                duration: interruptionTime,
-                completed: true
-            },
-            timestamp: new Date().toISOString()
-        };
+                }
+            );
 
-        navigate(`/sessions/${sessionId}/memory-reconstruction/evaluation`, {
-            state: {
-                sessionData
+            if (!createResponse.ok) {
+                throw new Error('Failed to create evaluation');
             }
-        });
+
+            const createData = await createResponse.json();
+            console.log('Evaluation created:', createData.id);
+
+            // Use section IDs returned from save
+            const sessionData = {
+                sessionId,
+                mode: 'session',
+                phase1: {
+                    story: storyText,
+                    language,
+                    dataset,
+                    segmentation,
+                    sections: sectionsWithImages.map((section, index) => ({
+                        sectionId: sectionIds[index], // Use real section ID from save response
+                        sectionText: section.section,
+                        imagesShown: section.images.map(img => ({
+                            url: img.url,
+                            name: img.name,
+                            id: img.id
+                        })),
+                        selectedImage: {
+                            url: selectedImagesPerSection[index],
+                            name: section.images.find(img => img.url === selectedImagesPerSection[index])?.name,
+                            id: section.images.find(img => img.url === selectedImagesPerSection[index])?.id
+                        }
+                    }))
+                },
+                interruption: {
+                    duration: interruptionTime,
+                    completed: true
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            navigate(`/sessions/${sessionId}/memory-reconstruction/evaluation`, {
+                state: {
+                    sessionData
+                }
+            });
+        } catch (error) {
+            console.error('Error creating evaluation:', error);
+            alert('Erro ao iniciar avaliação. Tente novamente.');
+        }
     };
 
     if (loadingSession) {

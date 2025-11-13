@@ -23,28 +23,24 @@ const ArtExplorationFree = () => {
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
-    const { generateLoading, responseText, generateStory } = useStoryGeneration();
+    const { generateLoading, responseText, storyData, generateStory } = useStoryGeneration();
     const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
 
-    // Handle form submission to fetch images
     const handleSubmit = () => {
         searchImages(storyText, language, dataset);
     };
 
-    // Handle story generation from selected images
     const handleGenerateStory = () => {
-        resetSaveState(); // Reset save state when generating new story
+        resetSaveState();
         generateStory(selectedImages);
     };
 
-    // Regenerate the story
     const handleRegenerateClick = () => {
         handleGenerateStory();
     };
 
-    // Handler for saving in free mode (not in session)
     const handleSave = async () => {
-        await saveStory(responseText, selectedImages, dataset, language); // No sessionId = free mode
+        await saveStory(responseText, selectedImages, dataset, language, storyData);
     };
 
     // Handler to clear selections

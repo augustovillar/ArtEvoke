@@ -142,6 +142,10 @@ CREATE TABLE IF NOT EXISTS ArtExploration (
   story_generated TEXT        NOT NULL,
   dataset         ENUM('ipiranga', 'wikiart','semart') NOT NULL,
   language        ENUM('en','pt') NOT NULL,
+  correct_option_0 CHAR(100)  NULL,
+  correct_option_1 CHAR(100)  NULL,
+  correct_option_2 CHAR(100)  NULL,
+  correct_option_3 CHAR(100)  NULL,
   created_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_art_exploration PRIMARY KEY (id),
   CONSTRAINT fk_artexp_patient FOREIGN KEY (patient_id) REFERENCES Patient(id)
@@ -293,6 +297,8 @@ CREATE TABLE IF NOT EXISTS Evaluation (
   id          CHAR(36)  NOT NULL,
   session_id  CHAR(36)  NOT NULL,
   mode        ENUM('art_exploration','memory_reconstruction') NOT NULL,
+  current_step SMALLINT NOT NULL DEFAULT 0,
+  number_steps SMALLINT NOT NULL,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_evaluation PRIMARY KEY (id),
   CONSTRAINT fk_eval_session
@@ -301,6 +307,8 @@ CREATE TABLE IF NOT EXISTS Evaluation (
   INDEX idx_eval_session (session_id),
   INDEX idx_eval_mode (mode)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_eval_current_step ON Evaluation(current_step);
 
 /*  ====================== */
 /*  SelectImageQuestion */
@@ -357,10 +365,6 @@ CREATE TABLE IF NOT EXISTS ChronologicalOrderQuestion (
   id                CHAR(36)     NOT NULL,
   eval_id           CHAR(36)     NOT NULL,
   elapsed_time      TIME         NULL,
-  correct_option_0  CHAR(100)    NULL,
-  correct_option_1  CHAR(100)    NULL,
-  correct_option_2  CHAR(100)    NULL,
-  correct_option_3  CHAR(100)    NULL,
   selected_option_0 CHAR(100)    NULL,
   selected_option_1 CHAR(100)    NULL,
   selected_option_2 CHAR(100)    NULL,

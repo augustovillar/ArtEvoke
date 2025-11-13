@@ -5,16 +5,7 @@ import DraggableEventItem from './DraggableEventItem';
 import DropZone from './DropZone';
 import styles from './ChronologyOrderQuestion.module.css';
 
-// Mock data - in final version, this will come from Maritaca AI
-const mockStoryEvents = {
-    correctOrder: [
-        "Ele comeu sorvete",
-        "Ele foi à escola", 
-        "Ele ficou satisfeito"
-    ]
-};
-
-const ChronologyOrderQuestion = ({ onAnswer }) => {
+const ChronologyOrderQuestion = ({ events, onAnswer, isSubmitting = false }) => {
     const { t } = useTranslation();
     const [startTime] = useState(Date.now());
 
@@ -23,12 +14,13 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
     const [draggedItem, setDraggedItem] = useState(null);
     const [attempts, setAttempts] = useState(0);
 
-    // Initialize shuffled events on component mount
     useEffect(() => {
-        const shuffled = [...mockStoryEvents.correctOrder].sort(() => Math.random() - 0.5);
-        setShuffledEvents(shuffled);
-        setOrderedEvents(new Array(mockStoryEvents.correctOrder.length).fill(null));
-    }, []);
+        if (events && events.length > 0) {
+            const shuffled = [...events].sort(() => Math.random() - 0.5);
+            setShuffledEvents(shuffled);
+            setOrderedEvents(new Array(events.length).fill(null));
+        }
+    }, [events]);
 
     const handleDragStart = (event, eventText) => {
         setDraggedItem(eventText);
@@ -71,17 +63,17 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
 
     const handleSubmit = () => {
         if (!isComplete) {
-            alert(t('evaluation.completeOrder') || 'Complete a ordenação para continuar.');
+            alert(t('evaluation.completeOrder'));
             return;
         }
 
         const timeSpent = Date.now() - startTime;
-        const isCorrect = JSON.stringify(orderedEvents) === JSON.stringify(mockStoryEvents.correctOrder);
+        const isCorrect = JSON.stringify(orderedEvents) === JSON.stringify(events);
         
         const answer = {
             questionType: 'chronology_order',
             userOrder: orderedEvents,
-            correctOrder: mockStoryEvents.correctOrder,
+            correctOrder: events,
             isCorrect,
             timeSpent,
             attempts: attempts + 1
@@ -91,16 +83,15 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
         onAnswer('chronology-order', answer, timeSpent);
     };
 
-    const questionText = t('evaluation.chronologyInstruction') || 
-        'Arraste os eventos para organizá-los na ordem cronológica correta:';
+    const questionText = t('evaluation.chronologyInstruction');
 
     return (
         <div className={styles.container}>
             <div className={styles.questionHeader}>
                 <h2>
-                    {t('evaluation.chronologyTitle') || 'Ordem dos Eventos'}
+                    {t('evaluation.chronologyTitle')}
                     <QuestionReadAloudButton 
-                        text={`${t('evaluation.chronologyTitle') || 'Ordem dos Eventos'}. ${questionText}`}
+                        text={`${t('evaluation.chronologyTitle')}. ${questionText}`}
                     />
                 </h2>
             </div>
@@ -112,10 +103,9 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
             </div>
 
             <div className={styles.gameArea}>
-                {/* Events to drag */}
                 <div className={styles.eventsPool}>
                     <h3 className={styles.sectionTitle}>
-                        {t('evaluation.eventsToOrder') || 'Eventos para ordenar:'}
+                        {t('evaluation.eventsToOrder')}
                     </h3>
                     <div className={styles.eventsList}>
                         {shuffledEvents.map((event, index) => (
@@ -130,10 +120,9 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
                     </div>
                 </div>
 
-                {/* Drop zones */}
                 <div className={styles.chronologyArea}>
                     <h3 className={styles.sectionTitle}>
-                        {t('evaluation.chronologicalOrder') || 'Ordem Cronológica:'}
+                        {t('evaluation.chronologicalOrder')}
                     </h3>
                     <div className={styles.dropZonesList}>
                         {orderedEvents.map((event, position) => (
@@ -153,9 +142,9 @@ const ChronologyOrderQuestion = ({ onAnswer }) => {
                 <button
                     onClick={handleSubmit}
                     className={styles.submitButton}
-                    disabled={!isComplete}
+                    disabled={!isComplete || isSubmitting}
                 >
-                    {t('evaluation.nextQuestion') || 'Próxima Pergunta'}
+                    {isSubmitting ? t('evaluation.submitting') : (t('evaluation.nextQuestion'))}
                 </button>
             </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { millisecondsToTimeString } from '../../../../utils/timeFormatter';
 
 /**
  * Hook to manage Memory Reconstruction evaluation progress and answer submission
@@ -14,7 +15,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         
         const token = localStorage.getItem('token');
         const progressResponse = await fetch(
-            `/api/evaluation/memory-reconstruction/progress/${sessionId}`,
+            `/api/evaluation/progress/${sessionId}`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -41,33 +42,14 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         const initializeEvaluation = async () => {
             try {
                 setLoading(true);
-                const token = localStorage.getItem('token');
                 
-                // First, get current progress
+                // Fetch progress (evaluation should already exist from button click)
                 const progressData = await fetchProgress();
 
-                // If evaluation already started, use existing eval_id
-                if (progressData.evaluation_started) {
+                if (progressData && progressData.evaluation_started) {
                     setEvaluationId(progressData.eval_id);
                 } else {
-                    // Create evaluation record if not started
-                    const startResponse = await fetch(
-                        `/api/evaluation/memory-reconstruction/start/${sessionId}`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            }
-                        }
-                    );
-
-                    if (!startResponse.ok) {
-                        throw new Error(`HTTP error! status: ${startResponse.status}`);
-                    }
-
-                    const startData = await startResponse.json();
-                    setEvaluationId(startData.eval_id);
+                    throw new Error('Evaluation not found - should have been created');
                 }
             } catch (err) {
                 console.error('[Evaluation Hook] Error initializing evaluation:', err);
@@ -99,7 +81,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
                     image_selected_id: imageSelectedId,
                     image_distractor_0_id: distractor0Id,
                     image_distractor_1_id: distractor1Id,
-                    elapsed_time: elapsedTime
+                    elapsed_time: millisecondsToTimeString(elapsedTime)
                 })
             }
         );
@@ -123,7 +105,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         const token = localStorage.getItem('token');
         
         const response = await fetch(
-            `/api/evaluation/memory-reconstruction/objective-question`,
+            `/api/evaluation/objective-question`,
             {
                 method: 'POST',
                 headers: {
@@ -136,7 +118,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
                     options: options,
                     selected_option: selectedOption,
                     correct_option: correctOption,
-                    elapsed_time: elapsedTime
+                    elapsed_time: millisecondsToTimeString(elapsedTime)
                 })
             }
         );

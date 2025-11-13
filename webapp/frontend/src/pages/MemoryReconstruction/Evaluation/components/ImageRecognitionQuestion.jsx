@@ -3,23 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { QuestionReadAloudButton } from '../../../../components/ui';
 import styles from './ImageRecognitionQuestion.module.css';
 
-const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAnswer }) => {
+const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, sessionId, onAnswer }) => {
     const { t } = useTranslation();
     const [selectedImage, setSelectedImage] = useState(null);
     const [startTime] = useState(Date.now());
     const [shuffledImages, setShuffledImages] = useState([]);
     const [distractor0, setDistractor0] = useState(null);
     const [distractor1, setDistractor1] = useState(null);
-    const [loadingDistractors, setLoadingDistractors] = useState(true);
+    const [loadingImages, setLoadingImages] = useState(true);
 
     useEffect(() => {
-        const fetchDistractors = async () => {
+        const fetchImagesAndDistractors = async () => {
             try {
-                setLoadingDistractors(true);
+                setLoadingImages(true);
                 const token = localStorage.getItem('token');
                 
                 const response = await fetch(
-                    `/api/evaluation/memory-reconstruction/distractor-images/${section.sectionId}`,
+                    `/api/evaluation/memory-reconstruction/select-image-question/${sessionId}/${section.sectionId}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -33,39 +33,42 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
 
                 const data = await response.json();
                 
+                // Format shown images
+                const shownImages = data.shown_images.map(img => ({
+                    id: img.id,
+                    url: img.image_url,
+                    name: img.art_name || 'Unknown',
+                    isDistractor: false,
+                    isCorrect: img.id === section.selectedImage?.id
+                }));
+
+                // Format distractors
                 const distractors = data.distractors.map((d, index) => ({
                     id: d.id,
-                    url: d.url,
-                    name: d.title || `Distractor ${index + 1}`,
+                    url: d.image_url,
+                    name: d.art_name || `Distractor ${index + 1}`,
                     isDistractor: true
                 }));
 
                 setDistractor0(distractors[0]);
                 setDistractor1(distractors[1]);
 
-                // Criar array com todas as imagens mostradas + distratores
-                const allImages = [
-                    ...(section.imagesShown || []).map(img => ({
-                        ...img,
-                        isDistractor: false,
-                        isCorrect: img.id === section.selectedImage?.id
-                    })),
-                    ...distractors
-                ];
-
-                // Embaralhar as imagens
+                // Combine all images and shuffle
+                const allImages = [...shownImages, ...distractors];
                 const shuffled = allImages.sort(() => Math.random() - 0.5);
                 setShuffledImages(shuffled);
             } catch (error) {
-                console.error('Error fetching distractors:', error);
-                alert(t('evaluation.errorLoadingDistractors') || 'Erro ao carregar imagens distratoras.');
+                console.error('Error fetching images:', error);
+                alert(t('evaluation.errorLoadingImages') || 'Erro ao carregar imagens.');
             } finally {
-                setLoadingDistractors(false);
+                setLoadingImages(false);
             }
         };
 
-        fetchDistractors();
-    }, [section, t]);
+        if (sessionId && section?.sectionId) {
+            fetchImagesAndDistractors();
+        }
+    }, [sessionId, section, t]);
 
     const handleImageSelect = (image) => {
         setSelectedImage(image);
@@ -88,7 +91,7 @@ const ImageRecognitionQuestion = ({ section, sectionNumber, totalSections, onAns
         );
     };
 
-    if (loadingDistractors) {
+    if (loadingImages) {
         return (
             <div className={styles.container}>
                 <div className={styles.loading}>

@@ -327,6 +327,7 @@
     "storyPlaceholder": "Comece a escrever sua história aqui...",
     "pleaseWriteStory": "Por favor, escreva uma história antes de continuar.",
     "continueToQuestions": "Continuar para Perguntas",
+    "submitting": "Enviando...",
     "characters": "caracteres",
     "chronologyTitle": "Ordem dos Eventos",
     "chronologyInstruction": "Arraste os eventos para organizá-los na ordem cronológica correta:",
@@ -334,7 +335,12 @@
     "chronologicalOrder": "Ordem Cronológica:",
     "dropHere": "Solte aqui",
     "completeOrder": "Complete a ordenação para continuar.",
-    "removeEvent": "Remover evento"
+    "removeEvent": "Remover evento",
+    "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
+    "errorSavingStory": "Erro ao salvar história. Tente novamente.",
+    "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",
+    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando...",
+    "loading": "Carregando..."
   },
   "roleSelection": {
     "subtitle": "Selecione se você é um médico ou paciente",

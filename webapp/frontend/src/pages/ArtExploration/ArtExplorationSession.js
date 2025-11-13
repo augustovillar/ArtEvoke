@@ -40,7 +40,7 @@ const ArtExplorationSession = () => {
 
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
-    const { generateLoading, responseText, generateStory } = useStoryGeneration();
+    const { generateLoading, responseText, storyData, generateStory } = useStoryGeneration();
     const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
 
     // Load session data on mount
@@ -112,7 +112,7 @@ const ArtExplorationSession = () => {
     };
 
     const handleSave = async () => {
-        await saveStory(responseText, selectedImages, dataset, language, sessionId); 
+        await saveStory(responseText, selectedImages, dataset, language, storyData, sessionId); 
     };
 
     const handleContinue = async () => {
@@ -129,33 +129,58 @@ const ArtExplorationSession = () => {
         handleProceedToNextStep();
     };
 
-    const handleProceedToNextStep = () => {
-        const sessionData = {
-            sessionId,
-            mode: 'session',
-            phase1: {
-                query: storyText || '',
-                language: language || 'en',
-                dataset: dataset || 'wikiart',
-                generatedStory: responseText || '',
-                selectedImages: (selectedImages || []).map(img => ({
-                    url: img.url,
-                    name: img.name,
-                    id: img.id
-                }))
-            },
-            interruption: {
-                duration: interruptionTime || 10,
-                completed: true
-            },
-            timestamp: new Date().toISOString()
-        };
+    const handleProceedToNextStep = async () => {
+        try {
+            // Create evaluation before navigating
+            const token = localStorage.getItem('token');
+            const createResponse = await fetch(
+                `/api/evaluation/create?session_id=${sessionId}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
 
-        navigate(`/sessions/${sessionId}/art-exploration/evaluation`, {
-            state: {
-                sessionData
+            if (!createResponse.ok) {
+                throw new Error('Failed to create evaluation');
             }
-        });
+
+            const createData = await createResponse.json();
+            console.log('Evaluation created:', createData.id);
+
+            const sessionData = {
+                sessionId,
+                mode: 'session',
+                phase1: {
+                    query: storyText || '',
+                    language: language || 'en',
+                    dataset: dataset || 'wikiart',
+                    generatedStory: responseText || '',
+                    selectedImages: (selectedImages || []).map(img => ({
+                        url: img.url,
+                        name: img.name,
+                        id: img.id
+                    }))
+                },
+                interruption: {
+                    duration: interruptionTime || 10,
+                    completed: true
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            navigate(`/sessions/${sessionId}/art-exploration/evaluation`, {
+                state: {
+                    sessionData
+                }
+            });
+        } catch (error) {
+            console.error('Error creating evaluation:', error);
+            alert('Erro ao iniciar avaliação. Tente novamente.');
+        }
     };
 
     if (loadingSession) {

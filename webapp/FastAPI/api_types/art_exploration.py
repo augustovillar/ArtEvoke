@@ -12,6 +12,10 @@ class SaveArtExplorationRequestDTO(BaseModel):
     dataset: str
     language: str
     images_selected: List[ImagesItem]
+    correct_option_0: Optional[str] = None
+    correct_option_1: Optional[str] = None
+    correct_option_2: Optional[str] = None
+    correct_option_3: Optional[str] = None
 
 
 class ArtExplorationResponse(BaseModel):

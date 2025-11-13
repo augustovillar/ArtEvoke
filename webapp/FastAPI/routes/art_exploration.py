@@ -57,7 +57,11 @@ async def create_art_exploration(
         patient_id=current_user["id"],
         story_generated=request.story_generated,
         dataset=request.dataset,  
-        language=request.language
+        language=request.language,
+        correct_option_0=request.correct_option_0,
+        correct_option_1=request.correct_option_1,
+        correct_option_2=request.correct_option_2,
+        correct_option_3=request.correct_option_3,
     )
 
     db.add(art_exploration)
@@ -87,7 +91,7 @@ async def create_art_exploration(
     db.commit()
     db.refresh(art_exploration)
 
-    return {"message": "Art exploration saved successfully", "id": art_exploration.id}
+    return {"id": art_exploration.id}
 
 
 @router.get("/retrieve", response_model=RetrieveArtExplorationResponseDTO)
@@ -169,7 +173,7 @@ async def delete_art_exploration(
     db.delete(art_exploration)
     db.commit()
 
-    return {"message": "Art exploration deleted successfully"}
+    return {"id": art_exploration.id}
 
 
 @router.post("/generate-story")

@@ -5,6 +5,7 @@ export const useStoryGeneration = () => {
     const { t } = useTranslation('common');
     const [generateLoading, setGenerateLoading] = useState(false);
     const [responseText, setResponseText] = useState(null);
+    const [storyData, setStoryData] = useState(null);
 
     const generateStory = async (selectedImages, language = 'en') => {
         if (selectedImages.length === 0) {
@@ -14,6 +15,7 @@ export const useStoryGeneration = () => {
 
         setGenerateLoading(true);
         setResponseText(null);
+        setStoryData(null);
 
         const selectedImageIds = [];
 
@@ -25,12 +27,10 @@ export const useStoryGeneration = () => {
             }
         });
 
-        // Normalize language: ensure it's 'en' or 'pt'
         const normalizedLanguage = language && typeof language === 'string' 
             ? language.split('-')[0].toLowerCase() 
             : 'en';
         
-        // Validate language
         const validLanguage = (normalizedLanguage === 'en' || normalizedLanguage === 'pt') 
             ? normalizedLanguage 
             : 'en';
@@ -53,12 +53,14 @@ export const useStoryGeneration = () => {
 
             const data = await response.json();
             setResponseText(data.text);
+            setStoryData(data);
             return data;
         } catch (error) {
             console.error("There was a problem with the fetch operation:", error);
             const errorMessage = error.message || 'Failed to generate story. Please try again.';
             alert(errorMessage);
             setResponseText(null);
+            setStoryData(null);
             throw error;
         } finally {
             setGenerateLoading(false);
@@ -81,6 +83,7 @@ export const useStoryGeneration = () => {
     return {
         generateLoading,
         responseText,
+        storyData,
         setResponseText,
         generateStory,
         copyToClipboard

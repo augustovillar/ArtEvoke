@@ -7,8 +7,7 @@ export const useSave = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [hasSaved, setHasSaved] = useState(false);
 
-    const saveStory = async (responseText, selectedImages, dataset, language, sessionId = null) => {
-        // Prevent multiple saves - set saving state immediately
+    const saveStory = async (responseText, selectedImages, dataset, language, storyData = null, sessionId = null) => {
         if (isSaving) return { success: false, message: 'Already saving...' };
         
         setIsSaving(true);
@@ -32,10 +31,26 @@ export const useSave = () => {
         }
 
         try {
-            // Build endpoint with optional sessionId query param
             let endpoint = `/api/art/save`;
             if (sessionId) {
                 endpoint += `?session_id=${sessionId}`;
+            }
+
+            const body = {
+                story_generated: responseText,
+                dataset: dataset,
+                language: language,
+                images_selected: selectedImages.map((img, index) => ({
+                    id: img.id,
+                    display_order: index + 1
+                })),
+            };
+
+            if (storyData && storyData.events && Array.isArray(storyData.events)) {
+                body.correct_option_0 = storyData.events[0] || null;
+                body.correct_option_1 = storyData.events[1] || null;
+                body.correct_option_2 = storyData.events[2] || null;
+                body.correct_option_3 = storyData.events[3] || null;
             }
 
             const response = await fetch(endpoint, {
@@ -44,15 +59,7 @@ export const useSave = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    story_generated: responseText,
-                    dataset: dataset,
-                    language: language,
-                    images_selected: selectedImages.map((img, index) => ({
-                        id: img.id,
-                        display_order: index + 1
-                    })),
-                }),
+                body: JSON.stringify(body),
             });
 
             if (!response.ok) {

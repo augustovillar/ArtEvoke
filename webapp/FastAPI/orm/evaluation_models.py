@@ -12,6 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
     Index,
+    SmallInteger,
 )
 from sqlalchemy.orm import relationship
 from .base import Base
@@ -41,6 +42,8 @@ class Evaluation(Base):
         Enum("art_exploration", "memory_reconstruction", name="evaluation_mode"),
         nullable=False,
     )
+    current_step = Column(SmallInteger, nullable=False, default=0)
+    number_steps = Column(SmallInteger, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -186,10 +189,6 @@ class ChronologicalOrderQuestion(Base):
         nullable=False,
     )
     elapsed_time = Column(Time, nullable=True)
-    correct_option_0 = Column(String(100), nullable=True)
-    correct_option_1 = Column(String(100), nullable=True)
-    correct_option_2 = Column(String(100), nullable=True)
-    correct_option_3 = Column(String(100), nullable=True)
     selected_option_0 = Column(String(100), nullable=True)
     selected_option_1 = Column(String(100), nullable=True)
     selected_option_2 = Column(String(100), nullable=True)

@@ -43,6 +43,100 @@ def get_embedding(text):
     return embedding.astype("float32")
 
 
+def format_catalog_item_info(catalog_item: CatalogItem, include_full_metadata: bool = True):
+    """
+    Format CatalogItem into a standardized dictionary with image URL and metadata.
+    
+    Args:
+        catalog_item: The CatalogItem ORM object to format
+        include_full_metadata: If True, includes all available metadata. If False, only basic info.
+    
+    Returns:
+        Dictionary with formatted image information, or None if catalog_item is invalid
+    """
+    if not catalog_item:
+        return None
+    
+    artwork_data = None
+    image_url = None
+    art_name = None
+    
+    # Get source-specific data
+    if catalog_item.source == Dataset.semart and catalog_item.semart:
+        artwork_data = catalog_item.semart
+        image_url = f"/art-images/semart/{artwork_data.image_file}"
+        art_name = artwork_data.title or "Untitled"
+    elif catalog_item.source == Dataset.wikiart and catalog_item.wikiart:
+        artwork_data = catalog_item.wikiart
+        image_url = f"/art-images/wikiart/{artwork_data.image_file}"
+        art_name = artwork_data.artist_name or "Unknown Artist"
+    elif catalog_item.source == Dataset.ipiranga and catalog_item.ipiranga:
+        artwork_data = catalog_item.ipiranga
+        image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{artwork_data.image_file}"
+        art_name = artwork_data.title or "Untitled"
+    
+    if not image_url or not art_name:
+        return None
+    
+    # Base information (always included)
+    artwork_info = {
+        "id": catalog_item.id,
+        "image_url": image_url,
+        "art_name": art_name,
+        "source": catalog_item.source.value,
+    }
+    
+    # Add full metadata if requested
+    if include_full_metadata and artwork_data:
+        artwork_info.update({
+            "title": None,
+            "artist": None,
+            "year": None,
+            "width": None,
+            "height": None,
+            "description": None,
+            "technique": None
+        })
+        
+        if catalog_item.source == Dataset.semart:
+            artwork_info.update({
+                "title": artwork_data.title,
+                "artist": artwork_data.artist_name,
+                "year": artwork_data.date,
+                "description": artwork_data.description,
+                "technique": artwork_data.technique,
+                "type": artwork_data.type,
+                "art_school": artwork_data.art_school
+            })
+        elif catalog_item.source == Dataset.wikiart:
+            artwork_info.update({
+                "artist": artwork_data.artist_name,
+                "width": artwork_data.width,
+                "height": artwork_data.height,
+                "description": artwork_data.description,
+                "type": artwork_data.type,
+                "year": artwork_data.description.split("-")[-1] if artwork_data.description else None,
+                "title": artwork_data.description.replace("-", " ") if artwork_data.description else None
+            })
+        elif catalog_item.source == Dataset.ipiranga:
+            artwork_info.update({
+                "title": artwork_data.title,
+                "artist": artwork_data.artist_name,
+                "year": artwork_data.date,
+                "width": artwork_data.width,
+                "height": artwork_data.height,
+                "description": artwork_data.description,
+                "technique": artwork_data.technique,
+                "inventory_code": artwork_data.inventory_code,
+                "location": artwork_data.location,
+                "period": artwork_data.period,
+                "color": artwork_data.color,
+                "history": artwork_data.history
+            })
+    
+    return artwork_info
+
+
 def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
     """
     Search for top k similar images using Qdrant vector database and return CatalogItem information
@@ -79,6 +173,7 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
             artwork_id = payload.get('id')
             if not artwork_id:
                 continue
+            
             # Query CatalogItem based on dataset and artwork ID
             catalog_item = None
             if dataset == Dataset.semart:
@@ -91,7 +186,6 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
                     CatalogItem.wikiart_id == artwork_id,
                     CatalogItem.source == Dataset.wikiart
                 ).first()
-                print(catalog_item)
             elif dataset == Dataset.ipiranga:
                 catalog_item = db.query(CatalogItem).filter(
                     CatalogItem.ipiranga_id == artwork_id,
@@ -101,79 +195,11 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
             if not catalog_item:
                 continue
             
-            # Get the specific artwork data based on source
-            artwork_data = None
-            image_url = None
-            art_name = None
-            
-            if catalog_item.source == Dataset.semart:
-                artwork_data = catalog_item.semart
-                image_url = f"/art-images/semart/{artwork_data.image_file}"
-                art_name = artwork_data.title or "Untitled"
-            elif catalog_item.source == Dataset.wikiart:
-                artwork_data = catalog_item.wikiart
-                image_url = f"/art-images/wikiart/{artwork_data.image_file}"
-                art_name = artwork_data.artist_name or "Unknown Artist"
-            elif catalog_item.source == Dataset.ipiranga:
-                artwork_data = catalog_item.ipiranga
-                image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{artwork_data.image_file}"
-                art_name = artwork_data.title or "Untitled"
-            
-            if image_url and art_name:
-                # Build comprehensive artwork info
-                artwork_info = {
-                    "image_url": image_url,
-                    "art_name": art_name,
-                    "id": catalog_item.id,
-                    "source": catalog_item.source.value,  # Convert enum to string
-                    "title": None,
-                    "artist": None,
-                    "year": None,
-                    "width": None,
-                    "height": None,
-                    "description": None,
-                    "technique": None
-                }
-                
-                # Add source-specific metadata
-                if artwork_data:
-                    if catalog_item.source == Dataset.semart:
-                        artwork_info.update({
-                            "title": artwork_data.title,
-                            "artist": artwork_data.artist_name,
-                            "year": artwork_data.date,
-                            "description": artwork_data.description,
-                            "technique": artwork_data.technique,
-                            "type": artwork_data.type,
-                            "art_school": artwork_data.art_school
-                        })
-                    elif catalog_item.source == Dataset.wikiart:
-                        artwork_info.update({
-                            "artist": artwork_data.artist_name,
-                            "width": artwork_data.width,
-                            "height": artwork_data.height,
-                            "description": artwork_data.description,
-                            "type": artwork_data.type,
-                            "year": artwork_data.description.split("-")[-1],
-                            "title": artwork_data.description.replace("-", " ")
-                        })
-                    elif catalog_item.source == Dataset.ipiranga:
-                        artwork_info.update({
-                            "title": artwork_data.title,
-                            "artist": artwork_data.artist_name,
-                            "year": artwork_data.date,
-                            "width": artwork_data.width,
-                            "height": artwork_data.height,
-                            "description": artwork_data.description,
-                            "technique": artwork_data.technique,
-                            "inventory_code": artwork_data.inventory_code,
-                            "location": artwork_data.location,
-                            "period": artwork_data.period,
-                            "color": artwork_data.color,
-                            "history": artwork_data.history
-                        })
-                
+            # Use the helper function to format the catalog item
+            artwork_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if artwork_info:
                 images.append(artwork_info)
+        
         return images
         
     finally:

@@ -10,130 +10,123 @@ from orm.evaluation_models import (
     Evaluation,
     SelectImageQuestion,
     ObjectiveQuestion,
+    StoryOpenQuestion,
+    ChronologicalOrderQuestion,
 )
 from orm.session_models import Session as SessionModel
 from orm.memory_reconstruction_models import Sections, MemoryReconstruction
+from orm.art_exploration_models import ArtExploration
 from orm.catalog_models import CatalogItem
 from api_types.evaluation import (
     SaveSelectImageQuestionDTO,
+    SaveSelectImageQuestionResponseDTO,
     SaveObjectiveQuestionDTO,
+    SaveObjectiveQuestionResponseDTO,
+    SaveStoryOpenQuestionRequestDTO,
+    SaveStoryOpenQuestionResponseDTO,
+    GetChronologyEventsResponseDTO,
+    SaveChronologicalOrderQuestionRequestDTO,
+    SaveChronologicalOrderQuestionResponseDTO,
+    GetSelectImageQuestionResponseDTO,
+    GetProgressResponseDTO,
+    CreateEvaluationResponseDTO,
+    ImageInfoDTO,
 )
-from utils.auth import get_current_user
-from datetime import datetime, timedelta
+from utils.auth import get_current_user, verify_evaluation_access, verify_session_access
+from utils.embeddings import format_catalog_item_info
+from datetime import datetime, time
 import uuid
 
 router = APIRouter()
 
 
-def milliseconds_to_time(milliseconds: float):
-    """Convert milliseconds to time object."""
-    seconds = milliseconds / 1000
-    hours = int(seconds // 3600)
-    minutes = int((seconds % 3600) // 60)
-    secs = int(seconds % 60)
-    microseconds = int((seconds % 1) * 1_000_000)
-    
-    # Create a timedelta and convert to time
-    td = timedelta(hours=hours, minutes=minutes, seconds=secs, microseconds=microseconds)
-    base_time = datetime.min
-    result_datetime = base_time + td
-    return result_datetime.time()
+def parse_time(time_str: str) -> time:
+    """Parse time string in format HH:MM:SS to time object."""
+    try:
+        hours, minutes, seconds = map(int, time_str.split(":"))
+        return time(hour=hours, minute=minutes, second=seconds)
+    except (ValueError, AttributeError):
+        return None
 
 
-@router.post("/memory-reconstruction/select-image-question")
-async def save_memory_reconstruction_select_image_question(
-    request: SaveSelectImageQuestionDTO,
+# ============================================================================
+# COMMON EVALUATION ROUTES (both modes)
+# ============================================================================
+
+@router.post("/create", response_model=CreateEvaluationResponseDTO, status_code=status.HTTP_201_CREATED)
+async def create_evaluation(
+    session_id: str,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Save a Memory Reconstruction select image question answer.
+    Create evaluation for a session (works for both art exploration and memory reconstruction).
+    Returns existing evaluation if already created.
     """
-    # Verify evaluation exists and belongs to user's session
-    evaluation = db.query(Evaluation).filter(Evaluation.id == request.eval_id).first()
-    if not evaluation:
+    session = verify_session_access(session_id, current_user, db)
+    
+    if session.art_exploration_id:
+        mode = "art_exploration"
+    elif session.memory_reconstruction_id:
+        mode = "memory_reconstruction"
+    else:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Evaluation not found"
+            status_code=400,
+            detail="Session must have either art_exploration or memory_reconstruction linked"
         )
     
-    # Verify session belongs to user
-    session = db.query(SessionModel).filter(
-        SessionModel.id == evaluation.session_id,
-        SessionModel.patient_id == current_user["id"]
+    existing_eval = db.query(Evaluation).filter(
+        Evaluation.session_id == session_id
     ).first()
     
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this evaluation"
-        )
+    if existing_eval:
+        return CreateEvaluationResponseDTO(id=existing_eval.id)
     
-    # Check if answer already exists for this section
-    existing = db.query(SelectImageQuestion).filter(
-        SelectImageQuestion.eval_id == request.eval_id,
-        SelectImageQuestion.section_id == request.section_id
-    ).first()
+    number_steps = 0
+    if mode == "art_exploration":
+        number_steps = 5
+    elif mode == "memory_reconstruction":
+        # Memory Reconstruction: N sections + 3 objective questions
+        memory_reconstruction = db.query(MemoryReconstruction).filter(
+            MemoryReconstruction.id == session.memory_reconstruction_id
+        ).first()
+        if memory_reconstruction:
+            sections_count = db.query(Sections).filter(
+                Sections.memory_reconstruction_id == memory_reconstruction.id
+            ).count()
+            number_steps = sections_count + 3
     
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Answer for this section already exists"
-        )
-    
-    # Create new answer
-    question = SelectImageQuestion(
+    evaluation = Evaluation(
         id=str(uuid.uuid4()),
-        eval_id=request.eval_id,
-        section_id=request.section_id,
-        image_selected_id=request.image_selected_id,
-        image_distractor_0_id=request.image_distractor_0_id,
-        image_distractor_1_id=request.image_distractor_1_id,
-        elapsed_time=milliseconds_to_time(request.elapsed_time),
+        session_id=session_id,
+        mode=mode,
+        number_steps=number_steps,
     )
     
-    db.add(question)
+    db.add(evaluation)
     db.commit()
-    db.refresh(question)
+    db.refresh(evaluation)
     
-    return {"message": "Answer saved successfully", "id": question.id}
+    return CreateEvaluationResponseDTO(id=evaluation.id)
 
 
-@router.post("/memory-reconstruction/objective-question")
-async def save_memory_reconstruction_objective_question(
+@router.post("/objective-question", response_model=SaveObjectiveQuestionResponseDTO, status_code=status.HTTP_201_CREATED)
+async def save_objective_question(
     request: SaveObjectiveQuestionDTO,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Save a Memory Reconstruction objective question answer.
+    Save an objective question answer (used by both art exploration and memory reconstruction).
     """
-    # Verify evaluation exists and belongs to user's session
-    evaluation = db.query(Evaluation).filter(Evaluation.id == request.eval_id).first()
-    if not evaluation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Evaluation not found"
-        )
-    
-    # Verify session belongs to user
-    session = db.query(SessionModel).filter(
-        SessionModel.id == evaluation.session_id,
-        SessionModel.patient_id == current_user["id"]
-    ).first()
-    
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this evaluation"
-        )
+    evaluation, session = verify_evaluation_access(request.eval_id, current_user, db)
     
     # Create new answer
     question = ObjectiveQuestion(
         id=str(uuid.uuid4()),
         eval_id=request.eval_id,
         type=request.question_type,
-        elapsed_time=milliseconds_to_time(request.elapsed_time),
+        elapsed_time=parse_time(request.elapsed_time) if request.elapsed_time else None,
         selected_option=request.selected_option,
         correct_option=request.correct_option,
     )
@@ -144,178 +137,26 @@ async def save_memory_reconstruction_objective_question(
         setattr(question, f"option_{i}", option)
     
     db.add(question)
+    
+    evaluation.current_step += 1
+    
     db.commit()
     db.refresh(question)
     
-    return {"message": "Answer saved successfully", "id": question.id}
+    return SaveObjectiveQuestionResponseDTO(id=question.id)
 
 
-@router.post("/memory-reconstruction/start/{session_id}")
-async def start_memory_reconstruction_evaluation(
+@router.get("/progress/{session_id}", response_model=GetProgressResponseDTO, status_code=status.HTTP_200_OK)
+async def get_evaluation_progress(
     session_id: str,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Start Memory Reconstruction evaluation for a session.
-    Creates the evaluation record when user enters evaluation phase.
+    Get the current progress of evaluation (works for both art exploration and memory reconstruction).
+    Returns current step, total steps, and completion status.
     """
-    # Verify session belongs to user
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.patient_id == current_user["id"]
-    ).first()
-    
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
-    
-    # Check if evaluation already exists
-    existing_evaluation = db.query(Evaluation).filter(
-        Evaluation.session_id == session_id
-    ).first()
-    
-    if existing_evaluation:
-        return {
-            "message": "Evaluation already exists",
-            "eval_id": existing_evaluation.id
-        }
-    
-    # Create new evaluation
-    evaluation = Evaluation(
-        id=str(uuid.uuid4()),
-        session_id=session_id,
-        mode=session.mode,
-    )
-    db.add(evaluation)
-    db.commit()
-    db.refresh(evaluation)
-    
-    return {
-        "message": "Evaluation started successfully",
-        "eval_id": evaluation.id
-    }
-
-
-@router.get("/memory-reconstruction/distractor-images/{section_id}")
-async def get_distractor_images(
-    section_id: str,
-    current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """
-    Get 2 random distractor images for a section.
-    Returns images from the same dataset but different from the ones shown in the section.
-    """
-    # Get the section to know which images were shown
-    section = db.query(Sections).filter(Sections.id == section_id).first()
-    if not section:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Section not found"
-        )
-    
-    # Get the Memory Reconstruction to know the dataset
-    memory_reconstruction = db.query(MemoryReconstruction).filter(
-        MemoryReconstruction.id == section.memory_reconstruction_id
-    ).first()
-    
-    if not memory_reconstruction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Memory Reconstruction not found"
-        )
-    
-    # Collect IDs of images shown in this section
-    shown_image_ids = []
-    for i in range(1, 7):  # image1 to image6
-        image_id = getattr(section, f'image{i}_id', None)
-        if image_id:
-            shown_image_ids.append(image_id)
-    
-    # Get 2 random images from the same dataset, excluding shown images
-    # Use joinedload to eagerly load the related dataset tables
-    distractor_images = db.query(CatalogItem).options(
-        joinedload(CatalogItem.wikiart),
-        joinedload(CatalogItem.semart),
-        joinedload(CatalogItem.ipiranga)
-    ).filter(
-        CatalogItem.source == memory_reconstruction.dataset,
-        CatalogItem.id.notin_(shown_image_ids)
-    ).order_by(func.rand()).limit(2).all()
-    
-    if len(distractor_images) < 2:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Not enough images available for distractors"
-        )
-    
-    # Build response with correct data based on source
-    distractors = []
-    for img in distractor_images:
-        # Get title, artist and image URL based on source
-        title = "Unknown"
-        artist = "Unknown"
-        image_url = None
-        
-        if img.source == "wikiart" and img.wikiart:
-            # WikiArt doesn't have title field, use image_file or id as fallback
-            title = img.wikiart.artist_name or img.id
-            artist = img.wikiart.artist_name or "Unknown"
-            image_url = f"/art-images/wikiart/{img.wikiart.image_file}" if img.wikiart.image_file else None
-        elif img.source == "semart" and img.semart:
-            title = img.semart.title or img.semart.image_file or "Unknown"
-            artist = img.semart.artist_name or "Unknown"
-            image_url = f"/art-images/semart/{img.semart.image_file}" if img.semart.image_file else None
-        elif img.source == "ipiranga" and img.ipiranga:
-            title = img.ipiranga.title or "Unknown"
-            artist = img.ipiranga.artist_name or "Unknown"
-            image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{img.ipiranga.image_file}" if img.ipiranga.image_file else None
-        
-        # Skip images without valid URL
-        if not image_url:
-            continue
-            
-        distractors.append({
-            "id": img.id,
-            "url": image_url,
-            "title": title,
-            "artist": artist,
-        })
-    
-    # Ensure we have at least 2 distractors
-    if len(distractors) < 2:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Not enough valid distractor images available"
-        )
-    
-    return {"distractors": distractors}
-
-
-@router.get("/memory-reconstruction/progress/{session_id}")
-async def get_memory_reconstruction_progress(
-    session_id: str,
-    current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """
-    Get the current progress of Memory Reconstruction evaluation.
-    Returns which questions have been answered and what's next.
-    """
-    # Verify session belongs to user
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.patient_id == current_user["id"]
-    ).first()
-    
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
+    session = verify_session_access(session_id, current_user, db)
     
     # Get evaluation
     evaluation = db.query(Evaluation).filter(
@@ -323,17 +164,174 @@ async def get_memory_reconstruction_progress(
     ).first()
     
     if not evaluation:
-        # No evaluation started yet
-        return {
-            "evaluation_started": False,
-            "current_step": 0,
-            "total_image_questions": 0,
-            "total_objective_questions": 3,  # Fixed number of objective questions
-            "answered_image_questions": [],
-            "answered_objective_questions": [],
-        }
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Evaluation not found"
+        )
     
-    # Get memory reconstruction to count sections
+    return GetProgressResponseDTO(
+        evaluation_started=True,
+        eval_id=evaluation.id,
+        current_step=evaluation.current_step,
+        number_steps=evaluation.number_steps,
+        is_completed=session.status == "completed",
+    )
+
+
+# ============================================================================
+# ART EXPLORATION SPECIFIC ROUTES
+# ============================================================================
+
+@router.post("/art-exploration/story-open-question", response_model=SaveStoryOpenQuestionResponseDTO, status_code=status.HTTP_201_CREATED)
+async def save_art_exploration_story_open_question(
+    request: SaveStoryOpenQuestionRequestDTO,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Save story open question answer for art exploration."""
+    evaluation, _ = verify_evaluation_access(request.eval_id, current_user, db)
+    
+    question = StoryOpenQuestion(
+        id=str(uuid.uuid4()),
+        eval_id=request.eval_id,
+        text=request.text,
+        elapsed_time=parse_time(request.elapsed_time) if request.elapsed_time else None,
+    )
+    
+    db.add(question)
+    
+    evaluation.current_step += 1
+    
+    db.commit()
+    db.refresh(question)
+    
+    return SaveStoryOpenQuestionResponseDTO(
+        question_id=question.id
+    )
+
+
+@router.get("/art-exploration/chronology-events/{eval_id}", response_model=GetChronologyEventsResponseDTO, status_code=status.HTTP_200_OK)
+async def get_art_exploration_chronology_events(
+    eval_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get chronology events for art exploration evaluation."""
+    _, session = verify_evaluation_access(eval_id, current_user, db)
+    
+    if not session.art_exploration_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Session does not have an art exploration associated"
+        )
+    
+    art_exploration = db.query(ArtExploration).filter(
+        ArtExploration.id == session.art_exploration_id
+    ).first()
+    
+    if not art_exploration:
+        raise HTTPException(status_code=404, detail="Art exploration not found")
+    
+    events = []
+    if art_exploration.correct_option_0:
+        events.append(art_exploration.correct_option_0)
+    if art_exploration.correct_option_1:
+        events.append(art_exploration.correct_option_1)
+    if art_exploration.correct_option_2:
+        events.append(art_exploration.correct_option_2)
+    if art_exploration.correct_option_3:
+        events.append(art_exploration.correct_option_3)
+    
+    if not events:
+        raise HTTPException(
+            status_code=404,
+            detail="No chronology events found for this art exploration"
+        )
+    
+    return GetChronologyEventsResponseDTO(events=events)
+
+
+@router.post("/art-exploration/chronological-order-question", response_model=SaveChronologicalOrderQuestionResponseDTO, status_code=status.HTTP_201_CREATED)
+async def save_art_exploration_chronological_order_question(
+    request: SaveChronologicalOrderQuestionRequestDTO,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Save chronological order question answer for art exploration."""
+    evaluation, _ = verify_evaluation_access(request.eval_id, current_user, db)
+    
+    question = ChronologicalOrderQuestion(
+        id=str(uuid.uuid4()),
+        eval_id=request.eval_id,
+        selected_option_0=request.selected_option_0,
+        selected_option_1=request.selected_option_1,
+        selected_option_2=request.selected_option_2,
+        selected_option_3=request.selected_option_3,
+        elapsed_time=parse_time(request.elapsed_time) if request.elapsed_time else None,
+    )
+    
+    db.add(question)
+    
+    evaluation.current_step += 1
+    
+    db.commit()
+    db.refresh(question)
+    
+    return SaveChronologicalOrderQuestionResponseDTO(
+        question_id=question.id
+    )
+
+
+# ============================================================================
+# MEMORY RECONSTRUCTION SPECIFIC ROUTES
+# ============================================================================
+
+
+@router.post("/memory-reconstruction/select-image-question", response_model=SaveSelectImageQuestionResponseDTO, status_code=status.HTTP_201_CREATED)
+async def save_memory_reconstruction_select_image_question(
+    request: SaveSelectImageQuestionDTO,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Save a Memory Reconstruction select image question answer.
+    """
+    evaluation, _ = verify_evaluation_access(request.eval_id, current_user, db)
+    
+    question = SelectImageQuestion(
+        id=str(uuid.uuid4()),
+        eval_id=request.eval_id,
+        section_id=request.section_id,
+        image_selected_id=request.image_selected_id,
+        image_distractor_0_id=request.image_distractor_0_id,
+        image_distractor_1_id=request.image_distractor_1_id,
+        elapsed_time=parse_time(request.elapsed_time) if request.elapsed_time else None,
+    )
+    
+    db.add(question)
+    
+    # Increment current_step
+    evaluation.current_step += 1
+    
+    db.commit()
+    db.refresh(question)
+    
+    return SaveSelectImageQuestionResponseDTO(id=question.id)
+
+
+@router.get("/memory-reconstruction/select-image-question/{session_id}/{section_id}", response_model=GetSelectImageQuestionResponseDTO, status_code=status.HTTP_200_OK)
+async def get_select_image_question(
+    session_id: str,
+    section_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get all 6 images from a specific section plus 2 random distractor images.
+    Returns images from the same dataset.
+    """
+    session = verify_session_access(session_id, current_user, db)
+    
     memory_reconstruction = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.id == session.memory_reconstruction_id
     ).first()
@@ -344,40 +342,62 @@ async def get_memory_reconstruction_progress(
             detail="Memory Reconstruction not found"
         )
     
-    # Count total sections (image questions)
-    total_sections = db.query(Sections).filter(
+    # Get the specific section
+    section = db.query(Sections).filter(
+        Sections.id == section_id,
         Sections.memory_reconstruction_id == memory_reconstruction.id
-    ).count()
+    ).first()
     
-    # Get answered image questions
-    answered_image_questions = db.query(SelectImageQuestion.section_id).filter(
-        SelectImageQuestion.eval_id == evaluation.id
+    if not section:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section not found"
+        )
+    
+    # Get the 6 images from this specific section
+    shown_image_ids = []
+    for i in range(1, 7):  # image1 to image6
+        image_id = getattr(section, f'image{i}_id', None)
+        if image_id:
+            shown_image_ids.append(image_id)
+    
+    shown_images = db.query(CatalogItem).options(
+        joinedload(CatalogItem.wikiart),
+        joinedload(CatalogItem.semart),
+        joinedload(CatalogItem.ipiranga)
+    ).filter(
+        CatalogItem.id.in_(shown_image_ids)
     ).all()
-    answered_image_section_ids = [q.section_id for q in answered_image_questions]
     
-    # Get answered objective questions
-    answered_objective_questions = db.query(ObjectiveQuestion.type).filter(
-        ObjectiveQuestion.eval_id == evaluation.id
-    ).all()
-    answered_objective_types = [q.type for q in answered_objective_questions]
+    distractor_images = db.query(CatalogItem).options(
+        joinedload(CatalogItem.wikiart),
+        joinedload(CatalogItem.semart),
+        joinedload(CatalogItem.ipiranga)
+    ).filter(
+        CatalogItem.source == memory_reconstruction.dataset,
+        CatalogItem.id.notin_(shown_image_ids)
+    ).order_by(func.rand()).limit(2).all()
     
-    # Calculate current step
-    # Step = number of answered image questions + number of answered objective questions
-    current_step = len(answered_image_section_ids) + len(answered_objective_types)
+    # Format images using the helper function
+    shown_images_formatted = []
+    for img in shown_images:
+        formatted = format_catalog_item_info(img, include_full_metadata=False)
+        if formatted:
+            shown_images_formatted.append(ImageInfoDTO(**formatted))
     
-    return {
-        "evaluation_started": True,
-        "eval_id": evaluation.id,
-        "current_step": current_step,
-        "total_image_questions": total_sections,
-        "total_objective_questions": 3,
-        "answered_image_questions": answered_image_section_ids,
-        "answered_objective_questions": answered_objective_types,
-        "is_completed": session.status == "completed",
-    }
+    distractors = []
+    for img in distractor_images:
+        formatted = format_catalog_item_info(img, include_full_metadata=False)
+        if formatted:
+            distractors.append(ImageInfoDTO(**formatted))
+    
+    return GetSelectImageQuestionResponseDTO(
+        shown_images=shown_images_formatted,
+        distractors=distractors
+    )
 
 
-@router.post("/memory-reconstruction/complete/{session_id}")
+@router.post("/memory-reconstruction/complete/{session_id}", status_code=status.HTTP_200_OK)
 async def complete_memory_reconstruction_evaluation(
     session_id: str,
     current_user: dict = Depends(get_current_user),
@@ -386,22 +406,11 @@ async def complete_memory_reconstruction_evaluation(
     """
     Mark Memory Reconstruction evaluation as complete and update session status.
     """
-    # Verify session belongs to user
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.patient_id == current_user["id"]
-    ).first()
+    session = verify_session_access(session_id, current_user, db)
     
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
-    
-    # Update session status to completed
+   
     session.status = "completed"
     session.ended_at = datetime.utcnow().date()
     
     db.commit()
-    
-    return {"message": "Evaluation completed successfully"}
+

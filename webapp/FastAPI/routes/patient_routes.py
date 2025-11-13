@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from orm import get_db, Patient
-from api_types.patient import CompletePatientRequest, PatientLoginResponse, PatientInDB
-from api_types.user import UserLogin, LoginResponse, MessageResponse
+from api_types.patient import CompletePatientRequest, PatientLoginResponse
+from api_types.user import UserLogin, MessageResponse
 from utils.auth import verify_password, get_password_hash, create_access_token
 
 router = APIRouter()
@@ -21,12 +21,11 @@ async def patient_login(user_login: UserLogin, db: Session = Depends(get_db)) ->
         "name": db_patient.name,
     }
 
-    return PatientLoginResponse(message="Login successful", token=access_token, user=patient_return)
+    return PatientLoginResponse(token=access_token, user=patient_return)
 
 
 @router.post("/complete")
 async def complete_patient(request: CompletePatientRequest, db: Session = Depends(get_db)) -> MessageResponse:
-    # Find patient by email and code
     patient = db.query(Patient).filter(
         Patient.email == request.email,
         Patient.code == request.code,
@@ -36,7 +35,6 @@ async def complete_patient(request: CompletePatientRequest, db: Session = Depend
     if not patient:
         raise HTTPException(status_code=404, detail="Invalid email or code")
 
-    # Update patient with provided data
     from datetime import datetime
     patient.password = get_password_hash(request.password)
     patient.date_of_birth = datetime.strptime(request.date_of_birth, '%Y-%m-%d').date()
@@ -51,5 +49,3 @@ async def complete_patient(request: CompletePatientRequest, db: Session = Depend
     patient.status = 'active'
 
     db.commit()
-
-    return MessageResponse(message="Patient profile completed successfully")

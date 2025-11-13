@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status, Request
 import os
 import hashlib
+from orm import Evaluation, Session
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = str(os.getenv("JWT_SECRET"))
@@ -87,3 +88,63 @@ def verify_doctor_role(current_user: dict) -> str:
             detail="Access denied. Doctor role required."
         )
     return current_user["id"]
+
+
+def verify_evaluation_access(
+    eval_id: str,
+    current_user: dict,
+    db,  
+):
+    """
+    Helper to get evaluation and verify session ownership.
+    Returns tuple of (evaluation, session).
+    
+    Raises:
+        HTTPException 404: Evaluation not found
+        HTTPException 403: Not authorized to access this evaluation
+    """
+    evaluation = db.query(Evaluation).filter(Evaluation.id == eval_id).first()
+    if not evaluation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Evaluation not found"
+        )
+    
+    session = db.query(Session).filter(
+        Session.id == evaluation.session_id,
+        Session.patient_id == current_user["id"]
+    ).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this evaluation"
+        )
+    
+    return evaluation, session
+
+
+def verify_session_access(
+    session_id: str,
+    current_user: dict,
+    db, 
+):
+    """
+    Helper to get session and verify ownership.
+    Returns session.
+    
+    Raises:
+        HTTPException 404: Session not found
+    """
+    session = db.query(Session).filter(
+        Session.id == session_id,
+        Session.patient_id == current_user["id"]
+    ).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    return session

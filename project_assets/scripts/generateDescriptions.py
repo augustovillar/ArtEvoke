@@ -14,9 +14,19 @@ random.seed(42)
 MODEL_NAME = "Qwen/Qwen2.5-VL-7B-Instruct"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Set local cache directory to avoid permission issues
+LOCAL_CACHE_DIR = os.path.join(SCRIPT_DIR, ".cache", "huggingface")
+os.makedirs(LOCAL_CACHE_DIR, exist_ok=True)
+os.environ['HF_HOME'] = LOCAL_CACHE_DIR
+os.environ['TRANSFORMERS_CACHE'] = LOCAL_CACHE_DIR
+os.environ['HF_DATASETS_CACHE'] = LOCAL_CACHE_DIR
+
 DATA_PATH = os.path.join(SCRIPT_DIR, "..", "data")
 
 DESCRIPTION_PATH = os.path.join(SCRIPT_DIR, "outputs", "descriptions")
+
+# Ensure output directories exist
+os.makedirs(DESCRIPTION_PATH, exist_ok=True)
 
 SQL_OUTPUT_PATH = os.path.join(SCRIPT_DIR, "outputs", "sql_inserts")
 
@@ -246,6 +256,19 @@ def generate_update_sql(dataset, merged_csv):
     return True
 
 
+def extract_first_style(type_str):
+    """Extract the first style from a list-like string, e.g., "['Abstract Expressionism']" -> "Abstract Expressionism" """
+    if pd.isna(type_str) or not isinstance(type_str, str):
+        return ""
+    try:
+        # Remove brackets and quotes, split by comma, take first item
+        cleaned = type_str.strip("[]").replace("'", "").replace('"', "")
+        first_style = cleaned.split(",")[0].strip()
+        return first_style
+    except:
+        return type_str
+
+
 def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
     torch.cuda.set_device(gpu_id)
     desc_col = f"{desc_col_base}_gpu{gpu_id}"
@@ -259,11 +282,22 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
     else:
         df_saved = pd.DataFrame(data_items)
         df_saved[desc_col] = pd.NA
+        # For WikiArt, extract the first style from the type column and rename it
+        if dataset == "wikiart" and "type" in df_saved.columns:
+            df_saved["type"] = df_saved["type"].apply(extract_first_style)
+        print(f"[GPU {gpu_id}] Starting fresh with {len(df_saved)} items")
 
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        MODEL_NAME, dtype=torch.bfloat16, device_map={"": f"cuda:{gpu_id}"}
+        MODEL_NAME, 
+        dtype=torch.bfloat16, 
+        device_map={"": f"cuda:{gpu_id}"},
+        cache_dir=LOCAL_CACHE_DIR
     )
-    processor = AutoProcessor.from_pretrained(MODEL_NAME, use_fast=True)
+    processor = AutoProcessor.from_pretrained(
+        MODEL_NAME, 
+        use_fast=True,
+        cache_dir=LOCAL_CACHE_DIR
+    )
 
     for idx, row in tqdm(
         df_saved.iterrows(), total=len(df_saved), desc=f"GPU {gpu_id}", position=gpu_id
@@ -316,11 +350,11 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
 
             # Save intermediate results with relevant columns only
             if dataset == "ipiranga":
-                df_temp = df_saved[["id", "inventory_code", desc_col]]
+                df_temp = df_saved[["id", "inventory_code", "type", desc_col]]
             elif dataset == "semart":
-                df_temp = df_saved[["id", "image_file", desc_col]]
+                df_temp = df_saved[["id", "image_file", "type", desc_col]]
             elif dataset == "wikiart":
-                df_temp = df_saved[["id", "image_file", desc_col]]
+                df_temp = df_saved[["id", "image_file", "type", desc_col]]
             else:
                 df_temp = df_saved
             df_temp.to_csv(output_file, index=False)
@@ -328,11 +362,11 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
         except Exception as e:
             df_saved.at[idx, desc_col] = f"Error: {str(e)}"
             if dataset == "ipiranga":
-                df_temp = df_saved[["id", "inventory_code", desc_col]]
+                df_temp = df_saved[["id", "inventory_code", "type", desc_col]]
             elif dataset == "semart":
-                df_temp = df_saved[["id", "image_file", desc_col]]
+                df_temp = df_saved[["id", "image_file", "type", desc_col]]
             elif dataset == "wikiart":
-                df_temp = df_saved[["id", "image_file", desc_col]]
+                df_temp = df_saved[["id", "image_file", "type", desc_col]]
             else:
                 df_temp = df_saved
             df_temp.to_csv(output_file, index=False)
@@ -340,15 +374,18 @@ def process_partition(dataset, data_items, gpu_id, output_file, desc_col_base):
 
     # Save final results with relevant columns only
     if dataset == "ipiranga":
-        df_saved = df_saved[["id", "inventory_code", desc_col]]
+        df_saved = df_saved[["id", "inventory_code", "type", desc_col]]
     elif dataset == "semart":
-        df_saved = df_saved[["id", "image_file", desc_col]]
+        df_saved = df_saved[["id", "image_file", "type", desc_col]]
     elif dataset == "wikiart":
-        df_saved = df_saved[["id", "image_file", desc_col]]
+        df_saved = df_saved[["id", "image_file", "type", desc_col]]
     df_saved.to_csv(output_file, index=False)
 
 
 if __name__ == "__main__":
+    # Set multiprocessing start method to 'spawn' for CUDA compatibility
+    mp.set_start_method('spawn', force=True)
+    
     dataset = sys.argv[1]  # "semart", "wikiart", "museum", or "ipiranga"
     valid_datasets = {"semart", "wikiart", "ipiranga"}
     if dataset not in valid_datasets:
