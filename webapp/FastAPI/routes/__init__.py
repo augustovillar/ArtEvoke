@@ -7,4 +7,4 @@ from . import session_routes
 from . import memory_reconstruction
 from . import vr_routes
 from . import art_exploration
-from . import evaluation
+from . import evaluation_routes

@@ -10,7 +10,6 @@ class PatientInDB(BaseModel):
 
 
 class PatientLoginResponse(BaseModel):
-    message: str
     token: str
     user: PatientInDB
 

@@ -297,6 +297,8 @@ CREATE TABLE IF NOT EXISTS Evaluation (
   id          CHAR(36)  NOT NULL,
   session_id  CHAR(36)  NOT NULL,
   mode        ENUM('art_exploration','memory_reconstruction') NOT NULL,
+  current_step SMALLINT NOT NULL DEFAULT 0,
+  number_steps SMALLINT NOT NULL,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_evaluation PRIMARY KEY (id),
   CONSTRAINT fk_eval_session
@@ -305,6 +307,8 @@ CREATE TABLE IF NOT EXISTS Evaluation (
   INDEX idx_eval_session (session_id),
   INDEX idx_eval_mode (mode)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_eval_current_step ON Evaluation(current_step);
 
 /*  ====================== */
 /*  SelectImageQuestion */

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import os
-from routes import art_routes, doctor_routes, patient_routes, session_routes, memory_reconstruction, vr_routes, art_exploration, evaluation, evaluation_routes
+from routes import art_routes, doctor_routes, patient_routes, session_routes, memory_reconstruction, vr_routes, art_exploration, evaluation_routes
 import database
 
 load_dotenv()
@@ -44,7 +44,6 @@ app.include_router(patient_routes.router, prefix="/api/patients", tags=["Patient
 app.include_router(session_routes.router, prefix="/api", tags=["Sessions"])
 app.include_router(memory_reconstruction.router, prefix="/api/memory", tags=["Memory Reconstruction"])
 app.include_router(art_exploration.router, prefix="/api/art", tags=["Art Exploration"])
-app.include_router(evaluation.router, prefix="/api/evaluation", tags=["Evaluation"])
 app.include_router(vr_routes.router, prefix="/api/vr", tags=["VR"])
 app.include_router(evaluation_routes.router, prefix="/api/evaluation", tags=["Evaluation"])
 

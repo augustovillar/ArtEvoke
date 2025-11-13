@@ -17,6 +17,7 @@ from orm import (
 )
 from api_types.common import Dataset
 from utils.auth import get_current_user, verify_doctor_role
+from utils.embeddings import format_catalog_item_info
 from api_types.session import SessionCreate, SessionUpdate, SessionResponse
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -26,7 +27,6 @@ DEFAULT_INTERRUPTION_TIME = 10
 
 @router.get("/config/default-interruption-time")
 async def get_default_interruption_time():
-    """Get the default interruption time for sessions"""
     return {"default_interruption_time": DEFAULT_INTERRUPTION_TIME}
 
 
@@ -110,7 +110,7 @@ async def get_patient_sessions(
     # Allow access if user is the patient themselves
     if current_user["role"] == "patient" and current_user["id"] == patient_id:
         pass  # Patient can view their own sessions
-    # If it's a doctor, verify they have access to this patient
+    
     elif current_user["role"] == "doctor":
         relationship = (
             db.query(PatientDoctor)
@@ -177,7 +177,6 @@ async def get_session(
             status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
         )
 
-    # Verify authorization
     if (
         current_user["id"] != session.patient_id
         and current_user["id"] != session.doctor_id
@@ -212,7 +211,6 @@ async def update_session(
             detail="Only the patient can update session status",
         )
 
-    # Update fields
     if session_update.status:
         session.status = session_update.status
 
@@ -241,7 +239,6 @@ async def delete_session(
     current_user: dict = Depends(get_current_user),
 ):
     """Delete a session (doctor only)"""
-    # Verify doctor
     doctor = db.query(Doctor).filter(Doctor.id == current_user["id"]).first()
     if not doctor:
         raise HTTPException(
@@ -256,7 +253,6 @@ async def delete_session(
             status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
         )
 
-    # Verify doctor owns this session
     if session.doctor_id != doctor.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -265,8 +261,6 @@ async def delete_session(
 
     db.delete(session)
     db.commit()
-
-    return None
 
 
 @router.post("/{session_id}/complete", response_model=SessionResponse)
@@ -283,14 +277,12 @@ async def complete_session(
             status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
         )
 
-    # Only patient can complete their sessions
     if current_user["id"] != session.patient_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only the patient can complete the session",
         )
 
-    # Update session status
     session.status = "completed"
     session.ended_at = datetime.utcnow().date()
 
@@ -453,23 +445,24 @@ async def get_session_evaluation(
             .first()
         )
         if ae:
+            # Get images with catalog item data using the helper function
+            images_data = []
+            for image in sorted(ae.images, key=lambda x: x.display_order):
+                # Use format_catalog_item_info to get standardized image data
+                catalog_info = format_catalog_item_info(image.catalog_item, include_full_metadata=True)
+                if catalog_info:
+                    # Add Images table specific fields
+                    catalog_info["images_id"] = image.id
+                    catalog_info["display_order"] = image.display_order
+                    images_data.append(catalog_info)
+            
             evaluation_data["art_exploration"] = {
                 "id": ae.id,
                 "story_generated": ae.story_generated,
-                "dataset": ae.dataset,
-                "language": ae.language,
-                "created_at": ae.created_at,
-                "images": [
-                    {
-                        "id": image.id,
-                        "image_number": image.image_number,
-                        "catalog_item_id": image.catalog_item_id,
-                        "title": image.title,
-                        "author": image.author,
-                        "year": image.year,
-                    }
-                    for image in ae.images
-                ],
+                "dataset": ae.dataset.value if ae.dataset else None,
+                "language": ae.language.value if ae.language else None,
+                "created_at": ae.created_at.isoformat() if ae.created_at else None,
+                "images": images_data,
             }
 
     # Return empty dict if no evaluation data exists yet (session not started)

@@ -146,26 +146,20 @@ const MemoryEvaluation = () => {
 
         // Fase 1: Perguntas de reconhecimento de imagem
         if (currentStep < numImageQuestions) {
-            // Find first unanswered section
-            const unansweredSection = sessionData.phase1.sections.find(
-                section => !progress.answered_image_questions.includes(section.sectionId)
-            );
+            const section = sessionData.phase1.sections[currentStep];
 
-            if (!unansweredSection) {
+            if (!section) {
                 // All image questions answered, move to objective questions
                 setCurrentStep(numImageQuestions);
                 return null;
             }
 
-            const sectionIndex = sessionData.phase1.sections.findIndex(
-                section => section.sectionId === unansweredSection.sectionId
-            );
-
             return (
                 <ImageRecognitionQuestion
-                    section={unansweredSection}
-                    sectionNumber={sectionIndex + 1}
+                    section={section}
+                    sectionNumber={currentStep + 1}
                     totalSections={numImageQuestions}
+                    sessionId={sessionData.sessionId}
                     onAnswer={handleImageRecognitionAnswer}
                 />
             );
@@ -174,25 +168,18 @@ const MemoryEvaluation = () => {
         // Fase 2: Perguntas objetivas
         const questionIndex = currentStep - numImageQuestions;
         if (questionIndex < objectiveQuestions.length) {
-            // Find first unanswered objective question
-            const unansweredQuestion = objectiveQuestions.find(
-                q => !progress.answered_objective_questions.includes(q.type)
-            );
+            const question = objectiveQuestions[questionIndex];
 
-            if (!unansweredQuestion) {
+            if (!question) {
                 // All questions answered, move to completion
                 setCurrentStep(totalSteps);
                 return null;
             }
 
-            const questionNumber = objectiveQuestions.findIndex(
-                q => q.type === unansweredQuestion.type
-            ) + 1;
-
             return (
                 <ObjectiveQuestions
-                    question={unansweredQuestion}
-                    questionNumber={questionNumber}
+                    question={question}
+                    questionNumber={questionIndex + 1}
                     totalQuestions={objectiveQuestions.length}
                     onAnswer={handleObjectiveAnswer}
                 />

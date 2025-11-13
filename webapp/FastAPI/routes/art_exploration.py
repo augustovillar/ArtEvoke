@@ -91,7 +91,7 @@ async def create_art_exploration(
     db.commit()
     db.refresh(art_exploration)
 
-    return {"message": "Art exploration saved successfully", "id": art_exploration.id}
+    return {"id": art_exploration.id}
 
 
 @router.get("/retrieve", response_model=RetrieveArtExplorationResponseDTO)
@@ -173,7 +173,7 @@ async def delete_art_exploration(
     db.delete(art_exploration)
     db.commit()
 
-    return {"message": "Art exploration deleted successfully"}
+    return {"id": art_exploration.id}
 
 
 @router.post("/generate-story")

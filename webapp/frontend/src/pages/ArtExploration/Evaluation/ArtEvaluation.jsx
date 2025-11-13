@@ -5,6 +5,7 @@ import { StoryWritingQuestion, ChronologyOrderQuestion } from './components';
 import { useEvaluationSubmit } from './hooks';
 import ObjectiveQuestions from '../../MemoryReconstruction/Evaluation/components/ObjectiveQuestions';
 import ProgressBar from '../../MemoryReconstruction/Evaluation/components/ProgressBar';
+import { millisecondsToTimeString } from '../../../utils/timeFormatter';
 import styles from './ArtEvaluation.module.css';
 
 const ArtEvaluation = () => {
@@ -12,7 +13,7 @@ const ArtEvaluation = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { sessionData } = location.state || {};
-  const { createEvaluation, submitStoryOpenQuestion, fetchChronologyEvents, submitChronologicalOrderQuestion, isLoading } = useEvaluationSubmit();
+  const { createEvaluation, submitStoryOpenQuestion, fetchChronologyEvents, submitChronologicalOrderQuestion, submitObjectiveQuestion, fetchProgress, isLoading } = useEvaluationSubmit();
   const hasInitialized = useRef(false);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -24,25 +25,32 @@ const ArtEvaluation = () => {
     objectiveQuestions: []
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [progress, setProgress] = useState(null);
 
   const objectiveQuestions = [
     {
-      id: 'q1',
+      id: 'environment',
+      type: 'environment',
       text: 'Como era o ambiente da história?', 
-      type: 'multiple-choice',
-      options: ['Aberto', 'Fechado', 'Urbano', 'Rural' ]
+      questionType: 'multiple-choice',
+      options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
+      correctOption: 'Aberto'
     },
     {
-      id: 'q2', 
+      id: 'period',
+      type: 'period', 
       text: 'Que parte do dia era?', 
-      type: 'multiple-choice', 
-      options: ['Manhã', 'Tarde', 'Noite']
+      questionType: 'multiple-choice', 
+      options: ['Manhã', 'Tarde', 'Noite'],
+      correctOption: 'Tarde'
     },
     {
-    id: 'q3', 
-    text: 'Qual emoção foi predominante na história?', 
-    type: 'multiple-choice',
-    options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo']
+      id: 'emotion',
+      type: 'emotion', 
+      text: 'Qual emoção foi predominante na história?', 
+      questionType: 'multiple-choice',
+      options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],
+      correctOption: 'Felicidade'
     }
   ];
 
@@ -51,31 +59,46 @@ const ArtEvaluation = () => {
   useEffect(() => {
     const initializeEvaluation = async () => {
       if (hasInitialized.current) return;
+      if (!sessionData?.sessionId) return;
       hasInitialized.current = true;
-
+      
       try {
-        const sessionId = sessionData.sessionId;
-        const evaluationId = await createEvaluation(sessionId);
-        setEvalId(evaluationId);
+        // Fetch progress (evaluation should already exist)
+        const progressData = await fetchProgress(sessionData.sessionId);
+        
+        if (progressData && progressData.evaluation_started) {
+          setEvalId(progressData.eval_id);
+          setProgress(progressData);
+          
+          // If evaluation is completed, go to completion screen
+          if (progressData.is_completed) {
+            setCurrentStep(totalSteps);
+          } else {
+            // Set to current progress step
+            setCurrentStep(progressData.current_step);
+            
+            // If we're at or past the chronology step, fetch events
+            if (progressData.current_step >= 1) {
+              const events = await fetchChronologyEvents(progressData.eval_id);
+              setChronologyEvents(events);
+            }
+          }
+        } else {
+          throw new Error('Evaluation not found - should have been created');
+        }
       } catch (err) {
-        console.error('Error creating evaluation:', err);
+        console.error('Error initializing evaluation:', err);
         alert(t('evaluation.errorInitializing'));
         navigate('/sessions');
       }
     };
-
-    if (!sessionData) {
-      console.error('No sessionData found in location.state');
-      alert(t('evaluation.sessionDataNotFound'));
-      navigate('/sessions');
-    } else {
-      initializeEvaluation();
-    }
-  }, [sessionData, navigate, createEvaluation, t]);
+    
+    initializeEvaluation();
+  }, [sessionData, totalSteps, fetchProgress, fetchChronologyEvents, t, navigate]);
 
   const handleStoryWritingAnswer = async (questionId, story, timeSpent) => {
     try {
-      const elapsedTimeFormatted = formatElapsedTime(timeSpent);
+      const elapsedTimeFormatted = millisecondsToTimeString(timeSpent);
       const savedQuestionId = await submitStoryOpenQuestion(evalId, story, elapsedTimeFormatted);
       
       const storyAnswer = { questionId: savedQuestionId, story, timeSpent };
@@ -91,17 +114,9 @@ const ArtEvaluation = () => {
     }
   };
 
-  const formatElapsedTime = (milliseconds) => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  };
-
   const handleChronologyOrderAnswer = async (questionId, answer, timeSpent) => {
     try {
-      const elapsedTimeFormatted = formatElapsedTime(timeSpent);
+      const elapsedTimeFormatted = millisecondsToTimeString(timeSpent);
       const savedQuestionId = await submitChronologicalOrderQuestion(
         evalId, 
         answer.userOrder, 
@@ -117,10 +132,25 @@ const ArtEvaluation = () => {
     }
   };
 
-  const handleObjectiveAnswer = (questionId, answer, timeSpent) => {
-    const newAnswer = { questionId, answer, timeSpent };
-    setEvaluationData(prev => ({ ...prev, objectiveQuestions: [...prev.objectiveQuestions, newAnswer] }));
-    setCurrentStep(prev => prev + 1);
+  const handleObjectiveAnswer = async (questionType, options, selectedOption, correctOption, timeSpent) => {
+    try {
+      const elapsedTimeFormatted = millisecondsToTimeString(timeSpent);
+      const savedQuestionId = await submitObjectiveQuestion(
+        evalId,
+        questionType,
+        options,
+        selectedOption,
+        correctOption,
+        elapsedTimeFormatted
+      );
+      
+      const newAnswer = { questionId: savedQuestionId, questionType, selectedOption, timeSpent };
+      setEvaluationData(prev => ({ ...prev, objectiveQuestions: [...prev.objectiveQuestions, newAnswer] }));
+      setCurrentStep(prev => prev + 1);
+    } catch (err) {
+      console.error('Error submitting objective question:', err);
+      alert(t('evaluation.errorSavingQuestion'));
+    }
   };
 
   const handleSaveSession = async () => {

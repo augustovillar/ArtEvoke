@@ -38,7 +38,7 @@ export const useEvaluationSubmit = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/evaluation/story-open-question', {
+      const response = await fetch('/api/evaluation/art-exploration/story-open-question', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -71,7 +71,7 @@ export const useEvaluationSubmit = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/evaluation/chronology-events/${evalId}`, {
+      const response = await fetch(`/api/evaluation/art-exploration/chronology-events/${evalId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -99,7 +99,7 @@ export const useEvaluationSubmit = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/evaluation/chronological-order-question', {
+      const response = await fetch('/api/evaluation/art-exploration/chronological-order-question', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -129,11 +129,77 @@ export const useEvaluationSubmit = () => {
     }
   };
 
+  const submitObjectiveQuestion = async (evalId, questionType, options, selectedOption, correctOption, elapsedTime) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/evaluation/objective-question', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eval_id: evalId,
+          question_type: questionType,
+          options: options,
+          selected_option: selectedOption,
+          correct_option: correctOption,
+          elapsed_time: elapsedTime,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit objective question');
+      }
+
+      const data = await response.json();
+      return data.id;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchProgress = async (sessionId) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/evaluation/progress/${sessionId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch progress');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     createEvaluation,
     submitStoryOpenQuestion,
     fetchChronologyEvents,
     submitChronologicalOrderQuestion,
+    submitObjectiveQuestion,
+    fetchProgress,
     isLoading,
     error,
   };

@@ -4,7 +4,9 @@ from orm import get_db, MemoryReconstruction, Sections
 from orm.session_models import Session as SessionModel
 from api_types.memory_reconstruction import (
     SaveMemoryReconstructionRequestDTO,
+    SaveMemoryReconstructionResponseDTO,
     RetrieveMemoryReconstructionsResponseDTO,
+    DeleteMemoryReconstructionResponseDTO,
     MemoryReconstructionResponse,
     SectionResponse,
 )
@@ -17,7 +19,7 @@ import uuid
 router = APIRouter()
 
 
-@router.post("/save")
+@router.post("/save", response_model=SaveMemoryReconstructionResponseDTO)
 async def save_memory_reconstruction(
     request: SaveMemoryReconstructionRequestDTO,
     current_user: dict = Depends(get_current_user),
@@ -73,11 +75,11 @@ async def save_memory_reconstruction(
     db.refresh(memory_reconstruction)
 
 
-    return {
-        "message": "Memory reconstruction saved successfully", 
-        "id": memory_reconstruction.id,
-        "section_ids": section_ids
-    }
+    return SaveMemoryReconstructionResponseDTO(
+        message="Memory reconstruction saved successfully",
+        id=memory_reconstruction.id,
+        section_ids=section_ids
+    )
 
 
 @router.get("/retrieve", response_model=RetrieveMemoryReconstructionsResponseDTO)
@@ -87,10 +89,6 @@ async def get_memory_reconstructions(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Get memory reconstructions NOT referenced by any session (free mode only)
-    from orm.session_models import Session as SessionModel
-    
-    # Subquery to get all memory_reconstruction_ids that are referenced in sessions
     session_mr_ids = db.query(SessionModel.memory_reconstruction_id).filter(
         SessionModel.memory_reconstruction_id.isnot(None)
     ).subquery()
@@ -107,7 +105,6 @@ async def get_memory_reconstructions(
 
     memory_reconstructions = []
     for mr in memory_reconstructions_query:
-        # Get sections for this memory reconstruction
         sections_query = db.query(Sections).filter(
             Sections.memory_reconstruction_id == mr.id
         ).order_by(Sections.display_order).all()
@@ -146,13 +143,12 @@ async def get_memory_reconstructions(
     )
 
 
-@router.delete("/delete/{memory_reconstruction_id}")
+@router.delete("/delete/{memory_reconstruction_id}", response_model=DeleteMemoryReconstructionResponseDTO)
 async def delete_memory_reconstruction(
     memory_reconstruction_id: str,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Find the memory reconstruction
     memory_reconstruction = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.id == memory_reconstruction_id,
         MemoryReconstruction.patient_id == current_user["id"]
@@ -161,13 +157,14 @@ async def delete_memory_reconstruction(
     if not memory_reconstruction:
         raise HTTPException(status_code=404, detail="Memory reconstruction not found")
 
-    # Delete associated sections first
     db.query(Sections).filter(
         Sections.memory_reconstruction_id == memory_reconstruction_id
     ).delete()
 
-    # Delete the memory reconstruction
     db.delete(memory_reconstruction)
     db.commit()
-
-    return {"message": "Memory reconstruction deleted successfully"}
+    
+    return DeleteMemoryReconstructionResponseDTO(
+        message="Memory reconstruction deleted successfully",
+        id=memory_reconstruction_id
+    )

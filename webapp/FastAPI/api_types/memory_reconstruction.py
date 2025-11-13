@@ -44,3 +44,14 @@ class RetrieveMemoryReconstructionsResponseDTO(BaseModel):
     total_count: int
     has_more: bool
 
+
+class SaveMemoryReconstructionResponseDTO(BaseModel):
+    message: str
+    id: str
+    section_ids: List[str]
+
+
+class DeleteMemoryReconstructionResponseDTO(BaseModel):
+    message: str
+    id: str
+
