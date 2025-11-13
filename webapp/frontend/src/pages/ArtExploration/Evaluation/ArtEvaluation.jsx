@@ -13,7 +13,7 @@ const ArtEvaluation = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { sessionData } = location.state || {};
-  const { createEvaluation, submitStoryOpenQuestion, fetchChronologyEvents, submitChronologicalOrderQuestion, submitObjectiveQuestion, fetchProgress, isLoading } = useEvaluationSubmit();
+  const { submitStoryOpenQuestion, fetchChronologyEvents, submitChronologicalOrderQuestion, submitObjectiveQuestion, fetchProgress, isLoading } = useEvaluationSubmit();
   const hasInitialized = useRef(false);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -25,7 +25,6 @@ const ArtEvaluation = () => {
     objectiveQuestions: []
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [progress, setProgress] = useState(null);
 
   const objectiveQuestions = [
     {
@@ -68,7 +67,6 @@ const ArtEvaluation = () => {
         
         if (progressData && progressData.evaluation_started) {
           setEvalId(progressData.eval_id);
-          setProgress(progressData);
           
           // If evaluation is completed, go to completion screen
           if (progressData.is_completed) {
