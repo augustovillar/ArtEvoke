@@ -306,9 +306,9 @@ CREATE TABLE IF NOT EXISTS Evaluation (
       ON DELETE CASCADE ON UPDATE CASCADE,
   INDEX idx_eval_session (session_id),
   INDEX idx_eval_mode (mode)
+  INDEX idx_current_step (current_step)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE INDEX idx_eval_current_step ON Evaluation(current_step);
 
 /*  ====================== */
 /*  SelectImageQuestion */
@@ -365,10 +365,10 @@ CREATE TABLE IF NOT EXISTS ChronologicalOrderQuestion (
   id                CHAR(36)     NOT NULL,
   eval_id           CHAR(36)     NOT NULL,
   elapsed_time      TIME         NULL,
-  selected_option_0 CHAR(100)    NULL,
-  selected_option_1 CHAR(100)    NULL,
-  selected_option_2 CHAR(100)    NULL,
-  selected_option_3 CHAR(100)    NULL,
+  selected_option_0 VARCHAR(100)    NULL,
+  selected_option_1 VARCHAR(100)    NULL,
+  selected_option_2 VARCHAR(100)    NULL,
+  selected_option_3 VARCHAR(100)    NULL,
   created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT pk_chronological_order_question PRIMARY KEY (id),
   CONSTRAINT fk_coq_eval

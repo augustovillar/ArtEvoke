@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status, Request
 import os
 import hashlib
+from uuid import UUID
 from orm import Evaluation, Session
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -90,6 +91,26 @@ def verify_doctor_role(current_user: dict) -> str:
     return current_user["id"]
 
 
+def validate_uuid(uuid_string: str, param_name: str = "ID") -> None:
+    """
+    Validates that a string is a valid UUID.
+    
+    Args:
+        uuid_string: The string to validate
+        param_name: Name of the parameter for error message
+        
+    Raises:
+        HTTPException 400: If the string is not a valid UUID
+    """
+    try:
+        UUID(uuid_string)
+    except (ValueError, AttributeError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid {param_name} format. Must be a valid UUID."
+        )
+
+
 def verify_evaluation_access(
     eval_id: str,
     current_user: dict,
@@ -100,9 +121,13 @@ def verify_evaluation_access(
     Returns tuple of (evaluation, session).
     
     Raises:
+        HTTPException 400: Invalid UUID format
         HTTPException 404: Evaluation not found
         HTTPException 403: Not authorized to access this evaluation
     """
+    # Validate UUID format
+    validate_uuid(eval_id, "evaluation ID")
+    
     evaluation = db.query(Evaluation).filter(Evaluation.id == eval_id).first()
     if not evaluation:
         raise HTTPException(
@@ -134,8 +159,12 @@ def verify_session_access(
     Returns session.
     
     Raises:
+        HTTPException 400: Invalid UUID format
         HTTPException 404: Session not found
     """
+    # Validate UUID format
+    validate_uuid(session_id, "session ID")
+    
     session = db.query(Session).filter(
         Session.id == session_id,
         Session.patient_id == current_user["id"]

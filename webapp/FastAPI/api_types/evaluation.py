@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import List
 
 class ImageInfoDTO(BaseModel):
     id: str
