@@ -142,13 +142,54 @@ class MemoryReconstructionResultsDTO(BaseModel):
     overall_accuracy: float  # Percentage
 
 
+class StoryQuestionResult(BaseModel):
+    """Results for the open-ended story question"""
+    user_answer: str
+    time_spent: Optional[str] = None  # Format: "HH:MM:SS"
+
+
+class ChronologicalOrderResult(BaseModel):
+    """Results for the chronological order question"""
+    # All 4 images from the art exploration session (may be fewer if not all were saved)
+    images: List[ImageInfo]
+    
+    # User's event ordering (list of event strings in user's order)
+    user_events: List[str]
+    
+    # Correct event ordering (list of event strings in correct order)
+    correct_events: List[str]
+    
+    # Comparison: list of bools indicating if each position is correct
+    is_correct_per_position: List[bool]
+    
+    # Overall correctness (all positions match)
+    is_fully_correct: bool
+    
+    # Number of correct positions
+    correct_positions_count: int
+    
+    time_spent: Optional[str] = None  # Format: "HH:MM:SS"
+
+
 class ArtExplorationResultsDTO(BaseModel):
     """Complete results for Art Exploration evaluation"""
-    # TODO: Implement when Art Exploration results are needed
     story: str
     dataset: str
     language: str
-    message: str = "Art Exploration results not yet implemented"
+    
+    # Questions results
+    story_question: Optional[StoryQuestionResult] = None
+    chronological_order_question: Optional[ChronologicalOrderResult] = None
+    objective_questions: List[ObjectiveQuestionResult]
+    
+    # Statistics
+    total_objective_questions: int
+    correct_objective_answers: int
+    objective_accuracy: float  # Percentage
+    chronological_positions_correct: int
+    chronological_total_positions: int
+    chronological_accuracy: float  # Percentage
+    overall_accuracy: float  # Percentage
 
 
 class SessionResultsResponse(BaseModel):

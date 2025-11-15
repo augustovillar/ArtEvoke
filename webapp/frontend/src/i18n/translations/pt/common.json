@@ -546,8 +546,9 @@
   "results": {
     "title": "Resultados da Sessão",
     "mode": "Modo",
+    "dataset": "Dataset",
+    "language": "Idioma",
     "completedAt": "Concluída em",
-    "summary": "Resumo",
     "imageQuestions": "Perguntas de Imagem",
     "objectiveQuestions": "Perguntas Objetivas",
     "overallAccuracy": "Precisão Geral",
@@ -560,10 +561,30 @@
     "distractor": "Distrator",
     "correctlyAnswered": "Você respondeu corretamente!",
     "incorrectlyAnswered": "Resposta incorreta",
+    "patientAnswer": "Resposta do Paciente",
+    "selected": "Selecionado",
+    "allCorrect": "Tudo Correto",
+    "correctPositions": "posições corretas",
     "questionTypes": {
       "environment": "Ambiente",
       "period": "Período do Dia",
       "emotion": "Emoção"
+    },
+    "summary": {
+      "imageQuestions": "Perguntas de Imagem",
+      "objectiveQuestions": "Perguntas Objetivas",
+      "chronologicalOrder": "Ordem Cronológica",
+      "overallAccuracy": "Precisão Geral",
+      "correct": "Correto",
+      "correctPositions": "Posições Corretas"
+    },
+    "artExploration": {
+      "storyQuestion": "Pergunta sobre a História",
+      "chronologicalOrder": "Ordem Cronológica das Imagens",
+      "patientOrder": "Ordem do Paciente",
+      "correctOrder": "Ordem Correta",
+      "notImplemented": "Resultados de Exploração de Arte",
+      "comingSoon": "A visualização de resultados para Exploração de Arte será implementada em breve."
     },
     "errors": {
       "title": "Erro ao Carregar Resultados",
@@ -572,10 +593,6 @@
       "notFound": "Sessão não encontrada",
       "loadFailed": "Falha ao carregar resultados",
       "noData": "Nenhum dado de resultado disponível"
-    },
-    "artExploration": {
-      "notImplemented": "Resultados de Exploração de Arte",
-      "comingSoon": "A visualização de resultados para Exploração de Arte será implementada em breve."
     }
   },
   "consent": {

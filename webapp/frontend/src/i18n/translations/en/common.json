@@ -545,8 +545,9 @@
   "results": {
     "title": "Session Results",
     "mode": "Mode",
+    "dataset": "Dataset",
+    "language": "Language",
     "completedAt": "Completed at",
-    "summary": "Summary",
     "imageQuestions": "Image Questions",
     "objectiveQuestions": "Objective Questions",
     "overallAccuracy": "Overall Accuracy",
@@ -559,10 +560,30 @@
     "distractor": "Distractor",
     "correctlyAnswered": "You answered correctly!",
     "incorrectlyAnswered": "Incorrect answer",
+    "patientAnswer": "Patient's Answer",
+    "selected": "Selected",
+    "allCorrect": "All Correct",
+    "correctPositions": "correct positions",
     "questionTypes": {
       "environment": "Environment",
       "period": "Time of Day",
       "emotion": "Emotion"
+    },
+    "summary": {
+      "imageQuestions": "Image Questions",
+      "objectiveQuestions": "Objective Questions",
+      "chronologicalOrder": "Chronological Order",
+      "overallAccuracy": "Overall Accuracy",
+      "correct": "Correct",
+      "correctPositions": "Correct Positions"
+    },
+    "artExploration": {
+      "storyQuestion": "Story Question",
+      "chronologicalOrder": "Chronological Order of Images",
+      "patientOrder": "Patient's Order",
+      "correctOrder": "Correct Order",
+      "notImplemented": "Art Exploration Results",
+      "comingSoon": "Results visualization for Art Exploration will be implemented soon."
     },
     "errors": {
       "title": "Error Loading Results",
@@ -571,10 +592,6 @@
       "notFound": "Session not found",
       "loadFailed": "Failed to load results",
       "noData": "No result data available"
-    },
-    "artExploration": {
-      "notImplemented": "Art Exploration Results",
-      "comingSoon": "Results visualization for Art Exploration will be implemented soon."
     }
   },
   "consent": {

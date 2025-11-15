@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 import uuid
 from datetime import datetime
 
@@ -25,10 +25,12 @@ from api_types.session import SessionCreate, SessionUpdate, SessionResponse
 from api_types.evaluation import (
     SessionResultsResponse,
     MemoryReconstructionResultsDTO,
+    ArtExplorationResultsDTO,
     ImageQuestionResult,
     ObjectiveQuestionResult,
     ImageInfo,
-    ArtExplorationResultsDTO,
+    StoryQuestionResult,
+    ChronologicalOrderResult,
 )
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -647,6 +649,89 @@ def _process_memory_reconstruction_image_questions(
     return image_results, correct_count
 
 
+def _process_objective_questions(
+    evaluation: Evaluation,
+    db: Session
+) -> List[ObjectiveQuestionResult]:
+    """
+    Process objective questions for any evaluation module.
+    Returns list of question results.
+    """
+    # Get language from the session
+    session = db.query(SessionModel).filter(
+        SessionModel.id == evaluation.session_id
+    ).first()
+    
+    if not session:
+        return []
+    
+    # Determine language based on module
+    language = "en"
+    if session.memory_reconstruction_id:
+        mr = db.query(MemoryReconstruction).filter(
+            MemoryReconstruction.id == session.memory_reconstruction_id
+        ).first()
+        if mr:
+            language = mr.language.value
+    elif session.art_exploration_id:
+        ae = db.query(ArtExploration).filter(
+            ArtExploration.id == session.art_exploration_id
+        ).first()
+        if ae:
+            language = ae.language.value
+    
+    # Question type translations
+    question_type_map = {
+        "environment": {
+            "pt": "Como era o ambiente da história?",
+            "en": "What was the environment of the story?"
+        },
+        "period": {
+            "pt": "Que parte do dia era?",
+            "en": "What time of day was it?"
+        },
+        "emotion": {
+            "pt": "Qual era a emoção predominante?",
+            "en": "What was the predominant emotion?"
+        }
+    }
+    
+    objective_questions = db.query(ObjectiveQuestion).filter(
+        ObjectiveQuestion.eval_id == evaluation.id
+    ).order_by(ObjectiveQuestion.created_at).all()
+    
+    objective_results = []
+    
+    for obj_q in objective_questions:
+        # Get question text based on type and language
+        question_text = question_type_map.get(obj_q.type, {}).get(
+            language,
+            f"Question about {obj_q.type}"
+        )
+        
+        # Collect options
+        options = []
+        for i in range(5):
+            option = getattr(obj_q, f"option_{i}", None)
+            if option:
+                options.append(option)
+        
+        # Check if correct
+        is_correct = (obj_q.selected_option == obj_q.correct_option) if obj_q.selected_option and obj_q.correct_option else None
+        
+        objective_results.append(ObjectiveQuestionResult(
+            question_type=obj_q.type,
+            question_text=question_text,
+            options=options,
+            user_answer=obj_q.selected_option,
+            correct_answer=obj_q.correct_option,
+            is_correct=is_correct,
+            time_spent=_time_to_string(obj_q.elapsed_time)
+        ))
+    
+    return objective_results
+
+
 def _process_memory_reconstruction_objective_questions(
     evaluation_id: str,
     language: str,
@@ -766,11 +851,84 @@ def _build_memory_reconstruction_results(
     )
 
 
+def _process_story_question(evaluation: Evaluation, db: Session) -> Optional[StoryQuestionResult]:
+    """Process story open question results"""
+    from orm.evaluation_models import StoryOpenQuestion
+    from api_types.evaluation import StoryQuestionResult
+    
+    story_q = db.query(StoryOpenQuestion).filter(
+        StoryOpenQuestion.eval_id == evaluation.id
+    ).first()
+    
+    if not story_q:
+        return None
+    
+    return StoryQuestionResult(
+        user_answer=story_q.text or "",
+        time_spent=_time_to_string(story_q.elapsed_time)
+    )
+
+
+def _process_chronological_order_question(
+    evaluation: Evaluation,
+    art_exploration: ArtExploration,
+    db: Session
+) -> Optional[ChronologicalOrderResult]:
+    """Process chronological order question results"""
+    from orm.evaluation_models import ChronologicalOrderQuestion
+    from api_types.evaluation import ChronologicalOrderResult
+    
+    chrono_q = db.query(ChronologicalOrderQuestion).filter(
+        ChronologicalOrderQuestion.eval_id == evaluation.id
+    ).first()
+    
+    if not chrono_q:
+        return None
+    
+    # Get the correct order of events (strings)
+    correct_events = []
+    for i in range(4):
+        event = getattr(art_exploration, f"correct_option_{i}")
+        if event:
+            correct_events.append(event)
+    
+    if len(correct_events) != 4:
+        return None
+    
+    # Get user's order of events (strings)
+    user_events = []
+    for i in range(4):
+        event = getattr(chrono_q, f"selected_option_{i}")
+        if event:
+            user_events.append(event)
+    
+    if len(user_events) != 4:
+        return None
+    
+    # Compare positions: is the event at position i the same in both lists?
+    is_correct_per_position = [
+        user_events[i] == correct_events[i] for i in range(4)
+    ]
+    
+    correct_positions_count = sum(is_correct_per_position)
+    is_fully_correct = correct_positions_count == 4
+    
+    return ChronologicalOrderResult(
+        images=[],  # Empty list - images not needed for chronological order
+        user_events=user_events,
+        correct_events=correct_events,
+        is_correct_per_position=is_correct_per_position,
+        is_fully_correct=is_fully_correct,
+        correct_positions_count=correct_positions_count,
+        time_spent=_time_to_string(chrono_q.elapsed_time)
+    )
+
+
 def _build_art_exploration_results(
     session: SessionModel,
     db: Session
 ) -> ArtExplorationResultsDTO:
-    """Build Art Exploration results DTO (placeholder)"""
+    """Build Art Exploration results DTO"""
     
     ae = db.query(ArtExploration).filter(
         ArtExploration.id == session.art_exploration_id
@@ -782,10 +940,54 @@ def _build_art_exploration_results(
             detail="Art Exploration data not found"
         )
     
-    # TODO: Implement Art Exploration results processing
+    # Get evaluation
+    evaluation = db.query(Evaluation).filter(
+        Evaluation.session_id == session.id
+    ).first()
+    
+    if not evaluation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Evaluation not found"
+        )
+    
+    # Process questions
+    story_question = _process_story_question(evaluation, db)
+    chronological_order_question = _process_chronological_order_question(evaluation, ae, db)
+    objective_questions = _process_objective_questions(evaluation, db)
+    
+    # Calculate statistics for objective questions
+    total_objective = len(objective_questions)
+    correct_objective = sum(1 for q in objective_questions if q.is_correct)
+    objective_accuracy = (correct_objective / total_objective * 100) if total_objective > 0 else 0.0
+    
+    # Calculate statistics for chronological order
+    chronological_positions_correct = 0
+    chronological_total_positions = 4
+    chronological_accuracy = 0.0
+    
+    if chronological_order_question:
+        chronological_positions_correct = chronological_order_question.correct_positions_count
+        chronological_accuracy = (chronological_positions_correct / chronological_total_positions * 100)
+    
+    # Calculate overall accuracy
+    total_questions = total_objective + 1  # +1 for chronological order
+    correct_answers = correct_objective + (1 if chronological_order_question and chronological_order_question.is_fully_correct else 0)
+    overall_accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0.0
+    
     return ArtExplorationResultsDTO(
         story=ae.story_generated or "",
         dataset=ae.dataset.value if ae.dataset else "",
         language=ae.language.value if ae.language else "",
-        message="Art Exploration results not yet implemented"
+        story_question=story_question,
+        chronological_order_question=chronological_order_question,
+        objective_questions=objective_questions,
+        total_objective_questions=total_objective,
+        correct_objective_answers=correct_objective,
+        objective_accuracy=round(objective_accuracy, 2),
+        chronological_positions_correct=chronological_positions_correct,
+        chronological_total_positions=chronological_total_positions,
+        chronological_accuracy=round(chronological_accuracy, 2),
+        overall_accuracy=round(overall_accuracy, 2)
     )
+
