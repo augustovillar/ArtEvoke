@@ -192,13 +192,23 @@
     background-color: #2563eb;
 }
 
-.btn-view-session {
+.btn-view-session,
+.btn-view-results {
     background-color: #06b6d4;
     color: white;
 }
 
-.btn-view-session:hover {
+.btn-view-session:hover,
+.btn-view-results:hover {
     background-color: #0891b2;
+}
+
+.btn-view-results {
+    background-color: #10b981;
+}
+
+.btn-view-results:hover {
+    background-color: #059669;
 }
 
 .btn-delete-session {

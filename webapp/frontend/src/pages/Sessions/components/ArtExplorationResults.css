@@ -1,0 +1,25 @@
+/* ArtExplorationResults.css */
+
+.art-exploration-results {
+    width: 100%;
+}
+
+.results-placeholder {
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.results-placeholder h2 {
+    color: #856404;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.results-placeholder p {
+    color: #856404;
+    font-size: 1.125rem;
+}

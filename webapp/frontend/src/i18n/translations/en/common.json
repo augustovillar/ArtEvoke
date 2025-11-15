@@ -542,6 +542,41 @@
       "inProgressMessage": "This session is in progress."
     }
   },
+  "results": {
+    "title": "Session Results",
+    "mode": "Mode",
+    "completedAt": "Completed at",
+    "summary": "Summary",
+    "imageQuestions": "Image Questions",
+    "objectiveQuestions": "Objective Questions",
+    "overallAccuracy": "Overall Accuracy",
+    "imageRecognitionQuestions": "Image Recognition Questions",
+    "objectiveQuestionsTitle": "Objective Questions",
+    "imageQuestion": "Image Question",
+    "of": "of",
+    "yourAnswer": "Your Answer",
+    "correctAnswer": "Correct Answer",
+    "distractor": "Distractor",
+    "correctlyAnswered": "You answered correctly!",
+    "incorrectlyAnswered": "Incorrect answer",
+    "questionTypes": {
+      "environment": "Environment",
+      "period": "Time of Day",
+      "emotion": "Emotion"
+    },
+    "errors": {
+      "title": "Error Loading Results",
+      "notCompleted": "This session has not been completed yet",
+      "unauthorized": "You do not have permission to view these results",
+      "notFound": "Session not found",
+      "loadFailed": "Failed to load results",
+      "noData": "No result data available"
+    },
+    "artExploration": {
+      "notImplemented": "Art Exploration Results",
+      "comingSoon": "Results visualization for Art Exploration will be implemented soon."
+    }
+  },
   "consent": {
     "title": "Participant Consent Form",
     "purpose": {

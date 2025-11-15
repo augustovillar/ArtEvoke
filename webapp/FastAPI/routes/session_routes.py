@@ -14,11 +14,22 @@ from orm import (
     Sections,
     ArtExploration,
     CatalogItem,
+    Evaluation,
+    SelectImageQuestion,
+    ObjectiveQuestion,
 )
 from api_types.common import Dataset
 from utils.auth import get_current_user, verify_doctor_role
 from utils.embeddings import format_catalog_item_info
 from api_types.session import SessionCreate, SessionUpdate, SessionResponse
+from api_types.evaluation import (
+    SessionResultsResponse,
+    MemoryReconstructionResultsDTO,
+    ImageQuestionResult,
+    ObjectiveQuestionResult,
+    ImageInfo,
+    ArtExplorationResultsDTO,
+)
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -364,49 +375,25 @@ async def get_session_evaluation(
                 Sections.memory_reconstruction_id == mr.id
             ).order_by(Sections.display_order).all()
             
-            def get_image_info(image_id):
-                """Helper to get image URL and metadata from CatalogItem"""
+            def get_image_info_dict(image_id):
+                """Helper to get image info as dict for evaluation endpoint"""
                 if not image_id:
                     return None
                 catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
                 if not catalog_item:
                     return None
                 
-                # Get the source-specific data and build image URL
-                image_url = None
-                art_name = None
-                artist_name = None
-                title = None
-                
-                if catalog_item.source == Dataset.semart and catalog_item.semart:
-                    source_data = catalog_item.semart
-                    image_url = f"/art-images/semart/{source_data.image_file}"
-                    title = source_data.title
-                    artist_name = source_data.artist_name
-                    art_name = title or artist_name or "Untitled"
-                elif catalog_item.source == Dataset.wikiart and catalog_item.wikiart:
-                    source_data = catalog_item.wikiart
-                    image_url = f"/art-images/wikiart/{source_data.image_file}"
-                    artist_name = source_data.artist_name
-                    # WikiArt doesn't have a title field, use artist_name
-                    art_name = artist_name or "Unknown Artist"
-                    title = None  # WikiArt doesn't have title
-                elif catalog_item.source == Dataset.ipiranga and catalog_item.ipiranga:
-                    source_data = catalog_item.ipiranga
-                    image_url = f"https://acervoonline.mp.usp.br/wp-content/uploads/tainacan-items{source_data.image_file}"
-                    title = source_data.title
-                    artist_name = source_data.artist_name
-                    art_name = title or artist_name or "Untitled"
-                
-                if not image_url:
+                catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+                if not catalog_info:
                     return None
                 
+                # Return in the expected format for this endpoint
                 return {
-                    "id": catalog_item.id,
-                    "url": image_url,
-                    "name": art_name,
-                    "artist": artist_name,
-                    "title": title
+                    "id": catalog_info["id"],
+                    "url": catalog_info["image_url"],
+                    "name": catalog_info["art_name"],
+                    "artist": catalog_info.get("artist"),
+                    "title": catalog_info.get("title")
                 }
             
             sections_data = []
@@ -416,14 +403,14 @@ async def get_session_evaluation(
                     "display_order": section.display_order,
                     "section_content": section.section_content,
                     "images": [
-                        get_image_info(section.image1_id),
-                        get_image_info(section.image2_id),
-                        get_image_info(section.image3_id),
-                        get_image_info(section.image4_id),
-                        get_image_info(section.image5_id),
-                        get_image_info(section.image6_id),
+                        get_image_info_dict(section.image1_id),
+                        get_image_info_dict(section.image2_id),
+                        get_image_info_dict(section.image3_id),
+                        get_image_info_dict(section.image4_id),
+                        get_image_info_dict(section.image5_id),
+                        get_image_info_dict(section.image6_id),
                     ],
-                    "fav_image": get_image_info(section.fav_image_id) if section.fav_image_id else None,
+                    "fav_image": get_image_info_dict(section.fav_image_id) if section.fav_image_id else None,
                 }
                 sections_data.append(section_dict)
             
@@ -467,3 +454,338 @@ async def get_session_evaluation(
 
     # Return empty dict if no evaluation data exists yet (session not started)
     return evaluation_data
+
+
+@router.get("/{session_id}/results", response_model=SessionResultsResponse)
+async def get_session_results(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get complete results for a completed evaluation session"""
+    
+    # Get session
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    # Verify authorization (patient or their doctor)
+    if (
+        current_user["id"] != session.patient_id
+        and current_user["id"] != session.doctor_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this session's results",
+        )
+    
+    # Verify session is completed
+    if session.status != "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Session is not completed yet. Current status: {session.status}"
+        )
+    
+    # Get evaluation
+    evaluation = db.query(Evaluation).filter(Evaluation.session_id == session_id).first()
+    
+    if not evaluation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No evaluation found for this session"
+        )
+    
+    # Build results based on mode
+    if session.mode == "memory_reconstruction":
+        mr_results = _build_memory_reconstruction_results(session, evaluation, db)
+        
+        return SessionResultsResponse(
+            session_id=session.id,
+            mode=session.mode,
+            status=session.status,
+            completed_at=session.ended_at,
+            memory_reconstruction_results=mr_results,
+            art_exploration_results=None
+        )
+    
+    elif session.mode == "art_exploration":
+        ae_results = _build_art_exploration_results(session, db)
+        
+        return SessionResultsResponse(
+            session_id=session.id,
+            mode=session.mode,
+            status=session.status,
+            completed_at=session.ended_at,
+            memory_reconstruction_results=None,
+            art_exploration_results=ae_results
+        )
+    
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown session mode: {session.mode}"
+        )
+
+
+# ============================================================================
+# Helper functions for results processing
+# ============================================================================
+
+def _convert_catalog_to_image_info(catalog_item: CatalogItem) -> ImageInfo:
+    """Convert CatalogItem to ImageInfo DTO using format_catalog_item_info"""
+    if not catalog_item:
+        return None
+    
+    catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+    if not catalog_info:
+        return None
+    
+    return ImageInfo(
+        id=catalog_info["id"],
+        url=catalog_info["image_url"],
+        name=catalog_info["art_name"],
+        artist=catalog_info.get("artist"),
+        title=catalog_info.get("title")
+    )
+
+
+def _time_to_string(time_obj):
+    """Convert time object to string format HH:MM:SS"""
+    if not time_obj:
+        return None
+    return str(time_obj)
+
+
+def _process_memory_reconstruction_image_questions(
+    evaluation_id: str,
+    db: Session
+) -> tuple[List[ImageQuestionResult], int]:
+    """
+    Process image selection questions for Memory Reconstruction.
+    Returns tuple of (question_results, correct_count)
+    """
+    image_questions = db.query(SelectImageQuestion).filter(
+        SelectImageQuestion.eval_id == evaluation_id
+    ).all()
+    
+    image_results = []
+    correct_count = 0
+    
+    for img_q in image_questions:
+        # Get the section for this question
+        section = db.query(Sections).filter(Sections.id == img_q.section_id).first()
+        if not section:
+            continue
+        
+        # Get all 6 original images from section
+        section_images = [
+            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image1_id).first()),
+            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image2_id).first()),
+            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image3_id).first()),
+            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image4_id).first()),
+            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image5_id).first()),
+            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image6_id).first()),
+        ]
+        
+        # Get distractor images
+        distractor_images = []
+        if img_q.image_distractor_0_id:
+            distractor = _convert_catalog_to_image_info(
+                db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_0_id).first()
+            )
+            if distractor:
+                distractor_images.append(distractor)
+        if img_q.image_distractor_1_id:
+            distractor = _convert_catalog_to_image_info(
+                db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_1_id).first()
+            )
+            if distractor:
+                distractor_images.append(distractor)
+        
+        # Combine section images and distractors (shown to user)
+        shown_images = section_images + distractor_images
+        # Filter out None values
+        shown_images = [img for img in shown_images if img is not None]
+        
+        # Get user's selected image
+        user_selected = None
+        if img_q.image_selected_id:
+            user_selected = _convert_catalog_to_image_info(
+                db.query(CatalogItem).filter(CatalogItem.id == img_q.image_selected_id).first()
+            )
+        
+        # Get correct image (favorite)
+        correct_image = _convert_catalog_to_image_info(
+            db.query(CatalogItem).filter(CatalogItem.id == section.fav_image_id).first()
+        )
+        
+        # Check if correct
+        is_correct = (img_q.image_selected_id == section.fav_image_id) if img_q.image_selected_id else False
+        if is_correct:
+            correct_count += 1
+        
+        image_results.append(ImageQuestionResult(
+            section_number=section.display_order,
+            section_text=section.section_content,
+            shown_images=shown_images,
+            user_selected_image_id=img_q.image_selected_id,
+            user_selected_image=user_selected,
+            correct_image_id=section.fav_image_id,
+            correct_image=correct_image,
+            distractor_images=distractor_images,
+            is_correct=is_correct,
+            time_spent=_time_to_string(img_q.elapsed_time)
+        ))
+    
+    # Sort by section number
+    image_results.sort(key=lambda x: x.section_number)
+    
+    return image_results, correct_count
+
+
+def _process_memory_reconstruction_objective_questions(
+    evaluation_id: str,
+    language: str,
+    db: Session
+) -> tuple[List[ObjectiveQuestionResult], int]:
+    """
+    Process objective questions for Memory Reconstruction.
+    Returns tuple of (question_results, correct_count)
+    """
+    # Question type translations
+    question_type_map = {
+        "environment": {
+            "pt": "Como era o ambiente da história?",
+            "en": "What was the environment of the story?"
+        },
+        "period": {
+            "pt": "Que parte do dia era?",
+            "en": "What time of day was it?"
+        },
+        "emotion": {
+            "pt": "Qual era a emoção predominante?",
+            "en": "What was the predominant emotion?"
+        }
+    }
+    
+    objective_questions = db.query(ObjectiveQuestion).filter(
+        ObjectiveQuestion.eval_id == evaluation_id
+    ).order_by(ObjectiveQuestion.created_at).all()
+    
+    objective_results = []
+    correct_count = 0
+    
+    for obj_q in objective_questions:
+        # Get question text based on type and language
+        question_text = question_type_map.get(obj_q.type, {}).get(
+            language,
+            f"Question about {obj_q.type}"
+        )
+        
+        # Collect options
+        options = []
+        for i in range(5):
+            option = getattr(obj_q, f"option_{i}", None)
+            if option:
+                options.append(option)
+        
+        # Check if correct
+        is_correct = (obj_q.selected_option == obj_q.correct_option) if obj_q.selected_option and obj_q.correct_option else None
+        if is_correct:
+            correct_count += 1
+        
+        objective_results.append(ObjectiveQuestionResult(
+            question_type=obj_q.type,
+            question_text=question_text,
+            options=options,
+            user_answer=obj_q.selected_option,
+            correct_answer=obj_q.correct_option,
+            is_correct=is_correct,
+            time_spent=_time_to_string(obj_q.elapsed_time)
+        ))
+    
+    return objective_results, correct_count
+
+
+def _build_memory_reconstruction_results(
+    session: SessionModel,
+    evaluation: Evaluation,
+    db: Session
+) -> MemoryReconstructionResultsDTO:
+    """Build complete Memory Reconstruction results DTO"""
+    
+    # Get Memory Reconstruction data
+    mr = db.query(MemoryReconstruction).filter(
+        MemoryReconstruction.id == session.memory_reconstruction_id
+    ).first()
+    
+    if not mr:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Memory Reconstruction data not found"
+        )
+    
+    # Process image questions
+    image_results, correct_image_count = _process_memory_reconstruction_image_questions(
+        evaluation.id, db
+    )
+    
+    # Process objective questions
+    objective_results, correct_objective_count = _process_memory_reconstruction_objective_questions(
+        evaluation.id,
+        mr.language.value if mr.language else "pt",
+        db
+    )
+    
+    # Calculate statistics
+    total_image = len(image_results)
+    total_objective = len(objective_results)
+    total_questions = total_image + total_objective
+    
+    image_accuracy = (correct_image_count / total_image * 100) if total_image > 0 else 0
+    objective_accuracy = (correct_objective_count / total_objective * 100) if total_objective > 0 else 0
+    overall_accuracy = ((correct_image_count + correct_objective_count) / total_questions * 100) if total_questions > 0 else 0
+    
+    return MemoryReconstructionResultsDTO(
+        story=mr.story,
+        dataset=mr.dataset.value if mr.dataset else "",
+        language=mr.language.value if mr.language else "",
+        image_questions=image_results,
+        objective_questions=objective_results,
+        total_image_questions=total_image,
+        correct_image_answers=correct_image_count,
+        total_objective_questions=total_objective,
+        correct_objective_answers=correct_objective_count,
+        image_accuracy=round(image_accuracy, 2),
+        objective_accuracy=round(objective_accuracy, 2),
+        overall_accuracy=round(overall_accuracy, 2)
+    )
+
+
+def _build_art_exploration_results(
+    session: SessionModel,
+    db: Session
+) -> ArtExplorationResultsDTO:
+    """Build Art Exploration results DTO (placeholder)"""
+    
+    ae = db.query(ArtExploration).filter(
+        ArtExploration.id == session.art_exploration_id
+    ).first()
+    
+    if not ae:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Art Exploration data not found"
+        )
+    
+    # TODO: Implement Art Exploration results processing
+    return ArtExplorationResultsDTO(
+        story=ae.story_generated or "",
+        dataset=ae.dataset.value if ae.dataset else "",
+        language=ae.language.value if ae.language else "",
+        message="Art Exploration results not yet implemented"
+    )

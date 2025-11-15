@@ -543,6 +543,41 @@
       "inProgressMessage": "Esta sessão está em andamento."
     }
   },
+  "results": {
+    "title": "Resultados da Sessão",
+    "mode": "Modo",
+    "completedAt": "Concluída em",
+    "summary": "Resumo",
+    "imageQuestions": "Perguntas de Imagem",
+    "objectiveQuestions": "Perguntas Objetivas",
+    "overallAccuracy": "Precisão Geral",
+    "imageRecognitionQuestions": "Perguntas de Reconhecimento de Imagem",
+    "objectiveQuestionsTitle": "Perguntas Objetivas",
+    "imageQuestion": "Pergunta de Imagem",
+    "of": "de",
+    "yourAnswer": "Sua Resposta",
+    "correctAnswer": "Resposta Correta",
+    "distractor": "Distrator",
+    "correctlyAnswered": "Você respondeu corretamente!",
+    "incorrectlyAnswered": "Resposta incorreta",
+    "questionTypes": {
+      "environment": "Ambiente",
+      "period": "Período do Dia",
+      "emotion": "Emoção"
+    },
+    "errors": {
+      "title": "Erro ao Carregar Resultados",
+      "notCompleted": "Esta sessão ainda não foi concluída",
+      "unauthorized": "Você não tem permissão para visualizar estes resultados",
+      "notFound": "Sessão não encontrada",
+      "loadFailed": "Falha ao carregar resultados",
+      "noData": "Nenhum dado de resultado disponível"
+    },
+    "artExploration": {
+      "notImplemented": "Resultados de Exploração de Arte",
+      "comingSoon": "A visualização de resultados para Exploração de Arte será implementada em breve."
+    }
+  },
   "consent": {
     "title": "Formulário de Consentimento do Participante",
     "purpose": {

@@ -1,0 +1,142 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
+import MemoryReconstructionResults from './components/MemoryReconstructionResults';
+import ArtExplorationResults from './components/ArtExplorationResults';
+import './SessionResults.css';
+
+const SessionResults = () => {
+    const { sessionId } = useParams();
+    const { t } = useTranslation('common');
+    const navigate = useNavigate();
+    const { userType } = useAuth();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [results, setResults] = useState(null);
+
+    useEffect(() => {
+        const fetchResults = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/sessions/${sessionId}/results`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 400) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || t('results.errors.notCompleted'));
+                    } else if (response.status === 403) {
+                        throw new Error(t('results.errors.unauthorized'));
+                    } else if (response.status === 404) {
+                        throw new Error(t('results.errors.notFound'));
+                    }
+                    throw new Error(t('results.errors.loadFailed'));
+                }
+
+                const data = await response.json();
+                setResults(data);
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching results:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResults();
+    }, [sessionId, t]);
+
+    const handleBack = () => {
+        if (userType === 'doctor') {
+            // Doctor goes back to patient's sessions
+            const patientId = results?.memory_reconstruction_results 
+                ? results.memory_reconstruction_results.patient_id 
+                : null;
+            
+            if (patientId) {
+                navigate(`/sessions?patientId=${patientId}`);
+            } else {
+                navigate('/patients');
+            }
+        } else {
+            // Patient goes back to their sessions
+            navigate('/sessions');
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="results-container">
+                <div className="results-loading">{t('common.loading')}</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="results-container">
+                <div className="results-error">
+                    <h2>{t('results.errors.title')}</h2>
+                    <p>{error}</p>
+                    <button className="btn-back" onClick={handleBack}>
+                        {t('common.back')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!results) {
+        return (
+            <div className="results-container">
+                <div className="results-error">
+                    <p>{t('results.errors.noData')}</p>
+                    <button className="btn-back" onClick={handleBack}>
+                        {t('common.back')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="results-container">
+            <div className="results-header">
+                <button className="btn-back" onClick={handleBack}>
+                    ← {t('common.back')}
+                </button>
+                <h1>{t('results.title')}</h1>
+            </div>
+
+            <div className="results-info">
+                <div className="info-item">
+                    <span className="info-label">{t('results.mode')}:</span>
+                    <span className="info-value">{t(`sessions.modes.${results.mode}`)}</span>
+                </div>
+                <div className="info-item">
+                    <span className="info-label">{t('results.completedAt')}:</span>
+                    <span className="info-value">
+                        {results.completed_at 
+                            ? new Date(results.completed_at).toLocaleString() 
+                            : '-'}
+                    </span>
+                </div>
+            </div>
+
+            {results.mode === 'memory_reconstruction' && results.memory_reconstruction_results && (
+                <MemoryReconstructionResults data={results.memory_reconstruction_results} />
+            )}
+
+            {results.mode === 'art_exploration' && results.art_exploration_results && (
+                <ArtExplorationResults data={results.art_exploration_results} />
+            )}
+        </div>
+    );
+};
+
+export default SessionResults;
