@@ -585,6 +585,10 @@
       "notImplemented": "Art Exploration Results",
       "comingSoon": "Results visualization for Art Exploration will be implemented soon."
     },
+    "notCompleted": {
+      "title": "Evaluation Not Completed",
+      "message": "The patient has not yet completed the evaluation for this session. Results will be available after completion."
+    },
     "errors": {
       "title": "Error Loading Results",
       "notCompleted": "This session has not been completed yet",

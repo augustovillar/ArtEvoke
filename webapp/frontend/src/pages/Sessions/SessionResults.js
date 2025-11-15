@@ -14,6 +14,7 @@ const SessionResults = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [results, setResults] = useState(null);
+    const [notCompleted, setNotCompleted] = useState(false);
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -28,18 +29,36 @@ const SessionResults = () => {
                 if (!response.ok) {
                     if (response.status === 400) {
                         const errorData = await response.json();
-                        throw new Error(errorData.detail || t('results.errors.notCompleted'));
+                        // Check if error is about session not being completed
+                        if (errorData.detail && (
+                            errorData.detail.includes('not completed') || 
+                            errorData.detail.includes('não foi concluída') ||
+                            errorData.detail.includes('not found')
+                        )) {
+                            setNotCompleted(true);
+                            setError(null);
+                        } else {
+                            throw new Error(errorData.detail || t('results.errors.notCompleted'));
+                        }
                     } else if (response.status === 403) {
                         throw new Error(t('results.errors.unauthorized'));
                     } else if (response.status === 404) {
-                        throw new Error(t('results.errors.notFound'));
+                        const errorData = await response.json();
+                        // Check if it's evaluation not found (session exists but no evaluation)
+                        if (errorData.detail && errorData.detail.includes('Evaluation not found')) {
+                            setNotCompleted(true);
+                            setError(null);
+                        } else {
+                            throw new Error(t('results.errors.notFound'));
+                        }
+                    } else {
+                        throw new Error(t('results.errors.loadFailed'));
                     }
-                    throw new Error(t('results.errors.loadFailed'));
+                } else {
+                    const data = await response.json();
+                    setResults(data);
+                    setError(null);
                 }
-
-                const data = await response.json();
-                setResults(data);
-                setError(null);
             } catch (err) {
                 console.error('Error fetching results:', err);
                 setError(err.message);
@@ -73,6 +92,21 @@ const SessionResults = () => {
         return (
             <div className="results-container">
                 <div className="results-loading">{t('common.loading')}</div>
+            </div>
+        );
+    }
+
+    if (notCompleted) {
+        return (
+            <div className="results-container">
+                <div className="results-not-completed">
+                    <div className="not-completed-icon">⏳</div>
+                    <h2>{t('results.notCompleted.title')}</h2>
+                    <p>{t('results.notCompleted.message')}</p>
+                    <button className="btn-back" onClick={handleBack}>
+                        ← {t('common.back')}
+                    </button>
+                </div>
             </div>
         );
     }

@@ -586,6 +586,10 @@
       "notImplemented": "Resultados de Exploração de Arte",
       "comingSoon": "A visualização de resultados para Exploração de Arte será implementada em breve."
     },
+    "notCompleted": {
+      "title": "Avaliação Não Concluída",
+      "message": "O paciente ainda não concluiu a avaliação para esta sessão. Os resultados estarão disponíveis após a conclusão."
+    },
     "errors": {
       "title": "Erro ao Carregar Resultados",
       "notCompleted": "Esta sessão ainda não foi concluída",
