@@ -47,9 +47,6 @@ const MemoryReconstructionResults = ({ data }) => {
                                 />
                                 <div className="image-info">
                                     <p className="image-name">{image.name}</p>
-                                    {image.artist && (
-                                        <p className="image-artist">{image.artist}</p>
-                                    )}
                                 </div>
                                 {isUserSelected && (
                                     <div className="selection-badge user-badge">
