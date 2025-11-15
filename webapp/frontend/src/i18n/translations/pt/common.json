@@ -339,8 +339,7 @@
     "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
     "errorSavingStory": "Erro ao salvar história. Tente novamente.",
     "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",
-    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando...",
-    "loading": "Carregando..."
+    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando..."
   },
   "roleSelection": {
     "subtitle": "Selecione se você é um médico ou paciente",
@@ -545,6 +544,7 @@
   },
   "results": {
     "title": "Resultados da Sessão",
+    "summaryTitle": "Resumo",
     "mode": "Modo",
     "dataset": "Dataset",
     "language": "Idioma",

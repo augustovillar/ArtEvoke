@@ -150,7 +150,7 @@ const MemoryReconstructionResults = ({ data }) => {
         <div className="memory-reconstruction-results">
             {/* Statistics Summary */}
             <div className="results-summary">
-                <h2>{t('results.summary')}</h2>
+                <h2>{t('results.summaryTitle')}</h2>
                 <div className="summary-cards">
                     <div className="summary-card">
                         <h3>{t('results.imageQuestions')}</h3>

@@ -339,8 +339,7 @@
     "errorInitializing": "Error initializing evaluation. Please try again.",
     "errorSavingStory": "Error saving story. Please try again.",
     "errorSavingQuestion": "Error saving answer. Please try again.",
-    "sessionDataNotFound": "Session data not found. Redirecting...",
-    "loading": "Loading..."
+    "sessionDataNotFound": "Session data not found. Redirecting..."
   },
   "roleSelection": {
     "subtitle": "Select whether you are a doctor or a patient",
@@ -544,6 +543,7 @@
   },
   "results": {
     "title": "Session Results",
+    "summaryTitle": "Summary",
     "mode": "Mode",
     "dataset": "Dataset",
     "language": "Language",
