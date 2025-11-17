@@ -1,6 +1,7 @@
 import React from 'react';
 import './Footer.css';
 import logoUcl from '../../../assets/images/logoucl.png';
+import logoUsp from '../../../assets/images/USP.jpg';
 
 const Footer = () => {
     return (
@@ -16,6 +17,7 @@ const Footer = () => {
                 </div>
                 
                 <div className="footer-logos-row">
+                    <img src={logoUsp} alt='USP' className="footer-logo"></img>
                     <img src={logoUcl} alt='UCL' className="footer-logo"></img>
                 </div>
             </div>
