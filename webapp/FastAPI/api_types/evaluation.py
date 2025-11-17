@@ -109,9 +109,9 @@ class MemoryReconstructionResultsDTO(BaseModel):
     correct_image_answers: int
     total_objective_questions: int
     correct_objective_answers: int
-    image_accuracy: float  # Percentage
-    objective_accuracy: float  # Percentage
-    overall_accuracy: float  # Percentage
+    image_accuracy: float  
+    objective_accuracy: float  
+    overall_accuracy: float  
 
 
 class StoryQuestionResult(BaseModel):
@@ -120,7 +120,6 @@ class StoryQuestionResult(BaseModel):
 
 
 class ChronologicalOrderResult(BaseModel):
-    images: List[ImageItem]
     user_events: List[str]
     correct_events: List[str]
     is_correct_per_position: List[bool]
@@ -140,11 +139,11 @@ class ArtExplorationResultsDTO(BaseModel):
     # Statistics
     total_objective_questions: int
     correct_objective_answers: int
-    objective_accuracy: float  # Percentage
+    objective_accuracy: float  
     chronological_positions_correct: int
     chronological_total_positions: int
-    chronological_accuracy: float  # Percentage
-    overall_accuracy: float  # Percentage
+    chronological_accuracy: float  
+    overall_accuracy: float  
 
 
 class SessionResultsResponse(BaseModel):

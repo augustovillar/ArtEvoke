@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 import uuid
 from datetime import datetime
-
+from orm.evaluation_models import ChronologicalOrderQuestion
 from routes import get_db
 from orm import (
     Session as SessionModel,
@@ -18,11 +18,10 @@ from orm import (
     SelectImageQuestion,
     ObjectiveQuestion,
 )
-from api_types.common import Dataset
 from utils.auth import get_current_user, verify_doctor_role
 from utils.embeddings import format_catalog_item_info
 from api_types.session import SessionCreate, SessionUpdate, SessionResponse
-from api_types.common import Dataset, ImageItem
+from api_types.common import ImageItem
 from api_types.evaluation import (
     SessionResultsResponse,
     MemoryReconstructionResultsDTO,
@@ -56,7 +55,6 @@ async def create_session(
             detail="Invalid mode. Must be 'memory_reconstruction' or 'art_exploration'",
         )
     
-    # Validate interruption_time (use default if not provided, ensure within range)
     interruption_time = session_data.interruption_time if session_data.interruption_time is not None else DEFAULT_INTERRUPTION_TIME
     if interruption_time < 1 or interruption_time > 300:
         raise HTTPException(
@@ -376,42 +374,42 @@ async def get_session_evaluation(
                 Sections.memory_reconstruction_id == mr.id
             ).order_by(Sections.display_order).all()
             
-            def get_image_info_dict(image_id):
-                """Helper to get image info as dict for evaluation endpoint"""
-                if not image_id:
-                    return None
-                catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
-                if not catalog_item:
-                    return None
-                
-                catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-                if not catalog_info:
-                    return None
-                
-                # Return in the expected format for this endpoint
-                return {
-                    "id": catalog_info["id"],
-                    "url": catalog_info["image_url"],
-                    "name": catalog_info["art_name"],
-                    "artist": catalog_info.get("artist"),
-                    "title": catalog_info.get("title")
-                }
-            
             sections_data = []
             for section in sections_list:
+                # Get all section images using format_catalog_item_info
+                section_image_ids = [
+                    section.image1_id,
+                    section.image2_id,
+                    section.image3_id,
+                    section.image4_id,
+                    section.image5_id,
+                    section.image6_id,
+                ]
+                
+                images_data = []
+                for image_id in section_image_ids:
+                    if image_id:
+                        catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
+                        if catalog_item:
+                            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+                            if catalog_info:
+                                images_data.append(catalog_info)
+                    else:
+                        images_data.append(None)
+                
+                # Get favorite image
+                fav_image_data = None
+                if section.fav_image_id:
+                    fav_catalog_item = db.query(CatalogItem).filter(CatalogItem.id == section.fav_image_id).first()
+                    if fav_catalog_item:
+                        fav_image_data = format_catalog_item_info(fav_catalog_item, include_full_metadata=True)
+                
                 section_dict = {
                     "id": section.id,
                     "display_order": section.display_order,
                     "section_content": section.section_content,
-                    "images": [
-                        get_image_info_dict(section.image1_id),
-                        get_image_info_dict(section.image2_id),
-                        get_image_info_dict(section.image3_id),
-                        get_image_info_dict(section.image4_id),
-                        get_image_info_dict(section.image5_id),
-                        get_image_info_dict(section.image6_id),
-                    ],
-                    "fav_image": get_image_info_dict(section.fav_image_id) if section.fav_image_id else None,
+                    "images": images_data,
+                    "fav_image": fav_image_data,
                 }
                 sections_data.append(section_dict)
             
@@ -463,9 +461,6 @@ async def get_session_results(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    """Get complete results for a completed evaluation session"""
-    
-    # Get session
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
     
     if not session:
@@ -484,14 +479,12 @@ async def get_session_results(
             detail="Not authorized to view this session's results",
         )
     
-    # Verify session is completed
     if session.status != "completed":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Session is not completed yet. Current status: {session.status}"
         )
     
-    # Get evaluation
     evaluation = db.query(Evaluation).filter(Evaluation.session_id == session_id).first()
     
     if not evaluation:
@@ -500,7 +493,6 @@ async def get_session_results(
             detail="No evaluation found for this session"
         )
     
-    # Build results based on mode
     if session.mode == "memory_reconstruction":
         mr_results = _build_memory_reconstruction_results(session, evaluation, db)
         
@@ -536,18 +528,6 @@ async def get_session_results(
 # Helper functions for results processing
 # ============================================================================
 
-def _convert_catalog_to_image_info(catalog_item: CatalogItem) -> ImageItem:
-    """Convert CatalogItem to ImageItem DTO using format_catalog_item_info"""
-    if not catalog_item:
-        return None
-    
-    catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-    if not catalog_info:
-        return None
-    
-    return ImageItem(**catalog_info)
-
-
 def _time_to_string(time_obj):
     """Convert time object to string format HH:MM:SS"""
     if not time_obj:
@@ -574,67 +554,111 @@ def _process_memory_reconstruction_image_questions(
     correct_count = 0
     
     for img_q in image_questions:
-        # Get the section for this question
         section = db.query(Sections).filter(Sections.id == img_q.section_id).first()
         if not section:
             continue
         
-        # Get all 6 original images from section
-        section_images = [
-            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image1_id).first()),
-            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image2_id).first()),
-            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image3_id).first()),
-            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image4_id).first()),
-            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image5_id).first()),
-            _convert_catalog_to_image_info(db.query(CatalogItem).filter(CatalogItem.id == section.image6_id).first()),
+        # Get all section images IDs and map them to their catalog items
+        section_image_ids = [
+            section.image1_id,
+            section.image2_id,
+            section.image3_id,
+            section.image4_id,
+            section.image5_id,
+            section.image6_id,
         ]
+        
+        # Build section_images list and create a mapping for quick lookup
+        section_images = []
+        section_images_map = {}
+        for img_id in section_image_ids:
+            catalog_item = db.query(CatalogItem).filter(CatalogItem.id == img_id).first()
+            if not catalog_item:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Section image not found in catalog: {img_id}"
+                )
+            
+            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not catalog_info:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to format catalog item: {img_id}"
+                )
+            
+            image_item = ImageItem(**catalog_info)
+            section_images.append(image_item)
+            section_images_map[img_id] = image_item
         
         # Get distractor images
         distractor_images = []
         if img_q.image_distractor_0_id:
-            distractor = _convert_catalog_to_image_info(
-                db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_0_id).first()
-            )
-            if distractor:
-                distractor_images.append(distractor)
+            catalog_item = db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_0_id).first()
+            if not catalog_item:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Distractor image 0 not found in catalog: {img_q.image_distractor_0_id}"
+                )
+            
+            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not catalog_info:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to format distractor image 0: {img_q.image_distractor_0_id}"
+                )
+            
+            distractor_images.append(ImageItem(**catalog_info))
+        
         if img_q.image_distractor_1_id:
-            distractor = _convert_catalog_to_image_info(
-                db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_1_id).first()
-            )
-            if distractor:
-                distractor_images.append(distractor)
+            catalog_item = db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_1_id).first()
+            if not catalog_item:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Distractor image 1 not found in catalog: {img_q.image_distractor_1_id}"
+                )
+            
+            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not catalog_info:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to format distractor image 1: {img_q.image_distractor_1_id}"
+                )
+            
+            distractor_images.append(ImageItem(**catalog_info))
         
-        # Combine section images and distractors (shown to user)
+        # Combine all shown images
         shown_images = section_images + distractor_images
-        # Filter out None values
-        shown_images = [img for img in shown_images if img is not None]
         
-        # Get user's selected image - must exist
         if not img_q.image_selected_id:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"User did not select an image for section {section.display_order}"
             )
         
-        user_selected = _convert_catalog_to_image_info(
-            db.query(CatalogItem).filter(CatalogItem.id == img_q.image_selected_id).first()
-        )
-        
-        if not user_selected:
+        # Get user selected image directly from database
+        catalog_item = db.query(CatalogItem).filter(CatalogItem.id == img_q.image_selected_id).first()
+        if not catalog_item:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Selected image not found in catalog: {img_q.image_selected_id}"
+                detail=f"User selected image not found in catalog: {img_q.image_selected_id}"
             )
         
-        # Get correct image (favorite)
-        correct_image = _convert_catalog_to_image_info(
-            db.query(CatalogItem).filter(CatalogItem.id == section.fav_image_id).first()
-        )
+        catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
+        if not catalog_info:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to format user selected image: {img_q.image_selected_id}"
+            )
+        
+        user_selected = ImageItem(**catalog_info)
+        
+        # Get correct image from section_images_map (already loaded)
+        correct_image = section_images_map.get(section.fav_image_id)
         
         if not correct_image:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Correct image not found in catalog: {section.fav_image_id}"
+                detail=f"Correct image not found in section images: {section.fav_image_id}"
             )
         
         # Check if correct
@@ -665,11 +689,6 @@ def _process_objective_questions(
     evaluation: Evaluation,
     db: Session
 ) -> List[ObjectiveQuestionResult]:
-    """
-    Process objective questions for any evaluation module.
-    Returns list of question results.
-    """
-    # Get language from the session
     session = db.query(SessionModel).filter(
         SessionModel.id == evaluation.session_id
     ).first()
@@ -677,7 +696,6 @@ def _process_objective_questions(
     if not session:
         return []
     
-    # Determine language based on module
     language = "en"
     if session.memory_reconstruction_id:
         mr = db.query(MemoryReconstruction).filter(
@@ -692,7 +710,6 @@ def _process_objective_questions(
         if ae:
             language = ae.language.value
     
-    # Question type translations
     question_type_map = {
         ObjectiveQuestionType.environment: {
             "pt": "Como era o ambiente da história?",
@@ -715,20 +732,17 @@ def _process_objective_questions(
     objective_results = []
     
     for obj_q in objective_questions:
-        # Get question text based on type and language
         question_text = question_type_map.get(obj_q.type, {}).get(
             language,
             f"Question about {obj_q.type}"
         )
         
-        # Collect options
         options = []
         for i in range(5):
             option = getattr(obj_q, f"option_{i}", None)
             if option:
                 options.append(option)
-        
-        # Check if correct - must have answer
+
         if not obj_q.selected_option:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -761,11 +775,7 @@ def _process_memory_reconstruction_objective_questions(
     language: str,
     db: Session
 ) -> tuple[List[ObjectiveQuestionResult], int]:
-    """
-    Process objective questions for Memory Reconstruction.
-    Returns tuple of (question_results, correct_count)
-    """
-    # Question type translations
+
     question_type_map = {
         ObjectiveQuestionType.environment: {
             "pt": "Como era o ambiente da história?",
@@ -789,20 +799,17 @@ def _process_memory_reconstruction_objective_questions(
     correct_count = 0
     
     for obj_q in objective_questions:
-        # Get question text based on type and language
         question_text = question_type_map.get(obj_q.type, {}).get(
             language,
             f"Question about {obj_q.type}"
         )
         
-        # Collect options
         options = []
         for i in range(5):
             option = getattr(obj_q, f"option_{i}", None)
             if option:
                 options.append(option)
         
-        # Check if correct - must have answer
         if not obj_q.selected_option:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -837,9 +844,7 @@ def _build_memory_reconstruction_results(
     evaluation: Evaluation,
     db: Session
 ) -> MemoryReconstructionResultsDTO:
-    """Build complete Memory Reconstruction results DTO"""
-    
-    # Get Memory Reconstruction data
+
     mr = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.id == session.memory_reconstruction_id
     ).first()
@@ -850,12 +855,10 @@ def _build_memory_reconstruction_results(
             detail="Memory Reconstruction data not found"
         )
     
-    # Process image questions
     image_results, correct_image_count = _process_memory_reconstruction_image_questions(
         evaluation.id, db
     )
     
-    # Process objective questions
     objective_results, correct_objective_count = _process_memory_reconstruction_objective_questions(
         evaluation.id,
         mr.language.value if mr.language else "pt",
@@ -914,8 +917,6 @@ def _process_chronological_order_question(
     db: Session
 ) -> ChronologicalOrderResult:
     """Process chronological order question results"""
-    from orm.evaluation_models import ChronologicalOrderQuestion
-    from api_types.evaluation import ChronologicalOrderResult
     
     chrono_q = db.query(ChronologicalOrderQuestion).filter(
         ChronologicalOrderQuestion.eval_id == evaluation.id
@@ -939,8 +940,7 @@ def _process_chronological_order_question(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Incomplete correct events data in art exploration"
         )
-    
-    # Get user's order of events (strings)
+
     user_events = []
     for i in range(4):
         event = getattr(chrono_q, f"selected_option_{i}")
@@ -953,7 +953,6 @@ def _process_chronological_order_question(
             detail="Incomplete user events data in chronological order question"
         )
     
-    # Compare positions: is the event at position i the same in both lists?
     is_correct_per_position = [
         user_events[i] == correct_events[i] for i in range(4)
     ]
@@ -962,7 +961,6 @@ def _process_chronological_order_question(
     is_fully_correct = correct_positions_count == 4
     
     return ChronologicalOrderResult(
-        images=[],  # Empty list - images not needed for chronological order
         user_events=user_events,
         correct_events=correct_events,
         is_correct_per_position=is_correct_per_position,
@@ -988,7 +986,6 @@ def _build_art_exploration_results(
             detail="Art Exploration data not found"
         )
     
-    # Get evaluation
     evaluation = db.query(Evaluation).filter(
         Evaluation.session_id == session.id
     ).first()
@@ -999,22 +996,18 @@ def _build_art_exploration_results(
             detail="Evaluation not found"
         )
     
-    # Process questions
     story_question = _process_story_question(evaluation, db)
     chronological_order_question = _process_chronological_order_question(evaluation, ae, db)
     objective_questions = _process_objective_questions(evaluation, db)
     
-    # Calculate statistics for objective questions
     total_objective = len(objective_questions)
     correct_objective = sum(1 for q in objective_questions if q.is_correct)
     objective_accuracy = (correct_objective / total_objective * 100) if total_objective > 0 else 0.0
     
-    # Calculate statistics for chronological order
     chronological_positions_correct = chronological_order_question.correct_positions_count
     chronological_total_positions = 4
     chronological_accuracy = (chronological_positions_correct / chronological_total_positions * 100)
     
-    # Calculate overall accuracy
     total_questions = total_objective + 1  # +1 for chronological order
     correct_answers = correct_objective + (1 if chronological_order_question.is_fully_correct else 0)
     overall_accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0.0
