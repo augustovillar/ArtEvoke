@@ -1,7 +1,15 @@
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 from datetime import datetime
+from enum import Enum
 from api_types.common import ImageItem
+
+
+class ObjectiveQuestionType(str, Enum):
+    """Types of objective questions available in evaluations"""
+    period = "period"
+    environment = "environment"
+    emotion = "emotion"
 
 class SaveSelectImageQuestionDTO(BaseModel):
     eval_id: str
@@ -13,7 +21,7 @@ class SaveSelectImageQuestionDTO(BaseModel):
 
 class SaveObjectiveQuestionDTO(BaseModel):
     eval_id: str
-    question_type: str
+    question_type: ObjectiveQuestionType
     options: List[str]
     selected_option: str
     correct_option: str
@@ -70,37 +78,22 @@ class ImageQuestionResult(BaseModel):
     """Results for an image selection question in Memory Reconstruction"""
     section_number: int
     section_text: str
-    
-    # Images shown to the user (6 original + 2 distractors)
     shown_images: List[ImageItem]
-    
-    # User's answer
     user_selected_image_id: Optional[str] = None
     user_selected_image: Optional[ImageItem] = None
-    
-    # Correct answer (the favorite from the section)
     correct_image_id: str
     correct_image: ImageItem
-    
-    # Distractor images used
     distractor_images: List[ImageItem]
-    
     is_correct: bool
     time_spent: Optional[str] = None  # Format: "HH:MM:SS"
 
 
 class ObjectiveQuestionResult(BaseModel):
     """Results for an objective question"""
-    question_type: str  # environment, period, emotion
+    question_type: ObjectiveQuestionType
     question_text: str
-    
-    # Options available
     options: List[str]
-    
-    # User's answer
     user_answer: Optional[str] = None
-    
-    # Correct answer
     correct_answer: str
     
     is_correct: Optional[bool] = None

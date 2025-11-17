@@ -16,6 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import Base
+from api_types.evaluation import ObjectiveQuestionType
 
 
 class Evaluation(Base):
@@ -226,7 +227,7 @@ class ObjectiveQuestion(Base):
     )
     elapsed_time = Column(Time, nullable=True)
     type = Column(
-        Enum("period","environment", "emotion", name="objective_question_type"),
+        Enum(ObjectiveQuestionType, name="objective_question_type"),
         nullable=False,
     )
     option_0 = Column(String(100), nullable=True)

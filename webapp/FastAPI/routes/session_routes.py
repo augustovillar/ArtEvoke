@@ -29,6 +29,7 @@ from api_types.evaluation import (
     ArtExplorationResultsDTO,
     ImageQuestionResult,
     ObjectiveQuestionResult,
+    ObjectiveQuestionType,
     StoryQuestionResult,
     ChronologicalOrderResult,
 )
@@ -676,15 +677,15 @@ def _process_objective_questions(
     
     # Question type translations
     question_type_map = {
-        "environment": {
+        ObjectiveQuestionType.environment: {
             "pt": "Como era o ambiente da história?",
             "en": "What was the environment of the story?"
         },
-        "period": {
+        ObjectiveQuestionType.period: {
             "pt": "Que parte do dia era?",
             "en": "What time of day was it?"
         },
-        "emotion": {
+        ObjectiveQuestionType.emotion: {
             "pt": "Qual era a emoção predominante?",
             "en": "What was the predominant emotion?"
         }
@@ -737,15 +738,15 @@ def _process_memory_reconstruction_objective_questions(
     """
     # Question type translations
     question_type_map = {
-        "environment": {
+        ObjectiveQuestionType.environment: {
             "pt": "Como era o ambiente da história?",
             "en": "What was the environment of the story?"
         },
-        "period": {
+        ObjectiveQuestionType.period: {
             "pt": "Que parte do dia era?",
             "en": "What time of day was it?"
         },
-        "emotion": {
+        ObjectiveQuestionType.emotion: {
             "pt": "Qual era a emoção predominante?",
             "en": "What was the predominant emotion?"
         }
