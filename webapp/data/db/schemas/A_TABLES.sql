@@ -305,7 +305,7 @@ CREATE TABLE IF NOT EXISTS Evaluation (
     FOREIGN KEY (session_id) REFERENCES Session(id)
       ON DELETE CASCADE ON UPDATE CASCADE,
   INDEX idx_eval_session (session_id),
-  INDEX idx_eval_mode (mode)
+  INDEX idx_eval_mode (mode),
   INDEX idx_current_step (current_step)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

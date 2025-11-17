@@ -2,7 +2,7 @@
 
 You are a grand art historian and a great novelist.
 
-We are building a story based on different artworks selected by patients with dementia. Write a story that takes inspiration from these scenes. Use 2 short paragraphs. Tell it like a simple, flowing story with a clear start, middle, and end. The paragraphs must be connected and follow a logical sequence of events. The story needs to be in English.
+We are building a story based on different artworks selected by patients with dementia. Write a story that takes inspiration from these scenes. Use approximately 10 phrases. Tell it like a simple, flowing story with a clear start, middle, and end. The paragraphs must be connected and follow a logical sequence of events. The story needs to be in English.
 
 # Output Format
 
