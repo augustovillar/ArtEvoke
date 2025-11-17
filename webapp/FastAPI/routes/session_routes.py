@@ -397,9 +397,9 @@ async def get_session_evaluation(
                 if image_id:
                     catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
                     if catalog_item:
-                        catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-                        if catalog_info:
-                            images_data.append(catalog_info)
+                        image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+                        if image_item:
+                            images_data.append(image_item)
                 else:
                     images_data.append(None)
             
@@ -469,11 +469,13 @@ async def get_session_evaluation(
         
         images_data = []
         for image in sorted(ae.images, key=lambda x: x.display_order):
-            catalog_info = format_catalog_item_info(image.catalog_item, include_full_metadata=True)
-            if catalog_info:
-                catalog_info["images_id"] = image.id
-                catalog_info["display_order"] = image.display_order
-                images_data.append(catalog_info)
+            image_item = format_catalog_item_info(image.catalog_item, include_full_metadata=True)
+            if image_item:
+                # Convert to dict and add extra fields
+                image_dict = image_item.model_dump()
+                image_dict["images_id"] = image.id
+                image_dict["display_order"] = image.display_order
+                images_data.append(image_dict)
         
         if not ae.dataset:
             raise HTTPException(
@@ -630,14 +632,13 @@ def _process_memory_reconstruction_image_questions(
                     detail=f"Section image not found in catalog: {img_id}"
                 )
             
-            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-            if not catalog_info:
+            image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not image_item:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to format catalog item: {img_id}"
                 )
             
-            image_item = ImageItem(**catalog_info)
             section_images.append(image_item)
             section_images_map[img_id] = image_item
         
@@ -651,14 +652,14 @@ def _process_memory_reconstruction_image_questions(
                     detail=f"Distractor image 0 not found in catalog: {img_q.image_distractor_0_id}"
                 )
             
-            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-            if not catalog_info:
+            image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not image_item:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to format distractor image 0: {img_q.image_distractor_0_id}"
                 )
             
-            distractor_images.append(ImageItem(**catalog_info))
+            distractor_images.append(image_item)
         
         if img_q.image_distractor_1_id:
             catalog_item = db.query(CatalogItem).filter(CatalogItem.id == img_q.image_distractor_1_id).first()
@@ -668,14 +669,14 @@ def _process_memory_reconstruction_image_questions(
                     detail=f"Distractor image 1 not found in catalog: {img_q.image_distractor_1_id}"
                 )
             
-            catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-            if not catalog_info:
+            image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not image_item:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to format distractor image 1: {img_q.image_distractor_1_id}"
                 )
             
-            distractor_images.append(ImageItem(**catalog_info))
+            distractor_images.append(image_item)
         
         # Combine all shown images
         shown_images = section_images + distractor_images
@@ -694,14 +695,12 @@ def _process_memory_reconstruction_image_questions(
                 detail=f"User selected image not found in catalog: {img_q.image_selected_id}"
             )
         
-        catalog_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-        if not catalog_info:
+        user_selected = format_catalog_item_info(catalog_item, include_full_metadata=True)
+        if not user_selected:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to format user selected image: {img_q.image_selected_id}"
             )
-        
-        user_selected = ImageItem(**catalog_info)
         
         # Get correct image from section_images_map (already loaded)
         correct_image = section_images_map.get(section.fav_image_id)

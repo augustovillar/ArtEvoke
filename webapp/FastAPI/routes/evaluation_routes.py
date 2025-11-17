@@ -383,13 +383,13 @@ async def get_select_image_question(
     for img in shown_images:
         formatted = format_catalog_item_info(img, include_full_metadata=False)
         if formatted:
-            shown_images_formatted.append(ImageItem(**formatted))
+            shown_images_formatted.append(formatted)
     
     distractors = []
     for img in distractor_images:
         formatted = format_catalog_item_info(img, include_full_metadata=False)
         if formatted:
-            distractors.append(ImageItem(**formatted))
+            distractors.append(formatted)
     
     return GetSelectImageQuestionResponseDTO(
         shown_images=shown_images_formatted,

@@ -1,6 +1,6 @@
 import numpy as np
 from orm import CatalogItem
-from api_types.common import Dataset
+from api_types.common import Dataset, ImageItem
 from clients import get_embedding_client, get_database_client, get_qdrant_client, encode_text
 
 # Lazy client initialization
@@ -43,16 +43,16 @@ def get_embedding(text):
     return embedding.astype("float32")
 
 
-def format_catalog_item_info(catalog_item: CatalogItem, include_full_metadata: bool = True):
+def format_catalog_item_info(catalog_item: CatalogItem, include_full_metadata: bool = True) -> ImageItem:
     """
-    Format CatalogItem into a standardized dictionary with image URL and metadata.
+    Format CatalogItem into an ImageItem object with image URL and metadata.
     
     Args:
         catalog_item: The CatalogItem ORM object to format
         include_full_metadata: If True, includes all available metadata. If False, only basic info.
     
     Returns:
-        Dictionary with formatted image information, or None if catalog_item is invalid
+        ImageItem object with formatted image information, or None if catalog_item is invalid
     """
     if not catalog_item:
         return None
@@ -134,7 +134,7 @@ def format_catalog_item_info(catalog_item: CatalogItem, include_full_metadata: b
                 "history": artwork_data.history
             })
     
-    return artwork_info
+    return ImageItem(**artwork_info)
 
 
 def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
@@ -196,9 +196,9 @@ def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
                 continue
             
             # Use the helper function to format the catalog item
-            artwork_info = format_catalog_item_info(catalog_item, include_full_metadata=True)
-            if artwork_info:
-                images.append(artwork_info)
+            image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if image_item:
+                images.append(image_item)
         
         return images
         
