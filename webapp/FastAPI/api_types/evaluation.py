@@ -75,38 +75,32 @@ class GetProgressResponseDTO(BaseModel):
 # ============================================================================
 
 class ImageQuestionResult(BaseModel):
-    """Results for an image selection question in Memory Reconstruction"""
     section_number: int
     section_text: str
     shown_images: List[ImageItem]
-    user_selected_image_id: Optional[str] = None
-    user_selected_image: Optional[ImageItem] = None
+    user_selected_image_id: str  
+    user_selected_image: ImageItem  
     correct_image_id: str
     correct_image: ImageItem
     distractor_images: List[ImageItem]
     is_correct: bool
-    time_spent: Optional[str] = None  # Format: "HH:MM:SS"
+    time_spent: str  # Format: "HH:MM:SS"
 
 
 class ObjectiveQuestionResult(BaseModel):
-    """Results for an objective question"""
     question_type: ObjectiveQuestionType
     question_text: str
     options: List[str]
-    user_answer: Optional[str] = None
+    user_answer: str  
     correct_answer: str
-    
-    is_correct: Optional[bool] = None
-    time_spent: Optional[str] = None  # Format: "HH:MM:SS"
+    is_correct: bool
+    time_spent: str  # Format: "HH:MM:SS"
 
 
 class MemoryReconstructionResultsDTO(BaseModel):
-    """Complete results for Memory Reconstruction evaluation"""
     story: str
     dataset: str
     language: str
-    
-    # Questions results
     image_questions: List[ImageQuestionResult]
     objective_questions: List[ObjectiveQuestionResult]
     
@@ -121,43 +115,26 @@ class MemoryReconstructionResultsDTO(BaseModel):
 
 
 class StoryQuestionResult(BaseModel):
-    """Results for the open-ended story question"""
     user_answer: str
-    time_spent: Optional[str] = None  # Format: "HH:MM:SS"
+    time_spent: str  # Format: "HH:MM:SS"
 
 
 class ChronologicalOrderResult(BaseModel):
-    """Results for the chronological order question"""
-    # All 4 images from the art exploration session (may be fewer if not all were saved)
     images: List[ImageItem]
-    
-    # User's event ordering (list of event strings in user's order)
     user_events: List[str]
-    
-    # Correct event ordering (list of event strings in correct order)
     correct_events: List[str]
-    
-    # Comparison: list of bools indicating if each position is correct
     is_correct_per_position: List[bool]
-    
-    # Overall correctness (all positions match)
     is_fully_correct: bool
-    
-    # Number of correct positions
     correct_positions_count: int
-    
-    time_spent: Optional[str] = None  # Format: "HH:MM:SS"
+    time_spent: str  # Format: "HH:MM:SS"
 
 
 class ArtExplorationResultsDTO(BaseModel):
-    """Complete results for Art Exploration evaluation"""
     story: str
     dataset: str
     language: str
-    
-    # Questions results
-    story_question: Optional[StoryQuestionResult] = None
-    chronological_order_question: Optional[ChronologicalOrderResult] = None
+    story_question: StoryQuestionResult
+    chronological_order_question: ChronologicalOrderResult
     objective_questions: List[ObjectiveQuestionResult]
     
     # Statistics
@@ -171,7 +148,6 @@ class ArtExplorationResultsDTO(BaseModel):
 
 
 class SessionResultsResponse(BaseModel):
-    """Response containing session results"""
     session_id: str
     mode: Literal["memory_reconstruction", "art_exploration"]
     status: str

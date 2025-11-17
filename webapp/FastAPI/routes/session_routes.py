@@ -64,10 +64,8 @@ async def create_session(
             detail="Interruption time must be between 1 and 300 seconds",
         )
     
-    # Verify user is doctor and get doctor ID
     doctor_id = verify_doctor_role(current_user)
     
-    # Verify patient exists
     patient = db.query(Patient).filter(Patient.id == session_data.patient_id).first()
     if not patient:
         raise HTTPException(
@@ -553,7 +551,10 @@ def _convert_catalog_to_image_info(catalog_item: CatalogItem) -> ImageItem:
 def _time_to_string(time_obj):
     """Convert time object to string format HH:MM:SS"""
     if not time_obj:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Elapsed time not recorded for question"
+        )
     return str(time_obj)
 
 
@@ -608,11 +609,21 @@ def _process_memory_reconstruction_image_questions(
         # Filter out None values
         shown_images = [img for img in shown_images if img is not None]
         
-        # Get user's selected image
-        user_selected = None
-        if img_q.image_selected_id:
-            user_selected = _convert_catalog_to_image_info(
-                db.query(CatalogItem).filter(CatalogItem.id == img_q.image_selected_id).first()
+        # Get user's selected image - must exist
+        if not img_q.image_selected_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"User did not select an image for section {section.display_order}"
+            )
+        
+        user_selected = _convert_catalog_to_image_info(
+            db.query(CatalogItem).filter(CatalogItem.id == img_q.image_selected_id).first()
+        )
+        
+        if not user_selected:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Selected image not found in catalog: {img_q.image_selected_id}"
             )
         
         # Get correct image (favorite)
@@ -620,8 +631,14 @@ def _process_memory_reconstruction_image_questions(
             db.query(CatalogItem).filter(CatalogItem.id == section.fav_image_id).first()
         )
         
+        if not correct_image:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Correct image not found in catalog: {section.fav_image_id}"
+            )
+        
         # Check if correct
-        is_correct = (img_q.image_selected_id == section.fav_image_id) if img_q.image_selected_id else False
+        is_correct = (img_q.image_selected_id == section.fav_image_id)
         if is_correct:
             correct_count += 1
         
@@ -711,8 +728,20 @@ def _process_objective_questions(
             if option:
                 options.append(option)
         
-        # Check if correct
-        is_correct = (obj_q.selected_option == obj_q.correct_option) if obj_q.selected_option and obj_q.correct_option else None
+        # Check if correct - must have answer
+        if not obj_q.selected_option:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"User did not answer objective question of type {obj_q.type}"
+            )
+        
+        if not obj_q.correct_option:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Correct option missing for objective question of type {obj_q.type}"
+            )
+        
+        is_correct = (obj_q.selected_option == obj_q.correct_option)
         
         objective_results.append(ObjectiveQuestionResult(
             question_type=obj_q.type,
@@ -773,8 +802,20 @@ def _process_memory_reconstruction_objective_questions(
             if option:
                 options.append(option)
         
-        # Check if correct
-        is_correct = (obj_q.selected_option == obj_q.correct_option) if obj_q.selected_option and obj_q.correct_option else None
+        # Check if correct - must have answer
+        if not obj_q.selected_option:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"User did not answer objective question of type {obj_q.type}"
+            )
+        
+        if not obj_q.correct_option:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Correct option missing for objective question of type {obj_q.type}"
+            )
+        
+        is_correct = (obj_q.selected_option == obj_q.correct_option)
         if is_correct:
             correct_count += 1
         
@@ -846,7 +887,7 @@ def _build_memory_reconstruction_results(
     )
 
 
-def _process_story_question(evaluation: Evaluation, db: Session) -> Optional[StoryQuestionResult]:
+def _process_story_question(evaluation: Evaluation, db: Session) -> StoryQuestionResult:
     """Process story open question results"""
     from orm.evaluation_models import StoryOpenQuestion
     from api_types.evaluation import StoryQuestionResult
@@ -856,7 +897,10 @@ def _process_story_question(evaluation: Evaluation, db: Session) -> Optional[Sto
     ).first()
     
     if not story_q:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Story question not found in evaluation"
+        )
     
     return StoryQuestionResult(
         user_answer=story_q.text or "",
@@ -868,7 +912,7 @@ def _process_chronological_order_question(
     evaluation: Evaluation,
     art_exploration: ArtExploration,
     db: Session
-) -> Optional[ChronologicalOrderResult]:
+) -> ChronologicalOrderResult:
     """Process chronological order question results"""
     from orm.evaluation_models import ChronologicalOrderQuestion
     from api_types.evaluation import ChronologicalOrderResult
@@ -878,7 +922,10 @@ def _process_chronological_order_question(
     ).first()
     
     if not chrono_q:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chronological order question not found in evaluation"
+        )
     
     # Get the correct order of events (strings)
     correct_events = []
@@ -888,7 +935,10 @@ def _process_chronological_order_question(
             correct_events.append(event)
     
     if len(correct_events) != 4:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Incomplete correct events data in art exploration"
+        )
     
     # Get user's order of events (strings)
     user_events = []
@@ -898,7 +948,10 @@ def _process_chronological_order_question(
             user_events.append(event)
     
     if len(user_events) != 4:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Incomplete user events data in chronological order question"
+        )
     
     # Compare positions: is the event at position i the same in both lists?
     is_correct_per_position = [
@@ -957,17 +1010,13 @@ def _build_art_exploration_results(
     objective_accuracy = (correct_objective / total_objective * 100) if total_objective > 0 else 0.0
     
     # Calculate statistics for chronological order
-    chronological_positions_correct = 0
+    chronological_positions_correct = chronological_order_question.correct_positions_count
     chronological_total_positions = 4
-    chronological_accuracy = 0.0
-    
-    if chronological_order_question:
-        chronological_positions_correct = chronological_order_question.correct_positions_count
-        chronological_accuracy = (chronological_positions_correct / chronological_total_positions * 100)
+    chronological_accuracy = (chronological_positions_correct / chronological_total_positions * 100)
     
     # Calculate overall accuracy
     total_questions = total_objective + 1  # +1 for chronological order
-    correct_answers = correct_objective + (1 if chronological_order_question and chronological_order_question.is_fully_correct else 0)
+    correct_answers = correct_objective + (1 if chronological_order_question.is_fully_correct else 0)
     overall_accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0.0
     
     return ArtExplorationResultsDTO(
