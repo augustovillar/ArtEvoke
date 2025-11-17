@@ -39,14 +39,14 @@ const MemoryReconstructionResults = ({ data }) => {
                         return (
                             <div key={imgIndex} className={cardClass}>
                                 <img 
-                                    src={image.url} 
-                                    alt={image.name}
+                                    src={image.image_url} 
+                                    alt={image.art_name}
                                     onError={(e) => {
                                         e.target.src = '/placeholder-image.png';
                                     }}
                                 />
                                 <div className="image-info">
-                                    <p className="image-name">{image.name}</p>
+                                    <p className="image-name">{image.art_name}</p>
                                 </div>
                                 {isUserSelected && (
                                     <div className="selection-badge user-badge">

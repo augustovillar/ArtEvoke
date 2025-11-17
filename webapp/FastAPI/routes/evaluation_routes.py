@@ -30,8 +30,8 @@ from api_types.evaluation import (
     GetSelectImageQuestionResponseDTO,
     GetProgressResponseDTO,
     CreateEvaluationResponseDTO,
-    ImageInfoDTO,
 )
+from api_types.common import ImageItem
 from utils.auth import get_current_user, verify_evaluation_access, verify_session_access
 from utils.embeddings import format_catalog_item_info
 from datetime import datetime, time
@@ -383,13 +383,13 @@ async def get_select_image_question(
     for img in shown_images:
         formatted = format_catalog_item_info(img, include_full_metadata=False)
         if formatted:
-            shown_images_formatted.append(ImageInfoDTO(**formatted))
+            shown_images_formatted.append(ImageItem(**formatted))
     
     distractors = []
     for img in distractor_images:
         formatted = format_catalog_item_info(img, include_full_metadata=False)
         if formatted:
-            distractors.append(ImageInfoDTO(**formatted))
+            distractors.append(ImageItem(**formatted))
     
     return GetSelectImageQuestionResponseDTO(
         shown_images=shown_images_formatted,

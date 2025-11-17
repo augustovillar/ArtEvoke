@@ -22,13 +22,13 @@ from api_types.common import Dataset
 from utils.auth import get_current_user, verify_doctor_role
 from utils.embeddings import format_catalog_item_info
 from api_types.session import SessionCreate, SessionUpdate, SessionResponse
+from api_types.common import Dataset, ImageItem
 from api_types.evaluation import (
     SessionResultsResponse,
     MemoryReconstructionResultsDTO,
     ArtExplorationResultsDTO,
     ImageQuestionResult,
     ObjectiveQuestionResult,
-    ImageInfo,
     StoryQuestionResult,
     ChronologicalOrderResult,
 )
@@ -537,8 +537,8 @@ async def get_session_results(
 # Helper functions for results processing
 # ============================================================================
 
-def _convert_catalog_to_image_info(catalog_item: CatalogItem) -> ImageInfo:
-    """Convert CatalogItem to ImageInfo DTO using format_catalog_item_info"""
+def _convert_catalog_to_image_info(catalog_item: CatalogItem) -> ImageItem:
+    """Convert CatalogItem to ImageItem DTO using format_catalog_item_info"""
     if not catalog_item:
         return None
     
@@ -546,13 +546,7 @@ def _convert_catalog_to_image_info(catalog_item: CatalogItem) -> ImageInfo:
     if not catalog_info:
         return None
     
-    return ImageInfo(
-        id=catalog_info["id"],
-        url=catalog_info["image_url"],
-        name=catalog_info["art_name"],
-        artist=catalog_info.get("artist"),
-        title=catalog_info.get("title")
-    )
+    return ImageItem(**catalog_info)
 
 
 def _time_to_string(time_obj):

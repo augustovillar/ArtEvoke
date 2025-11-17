@@ -1,13 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 from datetime import datetime
-
-
-class ImageInfoDTO(BaseModel):
-    id: str
-    image_url: str
-    art_name: str
-    source: str
+from api_types.common import ImageItem
 
 class SaveSelectImageQuestionDTO(BaseModel):
     eval_id: str
@@ -51,8 +45,8 @@ class SaveChronologicalOrderQuestionResponseDTO(BaseModel):
     question_id: str
 
 class GetSelectImageQuestionResponseDTO(BaseModel):
-    shown_images: List[ImageInfoDTO]
-    distractors: List[ImageInfoDTO]
+    shown_images: List[ImageItem]
+    distractors: List[ImageItem]
 
 class SaveSelectImageQuestionResponseDTO(BaseModel):
     id: str
@@ -72,33 +66,24 @@ class GetProgressResponseDTO(BaseModel):
 # Results DTOs - For displaying evaluation results
 # ============================================================================
 
-class ImageInfo(BaseModel):
-    """Information about an image in the catalog"""
-    id: str
-    url: str
-    name: str
-    artist: Optional[str] = None
-    title: Optional[str] = None
-
-
 class ImageQuestionResult(BaseModel):
     """Results for an image selection question in Memory Reconstruction"""
     section_number: int
     section_text: str
     
     # Images shown to the user (6 original + 2 distractors)
-    shown_images: List[ImageInfo]
+    shown_images: List[ImageItem]
     
     # User's answer
     user_selected_image_id: Optional[str] = None
-    user_selected_image: Optional[ImageInfo] = None
+    user_selected_image: Optional[ImageItem] = None
     
     # Correct answer (the favorite from the section)
     correct_image_id: str
-    correct_image: ImageInfo
+    correct_image: ImageItem
     
     # Distractor images used
-    distractor_images: List[ImageInfo]
+    distractor_images: List[ImageItem]
     
     is_correct: bool
     time_spent: Optional[str] = None  # Format: "HH:MM:SS"
@@ -151,7 +136,7 @@ class StoryQuestionResult(BaseModel):
 class ChronologicalOrderResult(BaseModel):
     """Results for the chronological order question"""
     # All 4 images from the art exploration session (may be fewer if not all were saved)
-    images: List[ImageInfo]
+    images: List[ImageItem]
     
     # User's event ordering (list of event strings in user's order)
     user_events: List[str]
