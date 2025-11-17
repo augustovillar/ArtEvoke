@@ -544,6 +544,7 @@
   "results": {
     "title": "Session Results",
     "summaryTitle": "Summary",
+    "generatedStory": "Generated Story",
     "mode": "Mode",
     "dataset": "Dataset",
     "language": "Language",
@@ -585,6 +586,20 @@
       "notImplemented": "Art Exploration Results",
       "comingSoon": "Results visualization for Art Exploration will be implemented soon."
     },
+    "chronologicalOrderQuestion": "Chronological Order Question",
+    "orderArtsByDate": "Order the artworks from oldest to newest",
+    "yourOrder": "Your Order",
+    "chronologicalOrder": "Chronological Order",
+    "chronologicalOrderCorrect": "Perfect! You ordered all artworks correctly.",
+    "chronologicalOrderIncorrect": "Some artworks were not in the correct chronological position.",
+    "storyQuestion": "Story Question",
+    "prompt": "Question",
+    "yourStory": "Your Story",
+    "noAnswerProvided": "No answer provided",
+    "referenceStory": "Reference Story",
+    "storyQuestionNote": "This is a creative question with no right or wrong answer.",
+    "storyPromptDefault": "Tell a story based on the images you saw.",
+    "creativeStory": "Creative Story",
     "notCompleted": {
       "title": "Evaluation Not Completed",
       "message": "The patient has not yet completed the evaluation for this session. Results will be available after completion."

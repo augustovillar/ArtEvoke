@@ -545,6 +545,7 @@
   "results": {
     "title": "Resultados da Sessão",
     "summaryTitle": "Resumo",
+    "generatedStory": "História Gerada",
     "mode": "Modo",
     "dataset": "Dataset",
     "language": "Idioma",
@@ -586,6 +587,20 @@
       "notImplemented": "Resultados de Exploração de Arte",
       "comingSoon": "A visualização de resultados para Exploração de Arte será implementada em breve."
     },
+    "chronologicalOrderQuestion": "Pergunta de Ordem Cronológica",
+    "orderArtsByDate": "Ordene as obras de arte da mais antiga para a mais recente",
+    "yourOrder": "Sua Ordem",
+    "chronologicalOrder": "Ordem Cronológica",
+    "chronologicalOrderCorrect": "Perfeito! Você ordenou todas as obras corretamente.",
+    "chronologicalOrderIncorrect": "Algumas obras não estavam na posição cronológica correta.",
+    "storyQuestion": "Pergunta sobre a História",
+    "prompt": "Pergunta",
+    "yourStory": "Sua História",
+    "noAnswerProvided": "Nenhuma resposta fornecida",
+    "referenceStory": "História de Referência",
+    "storyQuestionNote": "Esta é uma pergunta criativa sem resposta certa ou errada.",
+    "storyPromptDefault": "Conte uma história baseada nas imagens que você viu.",
+    "creativeStory": "História Criativa",
     "notCompleted": {
       "title": "Avaliação Não Concluída",
       "message": "O paciente ainda não concluiu a avaliação para esta sessão. Os resultados estarão disponíveis após a conclusão."
