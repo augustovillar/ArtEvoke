@@ -362,149 +362,16 @@ async def get_session_evaluation(
 
     evaluation_data = {}
 
-    # Get MemoryReconstruction data if present
     if session.memory_reconstruction_id:
-        mr = (
-            db.query(MemoryReconstruction)
-            .filter(MemoryReconstruction.id == session.memory_reconstruction_id)
-            .first()
+        evaluation_data["memory_reconstruction"] = _get_memory_reconstruction_evaluation_data(
+            session.memory_reconstruction_id, db
         )
-        
-        if not mr:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Memory Reconstruction with ID {session.memory_reconstruction_id} not found"
-            )
-        
-        sections_list = db.query(Sections).filter(
-            Sections.memory_reconstruction_id == mr.id
-        ).order_by(Sections.display_order).all()
-        
-        sections_data = []
-        for section in sections_list:
-            # Get all section images using format_catalog_item_info
-            section_image_ids = [
-                section.image1_id,
-                section.image2_id,
-                section.image3_id,
-                section.image4_id,
-                section.image5_id,
-                section.image6_id,
-            ]
-            
-            images_data = []
-            for image_id in section_image_ids:
-                if image_id:
-                    catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
-                    if catalog_item:
-                        image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
-                        if image_item:
-                            images_data.append(image_item)
-                else:
-                    images_data.append(None)
-            
-            # Get favorite image
-            fav_image_data = None
-            if section.fav_image_id:
-                fav_catalog_item = db.query(CatalogItem).filter(CatalogItem.id == section.fav_image_id).first()
-                if fav_catalog_item:
-                    fav_image_data = format_catalog_item_info(fav_catalog_item, include_full_metadata=True)
-            
-            section_dict = {
-                "id": section.id,
-                "display_order": section.display_order,
-                "section_content": section.section_content,
-                "images": images_data,
-                "fav_image": fav_image_data,
-            }
-            sections_data.append(section_dict)
-        
-        # Validate required fields
-        if not mr.dataset:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Memory Reconstruction dataset is missing"
-            )
-        
-        if not mr.language:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Memory Reconstruction language is missing"
-            )
-        
-        if not mr.segmentation_strategy:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Memory Reconstruction segmentation strategy is missing"
-            )
-        
-        if not mr.created_at:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Memory Reconstruction creation time is missing"
-            )
-        
-        evaluation_data["memory_reconstruction"] = {
-            "id": mr.id,
-            "story": mr.story,
-            "dataset": mr.dataset.value,
-            "language": mr.language.value,
-            "segmentation_strategy": mr.segmentation_strategy.value,
-            "created_at": mr.created_at.isoformat(),
-            "sections": sections_data,
-        }
 
     if session.art_exploration_id:
-        ae = (
-            db.query(ArtExploration)
-            .filter(ArtExploration.id == session.art_exploration_id)
-            .first()
+        evaluation_data["art_exploration"] = _get_art_exploration_evaluation_data(
+            session.art_exploration_id, db
         )
-        
-        if not ae:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Art Exploration with ID {session.art_exploration_id} not found"
-            )
-        
-        images_data = []
-        for image in sorted(ae.images, key=lambda x: x.display_order):
-            image_item = format_catalog_item_info(image.catalog_item, include_full_metadata=True)
-            if image_item:
-                # Convert to dict and add extra fields
-                image_dict = image_item.model_dump()
-                image_dict["images_id"] = image.id
-                image_dict["display_order"] = image.display_order
-                images_data.append(image_dict)
-        
-        if not ae.dataset:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Art Exploration dataset is missing"
-            )
-        
-        if not ae.language:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Art Exploration language is missing"
-            )
-            
-        if not ae.created_at:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Art Exploration creation time is missing"
-            )
-        
-        evaluation_data["art_exploration"] = {
-            "id": ae.id,
-            "story_generated": ae.story_generated,
-            "dataset": ae.dataset.value,
-            "language": ae.language.value,
-            "created_at": ae.created_at.isoformat(),
-            "images": images_data,
-        }
 
-    # Return empty dict if no evaluation data exists yet (session not started)
     return evaluation_data
 
 
@@ -580,6 +447,195 @@ async def get_session_results(
 # ============================================================================
 # Helper functions for results processing
 # ============================================================================
+
+def _get_memory_reconstruction_evaluation_data(
+    memory_reconstruction_id: str,
+    db: Session
+) -> dict:
+    """
+    Get Memory Reconstruction evaluation data for display.
+    Returns formatted dictionary with sections and images.
+    """
+    mr = (
+        db.query(MemoryReconstruction)
+        .filter(MemoryReconstruction.id == memory_reconstruction_id)
+        .first()
+    )
+    
+    if not mr:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Memory Reconstruction with ID {memory_reconstruction_id} not found"
+        )
+    
+    sections_list = db.query(Sections).filter(
+        Sections.memory_reconstruction_id == mr.id
+    ).order_by(Sections.display_order).all()
+    
+    sections_data = []
+    for section in sections_list:
+        # Get all section images
+        section_image_ids = [
+            section.image1_id,
+            section.image2_id,
+            section.image3_id,
+            section.image4_id,
+            section.image5_id,
+            section.image6_id,
+        ]
+        
+        images_data = []
+        for image_id in section_image_ids:
+            if not image_id:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Section {section.display_order} has missing image ID"
+                )
+            
+            catalog_item = db.query(CatalogItem).filter(CatalogItem.id == image_id).first()
+            if not catalog_item:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Image {image_id} not found in catalog for section {section.display_order}"
+                )
+            
+            image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            if not image_item:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to format image {image_id} for section {section.display_order}"
+                )
+            
+            images_data.append(image_item)
+        
+        # Get favorite image
+        if not section.fav_image_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Section {section.display_order} has no favorite image"
+            )
+        
+        fav_catalog_item = db.query(CatalogItem).filter(CatalogItem.id == section.fav_image_id).first()
+        if not fav_catalog_item:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Favorite image {section.fav_image_id} not found in catalog for section {section.display_order}"
+            )
+        
+        fav_image_data = format_catalog_item_info(fav_catalog_item, include_full_metadata=True)
+        if not fav_image_data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to format favorite image {section.fav_image_id} for section {section.display_order}"
+            )
+        
+        section_dict = {
+            "id": section.id,
+            "display_order": section.display_order,
+            "section_content": section.section_content,
+            "images": images_data,
+            "fav_image": fav_image_data,
+        }
+        sections_data.append(section_dict)
+    
+    # Validate required fields
+    if not mr.dataset:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Memory Reconstruction dataset is missing"
+        )
+    
+    if not mr.language:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Memory Reconstruction language is missing"
+        )
+    
+    if not mr.segmentation_strategy:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Memory Reconstruction segmentation strategy is missing"
+        )
+    
+    if not mr.created_at:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Memory Reconstruction creation time is missing"
+        )
+    
+    return {
+        "id": mr.id,
+        "story": mr.story,
+        "dataset": mr.dataset.value,
+        "language": mr.language.value,
+        "segmentation_strategy": mr.segmentation_strategy.value,
+        "created_at": mr.created_at.isoformat(),
+        "sections": sections_data,
+    }
+
+
+def _get_art_exploration_evaluation_data(
+    art_exploration_id: str,
+    db: Session
+) -> dict:
+    """
+    Get Art Exploration evaluation data for display.
+    Returns formatted dictionary with images.
+    """
+    ae = (
+        db.query(ArtExploration)
+        .filter(ArtExploration.id == art_exploration_id)
+        .first()
+    )
+    
+    if not ae:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Art Exploration with ID {art_exploration_id} not found"
+        )
+    
+    images_data = []
+    for image in sorted(ae.images, key=lambda x: x.display_order):
+        image_item = format_catalog_item_info(image.catalog_item, include_full_metadata=True)
+        if not image_item:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to format image for Art Exploration"
+            )
+        
+        # Convert to dict and add extra fields
+        image_dict = image_item.model_dump()
+        image_dict["display_order"] = image.display_order
+        images_data.append(image_dict)
+    
+    # Validate required fields
+    if not ae.dataset:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Art Exploration dataset is missing"
+        )
+    
+    if not ae.language:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Art Exploration language is missing"
+        )
+        
+    if not ae.created_at:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Art Exploration creation time is missing"
+        )
+    
+    return {
+        "id": ae.id,
+        "story_generated": ae.story_generated,
+        "dataset": ae.dataset.value,
+        "language": ae.language.value,
+        "created_at": ae.created_at.isoformat(),
+        "images": images_data,
+    }
+
 
 def _time_to_string(time_obj):
     """Convert time object to string format HH:MM:SS"""
