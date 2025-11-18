@@ -343,8 +343,7 @@
     "errorInitializing": "Error initializing evaluation. Please try again.",
     "errorSavingStory": "Error saving story. Please try again.",
     "errorSavingQuestion": "Error saving answer. Please try again.",
-    "sessionDataNotFound": "Session data not found. Redirecting...",
-    "loading": "Loading..."
+    "sessionDataNotFound": "Session data not found. Redirecting..."
   },
   "roleSelection": {
     "subtitle": "Select whether you are a doctor or a patient",
@@ -544,6 +543,78 @@
       "noResults": "No results available yet.",
       "pendingMessage": "This session has not been started by the patient yet.",
       "inProgressMessage": "This session is in progress."
+    }
+  },
+  "results": {
+    "title": "Session Results",
+    "summaryTitle": "Summary",
+    "generatedStory": "Generated Story",
+    "mode": "Mode",
+    "dataset": "Dataset",
+    "language": "Language",
+    "completedAt": "Completed at",
+    "imageQuestions": "Image Questions",
+    "objectiveQuestions": "Objective Questions",
+    "overallAccuracy": "Overall Accuracy",
+    "imageRecognitionQuestions": "Image Recognition Questions",
+    "objectiveQuestionsTitle": "Objective Questions",
+    "imageQuestion": "Image Question",
+    "of": "of",
+    "yourAnswer": "Your Answer",
+    "correctAnswer": "Correct Answer",
+    "distractor": "Distractor",
+    "correctlyAnswered": "You answered correctly!",
+    "incorrectlyAnswered": "Incorrect answer",
+    "patientAnswer": "Patient's Answer",
+    "selected": "Selected",
+    "allCorrect": "All Correct",
+    "correctPositions": "correct positions",
+    "questionTypes": {
+      "environment": "Environment",
+      "period": "Time of Day",
+      "emotion": "Emotion"
+    },
+    "summary": {
+      "imageQuestions": "Image Questions",
+      "objectiveQuestions": "Objective Questions",
+      "chronologicalOrder": "Chronological Order",
+      "overallAccuracy": "Overall Accuracy",
+      "correct": "Correct",
+      "correctPositions": "Correct Positions"
+    },
+    "artExploration": {
+      "storyQuestion": "Story Question",
+      "chronologicalOrder": "Chronological Order of Images",
+      "patientOrder": "Patient's Order",
+      "correctOrder": "Correct Order",
+      "notImplemented": "Art Exploration Results",
+      "comingSoon": "Results visualization for Art Exploration will be implemented soon."
+    },
+    "chronologicalOrderQuestion": "Chronological Order Question",
+    "orderArtsByDate": "Order the artworks from oldest to newest",
+    "yourOrder": "Your Order",
+    "chronologicalOrder": "Chronological Order",
+    "chronologicalOrderCorrect": "Perfect! You ordered all artworks correctly.",
+    "chronologicalOrderIncorrect": "Some artworks were not in the correct chronological position.",
+    "storyQuestion": "Story Question",
+    "prompt": "Question",
+    "yourStory": "Your Story",
+    "noAnswerProvided": "No answer provided",
+    "referenceStory": "Reference Story",
+    "storyQuestionNote": "This is a creative question with no right or wrong answer.",
+    "storyPromptDefault": "Tell a story based on the images you saw.",
+    "creativeStory": "Creative Story",
+    "notCompleted": {
+      "title": "Evaluation Not Completed",
+      "message": "The patient has not yet completed the evaluation for this session. Results will be available after completion."
+    },
+    "errors": {
+      "title": "Error Loading Results",
+      "notCompleted": "This session has not been completed yet",
+      "unauthorized": "You do not have permission to view these results",
+      "notFound": "Session not found",
+      "loadFailed": "Failed to load results",
+      "noData": "No result data available"
     }
   },
   "consent": {

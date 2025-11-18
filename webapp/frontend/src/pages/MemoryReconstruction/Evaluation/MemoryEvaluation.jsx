@@ -5,6 +5,7 @@ import { useMemoryReconstructionEvaluation } from './hooks/useMemoryReconstructi
 import ImageRecognitionQuestion from './components/ImageRecognitionQuestion';
 import ObjectiveQuestions from './components/ObjectiveQuestions';
 import ProgressBar from './components/ProgressBar';
+import { QUESTION_TYPES } from '../../../constants/questionTypes';
 import styles from './MemoryEvaluation.module.css';
 
 const MemoryEvaluation = () => {
@@ -30,7 +31,7 @@ const MemoryEvaluation = () => {
     const objectiveQuestions = [
         { 
             id: 'environment',
-            type: 'environment', 
+            type: QUESTION_TYPES.ENVIRONMENT, 
             text: 'Como era o ambiente da história?', 
             questionType: 'multiple-choice',
             options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
@@ -38,7 +39,7 @@ const MemoryEvaluation = () => {
         },
         { 
             id: 'period',
-            type: 'period', 
+            type: QUESTION_TYPES.PERIOD, 
             text: 'Que parte do dia era?', 
             questionType: 'multiple-choice', 
             options: ['Manhã', 'Tarde', 'Noite'],
@@ -46,7 +47,7 @@ const MemoryEvaluation = () => {
         },
         { 
             id: 'emotion',
-            type: 'emotion', 
+            type: QUESTION_TYPES.EMOTION, 
             text: 'Qual emoção foi predominante na história?', 
             questionType: 'multiple-choice',
             options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],

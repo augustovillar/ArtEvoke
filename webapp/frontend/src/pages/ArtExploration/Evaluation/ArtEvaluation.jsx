@@ -6,6 +6,7 @@ import { useEvaluationSubmit } from './hooks';
 import ObjectiveQuestions from '../../MemoryReconstruction/Evaluation/components/ObjectiveQuestions';
 import ProgressBar from '../../MemoryReconstruction/Evaluation/components/ProgressBar';
 import { millisecondsToTimeString } from '../../../utils/timeFormatter';
+import { QUESTION_TYPES } from '../../../constants/questionTypes';
 import styles from './ArtEvaluation.module.css';
 
 const ArtEvaluation = () => {
@@ -29,7 +30,7 @@ const ArtEvaluation = () => {
   const objectiveQuestions = [
     {
       id: 'environment',
-      type: 'environment',
+      type: QUESTION_TYPES.ENVIRONMENT,
       text: 'Como era o ambiente da história?', 
       questionType: 'multiple-choice',
       options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
@@ -37,7 +38,7 @@ const ArtEvaluation = () => {
     },
     {
       id: 'period',
-      type: 'period', 
+      type: QUESTION_TYPES.PERIOD, 
       text: 'Que parte do dia era?', 
       questionType: 'multiple-choice', 
       options: ['Manhã', 'Tarde', 'Noite'],
@@ -45,7 +46,7 @@ const ArtEvaluation = () => {
     },
     {
       id: 'emotion',
-      type: 'emotion', 
+      type: QUESTION_TYPES.EMOTION, 
       text: 'Qual emoção foi predominante na história?', 
       questionType: 'multiple-choice',
       options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],

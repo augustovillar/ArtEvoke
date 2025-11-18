@@ -343,8 +343,7 @@
     "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
     "errorSavingStory": "Erro ao salvar história. Tente novamente.",
     "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",
-    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando...",
-    "loading": "Carregando..."
+    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando..."
   },
   "roleSelection": {
     "subtitle": "Selecione se você é um médico ou paciente",
@@ -545,6 +544,78 @@
       "noResults": "Nenhum resultado disponível ainda.",
       "pendingMessage": "Esta sessão ainda não foi iniciada pelo paciente.",
       "inProgressMessage": "Esta sessão está em andamento."
+    }
+  },
+  "results": {
+    "title": "Resultados da Sessão",
+    "summaryTitle": "Resumo",
+    "generatedStory": "História Gerada",
+    "mode": "Modo",
+    "dataset": "Dataset",
+    "language": "Idioma",
+    "completedAt": "Concluída em",
+    "imageQuestions": "Perguntas de Imagem",
+    "objectiveQuestions": "Perguntas Objetivas",
+    "overallAccuracy": "Precisão Geral",
+    "imageRecognitionQuestions": "Perguntas de Reconhecimento de Imagem",
+    "objectiveQuestionsTitle": "Perguntas Objetivas",
+    "imageQuestion": "Pergunta de Imagem",
+    "of": "de",
+    "yourAnswer": "Sua Resposta",
+    "correctAnswer": "Resposta Correta",
+    "distractor": "Distrator",
+    "correctlyAnswered": "Você respondeu corretamente!",
+    "incorrectlyAnswered": "Resposta incorreta",
+    "patientAnswer": "Resposta do Paciente",
+    "selected": "Selecionado",
+    "allCorrect": "Tudo Correto",
+    "correctPositions": "posições corretas",
+    "questionTypes": {
+      "environment": "Ambiente",
+      "period": "Período do Dia",
+      "emotion": "Emoção"
+    },
+    "summary": {
+      "imageQuestions": "Perguntas de Imagem",
+      "objectiveQuestions": "Perguntas Objetivas",
+      "chronologicalOrder": "Ordem Cronológica",
+      "overallAccuracy": "Precisão Geral",
+      "correct": "Correto",
+      "correctPositions": "Posições Corretas"
+    },
+    "artExploration": {
+      "storyQuestion": "Pergunta sobre a História",
+      "chronologicalOrder": "Ordem Cronológica das Imagens",
+      "patientOrder": "Ordem do Paciente",
+      "correctOrder": "Ordem Correta",
+      "notImplemented": "Resultados de Exploração de Arte",
+      "comingSoon": "A visualização de resultados para Exploração de Arte será implementada em breve."
+    },
+    "chronologicalOrderQuestion": "Pergunta de Ordem Cronológica",
+    "orderArtsByDate": "Ordene as obras de arte da mais antiga para a mais recente",
+    "yourOrder": "Sua Ordem",
+    "chronologicalOrder": "Ordem Cronológica",
+    "chronologicalOrderCorrect": "Perfeito! Você ordenou todas as obras corretamente.",
+    "chronologicalOrderIncorrect": "Algumas obras não estavam na posição cronológica correta.",
+    "storyQuestion": "Pergunta sobre a História",
+    "prompt": "Pergunta",
+    "yourStory": "Sua História",
+    "noAnswerProvided": "Nenhuma resposta fornecida",
+    "referenceStory": "História de Referência",
+    "storyQuestionNote": "Esta é uma pergunta criativa sem resposta certa ou errada.",
+    "storyPromptDefault": "Conte uma história baseada nas imagens que você viu.",
+    "creativeStory": "História Criativa",
+    "notCompleted": {
+      "title": "Avaliação Não Concluída",
+      "message": "O paciente ainda não concluiu a avaliação para esta sessão. Os resultados estarão disponíveis após a conclusão."
+    },
+    "errors": {
+      "title": "Erro ao Carregar Resultados",
+      "notCompleted": "Esta sessão ainda não foi concluída",
+      "unauthorized": "Você não tem permissão para visualizar estes resultados",
+      "notFound": "Sessão não encontrada",
+      "loadFailed": "Falha ao carregar resultados",
+      "noData": "Nenhum dado de resultado disponível"
     }
   },
   "consent": {

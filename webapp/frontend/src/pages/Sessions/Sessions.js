@@ -356,9 +356,8 @@ const Sessions = () => {
                                 )}
                                 {userType === 'patient' && session.status === 'completed' && (
                                     <button 
-                                        className="btn-view-session"
-                                        disabled={true}
-                                        title={t('sessions.resultsComingSoon') || 'Página de resultados em desenvolvimento'}
+                                        className="btn-view-results"
+                                        onClick={() => navigate(`/sessions/${session.id}/results`)}
                                     >
                                         {t('sessions.viewResults')}
                                     </button>
