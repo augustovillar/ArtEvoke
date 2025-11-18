@@ -13,6 +13,8 @@ const Home = () => {
     const { isLoggedIn } = useAuth();
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
+    const memoryCardRef = useRef(null);
+    const artCardRef = useRef(null);
     
     const [expandedMemory, setExpandedMemory] = useState(false);
     const [expandedArt, setExpandedArt] = useState(false);
@@ -33,10 +35,25 @@ const Home = () => {
             // Se não logado, expande/recolhe a explicação de forma independente
             if (mode === 'memory') {
                 setExpandedMemory(!expandedMemory);
+                setExpandedArt(false); // Close the other card
             } else {
                 setExpandedArt(!expandedArt);
+                setExpandedMemory(false); // Close the other card
             }
         }
+    };
+
+    const handleCollapse = (cardRef, setExpanded) => {
+        setExpanded(false);
+        // Scroll to the card after a short delay to allow state update
+        setTimeout(() => {
+            if (cardRef.current) {
+                cardRef.current.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start'
+                });
+            }
+        }, 100);
     };
 
     return (
@@ -52,10 +69,14 @@ const Home = () => {
                 <div className="options-grid">
                     {/* Memory Reconstruction Card */}
                     <div 
+                        ref={memoryCardRef}
                         className={`option-card ${expandedMemory ? 'expanded' : ''} ${!isLoggedIn ? 'clickable' : ''}`}
-                        onClick={() => handleModeClick('memory')}
                     >
-                        <div className="option-header">
+                        <div 
+                            className="option-header"
+                            onClick={() => !expandedMemory && handleModeClick('memory')}
+                            style={{ cursor: expandedMemory ? 'default' : 'pointer' }}
+                        >
                             <div className="option-icon-wrapper">
                                 <img src={storyImage} alt={t('home.memoryReconstructionDesc')} className="option-icon" />
                             </div>
@@ -64,7 +85,7 @@ const Home = () => {
                         </div>
 
                         {!isLoggedIn && expandedMemory && (
-                            <div className="option-expanded-content">
+                            <div className="option-expanded-content" onClick={(e) => e.stopPropagation()}>
                                 <div className="expanded-section">
                                     <h3>{t('home.howItWorks')}</h3>
                                     <ol className="how-it-works-list">
@@ -91,30 +112,24 @@ const Home = () => {
                                                 <h4>{t('home.section')} 1</h4>
                                                 <p className="section-text">{t('home.memorySection1')}</p>
                                                 <div className="example-images">
-                                                    <div className="example-image-placeholder selected">
-                                                        <span>{t('home.selectedImage')}</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 2</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 3</span>
-                                                    </div>
+                                                    <img src="/mr_example/image0_0.jpg" alt="Via Appia at Sunset" className="example-image" />
+                                                    <img src="/mr_example/image0_1.jpg" alt="View Over Town at Sunset" className="example-image" />
+                                                    <img src="/mr_example/image0_2.jpg" alt="The Tuileries Study" className="example-image" />
+                                                    <img src="/mr_example/image0_3.jpg" alt="Bridge at Posilippo" className="example-image" />
+                                                    <img src="/mr_example/image0_4.jpg" alt="View of Moscow" className="example-image" />
+                                                    <img src="/mr_example/image0_5.jpg" alt="Road to Berneval" className="example-image" />
                                                 </div>
                                             </div>
                                             <div className="example-section-item">
                                                 <h4>{t('home.section')} 2</h4>
                                                 <p className="section-text">{t('home.memorySection2')}</p>
                                                 <div className="example-images">
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 1</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder selected">
-                                                        <span>{t('home.selectedImage')}</span>
-                                                    </div>
-                                                    <div className="example-image-placeholder">
-                                                        <span>{t('home.option')} 3</span>
-                                                    </div>
+                                                    <img src="/mr_example/image1_0.jpg" alt="July Afternoon" className="example-image" />
+                                                    <img src="/mr_example/image1_1.jpg" alt="Meadow on the Edge of a Forest" className="example-image" />
+                                                    <img src="/mr_example/image1_2.jpg" alt="Grass" className="example-image" />
+                                                    <img src="/mr_example/image1_3.jpg" alt="Shinnecock Hills Peconic Bay" className="example-image" />
+                                                    <img src="/mr_example/image1_4.jpg" alt="Oat and Poppy Field Giverny" className="example-image" />
+                                                    <img src="/mr_example/image1_5.jpg" alt="Poppy Garden" className="example-image" />
                                                 </div>
                                             </div>
                                         </div>
@@ -125,7 +140,7 @@ const Home = () => {
                                     className="collapse-button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setExpandedMemory(false);
+                                        handleCollapse(memoryCardRef, setExpandedMemory);
                                     }}
                                 >
                                     {t('home.showLess')}
@@ -134,7 +149,10 @@ const Home = () => {
                         )}
 
                         {!isLoggedIn && !expandedMemory && (
-                            <button className="expand-button">
+                            <button 
+                                className="expand-button"
+                                onClick={() => handleModeClick('memory')}
+                            >
                                 {t('home.learnMore')}
                             </button>
                         )}
@@ -142,10 +160,14 @@ const Home = () => {
 
                     {/* Art Exploration Card */}
                     <div 
+                        ref={artCardRef}
                         className={`option-card ${expandedArt ? 'expanded' : ''} ${!isLoggedIn ? 'clickable' : ''}`}
-                        onClick={() => handleModeClick('art')}
                     >
-                        <div className="option-header">
+                        <div 
+                            className="option-header"
+                            onClick={() => !expandedArt && handleModeClick('art')}
+                            style={{ cursor: expandedArt ? 'default' : 'pointer' }}
+                        >
                             <div className="option-icon-wrapper">
                                 <img src={artImage} alt={t('home.artExplorationDesc')} className="option-icon" />
                             </div>
@@ -154,7 +176,7 @@ const Home = () => {
                         </div>
 
                         {!isLoggedIn && expandedArt && (
-                            <div className="option-expanded-content">
+                            <div className="option-expanded-content" onClick={(e) => e.stopPropagation()}>
                                 <div className="expanded-section">
                                     <h3>{t('home.howItWorks')}</h3>
                                     <ol className="how-it-works-list">
@@ -180,16 +202,9 @@ const Home = () => {
                                             {t('home.artSearchDesc')}
                                         </p>
                                         <div className="example-images">
-                                            {/* Placeholder para imagens selecionadas */}
-                                            <div className="example-image-placeholder selected">
-                                                <span>{t('home.selectedImage')} 1</span>
-                                            </div>
-                                            <div className="example-image-placeholder selected">
-                                                <span>{t('home.selectedImage')} 2</span>
-                                            </div>
-                                            <div className="example-image-placeholder selected">
-                                                <span>{t('home.selectedImage')} 3</span>
-                                            </div>
+                                            <img src="/ae_example/image0.jpg" alt={t('home.artImage1')} className="example-image art-exploration" />
+                                            <img src="/ae_example/image1.jpg" alt={t('home.artImage2')} className="example-image art-exploration" />
+                                            <img src="/ae_example/image2.jpg" alt={t('home.artImage3')} className="example-image art-exploration" />
                                         </div>
                                         <p className="example-description">
                                             {t('home.artGenerationDesc')}
@@ -206,7 +221,7 @@ const Home = () => {
                                     className="collapse-button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setExpandedArt(false);
+                                        handleCollapse(artCardRef, setExpandedArt);
                                     }}
                                 >
                                     {t('home.showLess')}
@@ -215,7 +230,10 @@ const Home = () => {
                         )}
 
                         {!isLoggedIn && !expandedArt && (
-                            <button className="expand-button">
+                            <button 
+                                className="expand-button"
+                                onClick={() => handleModeClick('art')}
+                            >
                                 {t('home.learnMore')}
                             </button>
                         )}

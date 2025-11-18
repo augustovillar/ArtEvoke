@@ -64,9 +64,8 @@
     "contact": "Contact",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "copyright": "Marc Bejjani, Augusto Barbosa Villar Silva.",
-    "university": "Université Catholique de Louvain, EPL",
-    "supervisor": "Thesis Supervisor: Benoît Macq"
+    "copyright": "Augusto B. V. Silva, Vinicius Alvarenga.",
+    "university": "Université Catholique de Louvain"
   },
   "language": {
     "select": "Select Language",
@@ -89,9 +88,11 @@
     "readQuestion": "Read Question"
   },
   "about": {
-    "title": "About Us",
-    "paragraph1": "This website is created in the context of a Masters Thesis at the Université Catholique de Louvain, undertaken by Marc Bejjani and Augusto Barbosa Villar Silva, under the supervision of Professor Benoît Macq.",
-    "paragraph2": "This thesis explores how artificial intelligence can support non-drug interventions for people living with Alzheimer's disease (AD) through the use of visual stimuli and art. We present a prototype platform that combines large multimodal models (LMMs), large language models (LLMs), and embedding-based vector search to connect personal stories with curated artworks. Designed to assist memory recall and cognitive engagement, ArtEvoke generates personalized visual narratives or retrieves relevant paintings based on the user's story. Art is used not only as a memory trigger but also as a tool to promote emotional connection and engagement. The prototype is intended for testing in future therapeutic and research settings, particularly as a scalable support tool for caregivers and clinical practitioners. We evaluate model performance, retrieval effectiveness using FAISS, and user interaction design with a focus on accessibility. These findings highlight the potential of AI tools to support scalable cognitive stimulation in dementia care."
+    "title": "About ArtEvoke",
+    "paragraph1": "This thesis explores how artificial intelligence can support non-drug interventions for people living with Alzheimer's disease through the use of visual stimuli and art. We present the development and integration of ArtEvoke, a prototype platform that combines large multimodal models (LMMs), large language models (LLMs), and embedding-based vector search to connect personal stories with curated artworks.",
+    "paragraph2": "Building upon foundational research from a <a href='https://thesis.dial.uclouvain.be/entities/masterthesis/579c4760-996b-4b3b-ba39-3ea7caf05ab8' target='_blank' rel='noopener noreferrer'>Master's thesis by Augusto B. V. Silva and Marc Bejjani</a> at Université Catholique de Louvain, which benchmarked the core AI models, this work focuses on integrating these components into a functional prototype and introducing a novel clinical evaluation framework. Designed to assist memory recall and cognitive engagement, ArtEvoke generates personalized visual narratives or retrieves relevant paintings based on the user's story. A key contribution of this thesis is the platform's ability to support structured clinical sessions, enabling practitioners to capture and \"score\" patient responses to provide a metric for engagement.",
+    "paragraph3": "The prototype is intended for testing in future therapeutic and research settings as a scalable support tool. We evaluate the integrated system's retrieval effectiveness using FAISS and its user interaction design with a focus on accessibility. These findings highlight the potential of AI tools to support scalable and measurable cognitive stimulation in dementia care.",
+    "paragraph4": "This work was undertaken at the University of São Paulo by Augusto B. V. Silva and Vinicius Alvarenga."
   },
   "home": {
     "heroTitle": "Welcome to ArtEvoke",
@@ -112,23 +113,26 @@
     "section": "Section",
     "keywordsEntered": "Keywords Entered:",
     "keyword1": "garden",
-    "keyword2": "flowers",
-    "keyword3": "nature",
+    "keyword2": "children",
+    "keyword3": "beautiful city",
     "memoryStep1": "Tell us a story or memory that you'd like to explore",
     "memoryStep2": "The AI divides your story into meaningful sections",
     "memoryStep3": "For each section, the system searches for related artworks",
     "memoryStep4": "Choose the image that best matches each section of your story",
-    "memoryExampleStory": "When I was a child, I loved playing in my grandmother's garden. The colorful flowers bloomed everywhere, and I spent hours discovering nature's beauty. Those peaceful afternoons taught me to appreciate simple joys and the wonder of the natural world.",
+    "memoryExampleStory": "The city towers glimmered above me like steel giants. I wandered toward the quiet outskirts where the noise softened. Sunlight spilled across open fields, turning everything warm and golden. Wildflowers brushed my legs as colors replaced concrete. And at last, a still blue lake opened before me.",
     "memoryExampleDesc": "The AI divides your story into sections and finds related images:",
-    "memorySection1": "Playing in grandmother's garden with colorful flowers",
-    "memorySection2": "Discovering nature's beauty and peaceful afternoons",
+    "memorySection1": "The city towers glimmered above me like steel giants. I wandered toward the quiet outskirts where the noise softened. Sunlight spilled across open fields, turning everything warm and golden.",
+    "memorySection2": "Sunlight spilled across open fields, turning everything warm and golden. Wildflowers brushed my legs as colors replaced concrete. And at last, a still blue lake opened before me.",
     "artStep1": "Enter keywords related to themes you want to explore",
     "artStep2": "The system searches for artworks matching your keywords",
     "artStep3": "Select the images that resonate with you",
     "artStep4": "The AI generates a personalized story connecting your chosen artworks",
     "artSearchDesc": "The system finds artworks related to your keywords:",
     "artGenerationDesc": "Based on the selected images, the AI generates a story:",
-    "artExampleStory": "In a peaceful garden blooming with vibrant flowers, one discovers the simple beauty of nature. Each petal tells a story of growth and renewal, inviting quiet contemplation and connection with the natural world."
+    "artExampleStory": "In the vibrant city of Paris, newcomers arrived in 1934, carrying dreams and stories from their homeland. Among them was La Verja, a spirited young artist whose eyes danced with the colors of her memories. As they settled into their cozy apartment, the city buzzed with life and excitement. La Verja found solace in painting, capturing the essence of Paris in every stroke. One sunny afternoon, she painted a lively scene of the Seine River, with boats gliding past the Eiffel Tower. Her artwork soon became a cherished piece in the neighborhood, bringing joy to many.",
+    "artImage1": "La Verja",
+    "artImage2": "Newcomers",
+    "artImage3": "Design for Final Backcloth"
   },
   "login": {
     "title": "Login",

@@ -12,8 +12,12 @@ const About = () => {
                 <p>
                     {t('about.paragraph1')}
                 </p>
+                <p dangerouslySetInnerHTML={{ __html: t('about.paragraph2') }} />
                 <p>
-                    {t('about.paragraph2')}
+                    {t('about.paragraph3')}
+                </p>
+                <p>
+                    {t('about.paragraph4')}
                 </p>
             </div>
         </div>
