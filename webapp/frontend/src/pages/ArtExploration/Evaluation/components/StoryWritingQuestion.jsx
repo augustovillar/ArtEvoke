@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QuestionReadAloudButton } from '../../../../components/ui';
+import SpeechInput from '../../../../features/speech';
 import styles from './StoryWritingQuestion.module.css';
 
 const StoryWritingQuestion = ({ onAnswer, isSubmitting = false }) => {
@@ -48,6 +49,7 @@ const StoryWritingQuestion = ({ onAnswer, isSubmitting = false }) => {
                 <div className={styles.charCount}>
                     {story.length} {t('evaluation.characters')}
                 </div>
+                <SpeechInput onChange={setStory} initialValue={story} improveText={false} />
             </div>
 
             <div className={styles.buttonContainer}>

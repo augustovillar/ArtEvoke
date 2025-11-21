@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from orm import get_db, MemoryReconstruction, Sections
 from orm.session_models import Session as SessionModel
 from api_types.memory_reconstruction import (
@@ -10,13 +11,38 @@ from api_types.memory_reconstruction import (
     MemoryReconstructionResponse,
     SectionResponse,
 )
+from api_types.common import (
+    ImproveTextRequestDTO,
+    ImproveTextResponseDTO,
+)
 from utils.auth import (
     get_current_user,
 )
 from typing import Optional
 import uuid
+import os
+import json
+from clients import get_maritaca_client
+from utils.text_correction import parse_llm_json_response
 
 router = APIRouter()
+
+client = get_maritaca_client()
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
+
+
+def load_speech_correct_prompt(language: str = "pt") -> str:
+    """Load the speech text correction prompt based on language."""
+    if language == "en":
+        filename = "speech_correct_text_en.md"
+    else:
+        filename = "speech_correct_text_pt.md"
+    
+    filepath = os.path.join(PROMPTS_DIR, filename)
+    with open(filepath, "r", encoding="utf-8") as f:
+        return f.read().strip()
 
 
 @router.post("/save", response_model=SaveMemoryReconstructionResponseDTO)
@@ -89,9 +115,9 @@ async def get_memory_reconstructions(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    session_mr_ids = db.query(SessionModel.memory_reconstruction_id).filter(
+    session_mr_ids = select(SessionModel.memory_reconstruction_id).where(
         SessionModel.memory_reconstruction_id.isnot(None)
-    ).subquery()
+    )
     
     total_count = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.patient_id == current_user["id"],
@@ -168,3 +194,50 @@ async def delete_memory_reconstruction(
         message="Memory reconstruction deleted successfully",
         id=memory_reconstruction_id
     )
+
+
+@router.post("/improve-text", response_model=ImproveTextResponseDTO)
+async def improve_text(
+    body: ImproveTextRequestDTO,
+    current_user: dict = Depends(get_current_user),
+) -> ImproveTextResponseDTO:
+    """
+    Improve and correct text from speech-to-text transcription.
+    
+    - **raw_text**: Text to be corrected (max 900 characters)
+    - **language**: Language code ('pt' or 'en')
+    
+    Requires authentication (patient or doctor).
+    """
+    if len(body.raw_text) > 900:
+        raise HTTPException(
+            status_code=400,
+            detail="Text is too long. Maximum length is 900 characters."
+        )
+    
+    if not body.raw_text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Text cannot be empty."
+        )
+    
+    language = body.language.value
+    prompt_template = load_speech_correct_prompt(language)
+    
+    messages = [
+        {"role": "system", "content": prompt_template},
+        {"role": "user", "content": body.raw_text}
+    ]
+    
+    response = client.chat.completions.create(
+        model="sabiazinho-3",
+        messages=messages,
+        max_tokens=1024,
+        temperature=0.3,
+    )
+    
+    response_content = response.choices[0].message.content.strip()
+    
+    processed_text = parse_llm_json_response(response_content, json_key="improved_text", raise_on_error=True)
+    
+    return ImproveTextResponseDTO(processed_text=processed_text)

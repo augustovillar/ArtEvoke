@@ -87,6 +87,19 @@
     "readAloudButton": "Ler em Voz Alta",
     "readQuestion": "Ler Pergunta"
   },
+  "speech": {
+    "speak": "Falar",
+    "listening": "Ouvindo...",
+    "stop": "Parar",
+    "processing": "Processando...",
+    "correcting": "Corrigindo texto...",
+    "enhancing": "Melhorando...",
+    "errorGeneral": "Ocorreu um erro no reconhecimento de fala.",
+    "errorNotAllowed": "Acesso ao microfone negado. Por favor, permita o acesso ao microfone nas configurações do navegador.",
+    "errorNoSpeech": "Nenhuma fala detectada. Por favor, tente novamente.",
+    "errorNetwork": "Erro de rede ocorrido. Por favor, verifique sua conexão.",
+    "errorServiceNotAllowed": "Serviço de reconhecimento de fala não está disponível."
+  },
   "about": {
     "title": "Sobre o ArtEvoke",
     "paragraph1": "Esta tese explora como a inteligência artificial pode apoiar intervenções não medicamentosas para pessoas que vivem com a doença de Alzheimer através do uso de estímulos visuais e arte. Apresentamos o desenvolvimento e integração do ArtEvoke, uma plataforma protótipo que combina grandes modelos multimodais (LMMs), grandes modelos de linguagem (LLMs) e busca vetorial baseada em embeddings para conectar histórias pessoais com obras de arte curadas.",
@@ -141,7 +154,8 @@
     "submit": "Entrar",
     "createAccount": "Ou crie uma conta se você não está registrado",
     "errorInvalid": "Email ou senha inválidos",
-    "errorGeneral": "Algo deu errado. Por favor, tente novamente mais tarde."
+    "errorGeneral": "Algo deu errado. Por favor, tente novamente mais tarde.",
+    "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente."
   },
   "profile": {
     "welcomeTitle": "Bem-vindo ao seu painel, {{email}}!",
