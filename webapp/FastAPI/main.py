@@ -61,3 +61,9 @@ async def shutdown_event():
 @app.get("/")
 async def root():
     return {"message": "Welcome to the home page!"}
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint for load balancer and ECS"""
+    return {"status": "healthy"}

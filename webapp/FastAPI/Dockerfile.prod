@@ -1,0 +1,40 @@
+# Production Dockerfile for FastAPI Backend
+FROM python:3.13-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy UV binary
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy pyproject.toml first for dependency caching
+COPY pyproject.toml uv.lock* ./
+
+# Install dependencies using UV
+RUN uv sync --frozen --no-dev
+
+# Copy the rest of the application
+COPY . .
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Expose the backend port
+EXPOSE 5001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:5001/health || exit 1
+
+# Command to run the FastAPI app in production
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--workers", "2"]
+
+

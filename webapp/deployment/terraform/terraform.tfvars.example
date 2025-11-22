@@ -1,0 +1,7 @@
+aws_region      = "us-east-1"
+project_name    = "artevoke"
+instance_type   = "g4dn.xlarge"  # GPU instance: g4dn.xlarge (16GB VRAM), g4dn.2xlarge (16GB VRAM), g5.xlarge (24GB VRAM)
+                                # CPU-only: t3.large, t3.xlarge (no GPU support)
+instance_ami    = ""  # Leave empty to auto-detect Ubuntu 22.04 LTS, or specify your AMI ID
+key_pair_name   = "your-key-pair-name"  # Must exist in AWS
+root_volume_size = 50  # GB
