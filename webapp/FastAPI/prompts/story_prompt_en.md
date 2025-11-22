@@ -8,17 +8,19 @@ We are building a story based on different artworks selected by patients with de
 
 After writing the story, you must provide:
 
-1. **Story**: The complete story text
+1. **text**: The complete story text
 2. **Events**: Exactly 4 events from the story, each as a short phrase (2-6 words), listed in chronological order as they occur in the story
 3. **Distractor**: One short phrase (2-6 words) that describes something that is NOT an event from the story
 4. **Environment**: The environment of the story. Choose one: Open, Urban, Closed, or Rural
 5. **TimeOfDay**: The time of day in the story. Choose one: Morning, Afternoon, or Night
 6. **Emotion**: The predominant emotion in the story. Choose one: Happiness, Sadness, Anger, Surprise, or Disgust
 
+IMPORTANT: You MUST return a JSON object with the key "text" (NOT "story") containing the story.
+
 Format your response as JSON with the following structure:
 ```json
 {
-  "story": "The complete story text here...",
+  "text": "The complete story text here...",
   "events": [
     "First event phrase",
     "Second event phrase",
@@ -31,3 +33,5 @@ Format your response as JSON with the following structure:
   "emotion": "Happiness"
 }
 ```
+
+Remember: Use "text" not "story" as the key for the story content.

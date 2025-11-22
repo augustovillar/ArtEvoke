@@ -13,6 +13,7 @@ from api_types.common import (
     ImproveTextResponseDTO,
 )
 from clients import get_maritaca_client
+from utils.text_correction import parse_llm_json_response
 import os
 
 router = APIRouter()
@@ -64,6 +65,6 @@ async def improve_text(
         temperature=0.3,
     )
     
-    processed_text = response.choices[0].message.content.strip()
-    
-    return {"processed_text": processed_text}
+    response_content = response.choices[0].message.content.strip()
+    processed_text = parse_llm_json_response(response_content, json_key="improved_text", raise_on_error=True)
+    return ImproveTextResponseDTO(processed_text=processed_text)

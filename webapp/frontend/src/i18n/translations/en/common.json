@@ -87,6 +87,19 @@
     "readAloudButton": "Read Aloud",
     "readQuestion": "Read Question"
   },
+  "speech": {
+    "speak": "Speak",
+    "listening": "Listening...",
+    "stop": "Stop",
+    "processing": "Processing...",
+    "correcting": "Correcting text...",
+    "enhancing": "Enhancing...",
+    "errorGeneral": "An error occurred with speech recognition.",
+    "errorNotAllowed": "Microphone access denied. Please allow microphone access in your browser settings.",
+    "errorNoSpeech": "No speech detected. Please try again.",
+    "errorNetwork": "Network error occurred. Please check your connection.",
+    "errorServiceNotAllowed": "Speech recognition service is not available."
+  },
   "about": {
     "title": "About ArtEvoke",
     "paragraph1": "This thesis explores how artificial intelligence can support non-drug interventions for people living with Alzheimer's disease through the use of visual stimuli and art. We present the development and integration of ArtEvoke, a prototype platform that combines large multimodal models (LMMs), large language models (LLMs), and embedding-based vector search to connect personal stories with curated artworks.",
@@ -141,7 +154,8 @@
     "submit": "Login",
     "createAccount": "Or create an account if you aren't registered",
     "errorInvalid": "Invalid email or password",
-    "errorGeneral": "Something went wrong. Please try again later."
+    "errorGeneral": "Something went wrong. Please try again later.",
+    "sessionExpired": "Your session has expired. Please log in again."
   },
   "profile": {
     "welcomeTitle": "Welcome to your dashboard, {{email}}!",

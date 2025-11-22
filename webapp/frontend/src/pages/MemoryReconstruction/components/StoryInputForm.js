@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import SpeechInput from '../../../features/speech';
 
@@ -15,6 +15,15 @@ const StoryInputForm = ({
     loading
 }) => {
     const { t } = useTranslation();
+    const [isProcessingText, setIsProcessingText] = useState(false);
+    const [displayText, setDisplayText] = useState(storyText);
+
+    // Sync displayText with storyText when it changes externally
+    useEffect(() => {
+        if (!isProcessingText) {
+            setDisplayText(storyText);
+        }
+    }, [storyText, isProcessingText]);
 
     return (
         <div className="content-box">
@@ -23,8 +32,16 @@ const StoryInputForm = ({
                 <textarea
                     className="story-textbox"
                     placeholder={t('memoryReconstruction.textareaPlaceholder')}
-                    value={storyText}
-                    onChange={(e) => onStoryTextChange(e.target.value)}
+                    value={displayText}
+                    onChange={(e) => {
+                        setDisplayText(e.target.value);
+                        onStoryTextChange(e.target.value);
+                    }}
+                    style={{
+                        opacity: isProcessingText ? 0.6 : 1,
+                        transition: 'opacity 0.3s ease'
+                    }}
+                    disabled={isProcessingText}
                 />
                 <div className="select-row">
                     <div className="select-group">
@@ -80,7 +97,23 @@ const StoryInputForm = ({
                 >
                     {loading ? t('memoryReconstruction.searching') : t('memoryReconstruction.submitButton')}
                 </button>
-                <SpeechInput onChange={onStoryTextChange} initialValue={storyText} />
+                <SpeechInput 
+                    onChange={(text) => {
+                        setDisplayText(text);
+                        onStoryTextChange(text);
+                    }}
+                    initialValue={storyText}
+                    onInterimText={(text, processing) => {
+                        if (text !== null) {
+                            setDisplayText(text);
+                            if (!processing) {
+                                onStoryTextChange(text);
+                            }
+                        }
+                        setIsProcessingText(processing || false);
+                    }}
+                    onProcessingChange={setIsProcessingText}
+                />
             </div>
         </div>
     );
