@@ -22,24 +22,16 @@ dependencies = [
     "cryptography==44.0.2",
     
     # ML & AI Models
-    "transformers==4.57.1",
     "sentence-transformers==4.1.0",
     
     # Vector Search
     "qdrant-client==1.15.1",
     
     # Data Processing
-    "pandas==2.2.3",
     "openai==1.58.1",
     
-    # Utilities
-    "requests==2.32.3",
-    "tqdm==4.67.1",
-    "accelerate==1.6.0",
-    "bitsandbytes==0.45.4",
-    
     # NLP & Translation
-    "deep-translator==1.11.4",
+    "language-tool-python==3.1.0",
     
     # Pydantic for validation
     "pydantic==2.10.6"
