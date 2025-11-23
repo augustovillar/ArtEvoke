@@ -46,29 +46,24 @@ def check_and_correct_text(text: str, language: Language) -> str:
     if not text or not text.strip():
         return text
     
-    try:
-        tool = get_language_tool(language)
-        matches = tool.check(text)
-        
-        if not matches:
-            return text
-        
-        sorted_matches = sorted(matches, key=lambda m: m.offset, reverse=True)
-        corrected_text = text
-        
-        for match in sorted_matches:
-            if match.replacements:
-                replacement = match.replacements[0]
-                start = match.offset
-                end = match.offset + match.errorLength
-                corrected_text = corrected_text[:start] + replacement + corrected_text[end:]
-        
-        if len(matches) > 0:
-            print(f"Spell check corrected {len(matches)} issue(s) in text")
-        return corrected_text
-    except Exception as e:
-        print(f"❌ Spell check failed: {e}")
-        raise
+    tool = get_language_tool(language)
+    matches = tool.check(text)
+    
+    if not matches:
+        return text
+    
+    sorted_matches = sorted(matches, key=lambda m: m.offset, reverse=True)
+    corrected_text = text
+    
+    for match in sorted_matches:
+        if match.replacements:
+            start = match.offset
+            end = match.offset + match.error_length
+            corrected_text = corrected_text[:start] + match.replacements[0] + corrected_text[end:]
+    
+    if len(matches) > 0:
+        print(f"Spell check corrected {len(matches)} issue(s)")
+    return corrected_text
     
 
 
