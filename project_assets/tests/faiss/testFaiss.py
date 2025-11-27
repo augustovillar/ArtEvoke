@@ -12,7 +12,7 @@ K_values = [1, 3, 6]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DATA_PATH = os.path.join(SCRIPT_DIR, "..", "..", "descriptions", "output_merged_semart.csv")
+DATA_PATH = os.path.join(SCRIPT_DIR, "..", "..", "scripts", "outputs", "descriptions", "output_merged_semart.csv")
 RETRIEVAL_DIR = os.path.join(SCRIPT_DIR, "retrieval_examples")
 os.makedirs(RETRIEVAL_DIR, exist_ok=True)
 
