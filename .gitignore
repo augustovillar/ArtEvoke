@@ -87,3 +87,9 @@ webapp/env/.nginx.env
 # Ignore specific internal instructions file
 /.github/instructions/intructions.instructions.md
 project_assets/scripts/.cache/*
+
+
+#Qdrant tests
+project_assets/tests/qdrant/model_cache/*
+project_assets/tests/qdrant/qdrant_storage/*
+project_assets/tests/qdrant/qdrant_results_local_multi_config.csv
