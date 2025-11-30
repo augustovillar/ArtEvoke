@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import CreateSession from './CreateSession';
+import PreEvaluationModal from './components/PreEvaluationModal';
 import './Sessions.css';
 
 const Sessions = () => {
@@ -14,6 +15,8 @@ const Sessions = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showPreEvalModal, setShowPreEvalModal] = useState(false);
+    const [selectedSession, setSelectedSession] = useState(null);
     const navigate = useNavigate();
 
     // Debug log
@@ -209,50 +212,111 @@ const Sessions = () => {
                 return;
             }
             
-            // For pending or in_progress status, update to in_progress and continue to activity
+            // For pending status, show pre-evaluation modal first
             if (sessionStatus.status === 'pending') {
-                const updateResponse = await fetch(`/api/sessions/${session.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        status: 'in_progress',
-                        started_at: new Date().toISOString().split('T')[0]
-                    })
-                });
-
-                if (!updateResponse.ok) {
-                    alert(t('sessions.errors.startFailed'));
+                try {
+                    const preEvalResponse = await fetch(`/api/sessions/${session.id}/pre-evaluation`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (preEvalResponse.ok) {
+                        await proceedWithSession(session, sessionStatus);
+                        return;
+                    }
+                    
+                    if (preEvalResponse.status === 404) {
+                        setSelectedSession(session);
+                        setShowPreEvalModal(true);
+                        return;
+                    }
+                    
+                    console.warn('Error checking pre-evaluation:', preEvalResponse.status);
+                    await proceedWithSession(session, sessionStatus);
+                    return;
+                } catch (err) {
+                    console.warn('Error checking pre-evaluation:', err);
+                    await proceedWithSession(session, sessionStatus);
                     return;
                 }
             }
-
-            // Navigate to the appropriate mode based on session mode
-            // Pass session data via state to avoid unnecessary fetch
-            if (sessionStatus.mode === 'memory_reconstruction') {
-                navigate(`/sessions/${session.id}/memory-reconstruction`, {
-                    state: {
-                        sessionId: sessionStatus.session_id,
-                        memoryReconstructionId: sessionStatus.memory_reconstruction_id,
-                        interruptionTime: sessionStatus.interruption_time,
-                        mode: sessionStatus.mode
-                    }
-                });
-            } else if (sessionStatus.mode === 'art_exploration') {
-                navigate(`/sessions/${session.id}/art-exploration`, {
-                    state: {
-                        sessionId: sessionStatus.session_id,
-                        interruptionTime: sessionStatus.interruption_time,
-                        mode: sessionStatus.mode
-                    }
-                });
+            
+            if (sessionStatus.status === 'in_progress') {
+                await proceedToActivity(session, sessionStatus);
             }
             
         } catch (error) {
             alert(t('sessions.errors.startFailed'));
             console.error('Error:', error);
+        }
+    };
+
+    const handlePreEvaluationSubmit = async (preEvalData) => {
+        setShowPreEvalModal(false);
+        if (selectedSession) {
+            try {
+                const token = localStorage.getItem('token');
+                const statusResponse = await fetch(`/api/sessions/${selectedSession.id}/status`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (statusResponse.ok) {
+                    const sessionStatus = await statusResponse.json();
+                    await proceedWithSession(selectedSession, sessionStatus);
+                }
+            } catch (error) {
+                alert(t('sessions.errors.startFailed'));
+                console.error('Error:', error);
+            }
+        }
+        setSelectedSession(null);
+    };
+
+    const proceedWithSession = async (session, sessionStatus) => {
+        const token = localStorage.getItem('token');
+        
+        // Update session status to in_progress
+        const updateResponse = await fetch(`/api/sessions/${session.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: 'in_progress',
+                started_at: new Date().toISOString().split('T')[0]
+            })
+        });
+
+        if (!updateResponse.ok) {
+            alert(t('sessions.errors.startFailed'));
+            return;
+        }
+        
+        await proceedToActivity(session, sessionStatus);
+    };
+
+    const proceedToActivity = async (session, sessionStatus) => {
+        if (sessionStatus.mode === 'memory_reconstruction') {
+            navigate(`/sessions/${session.id}/memory-reconstruction`, {
+                state: {
+                    sessionId: sessionStatus.session_id,
+                    memoryReconstructionId: sessionStatus.memory_reconstruction_id,
+                    interruptionTime: sessionStatus.interruption_time,
+                    mode: sessionStatus.mode
+                }
+            });
+        } else if (sessionStatus.mode === 'art_exploration') {
+            navigate(`/sessions/${session.id}/art-exploration`, {
+                state: {
+                    sessionId: sessionStatus.session_id,
+                    interruptionTime: sessionStatus.interruption_time,
+                    mode: sessionStatus.mode
+                }
+            });
         }
     };
 
@@ -389,6 +453,17 @@ const Sessions = () => {
                     patientId={patientId}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={handleSessionCreated}
+                />
+            )}
+
+            {showPreEvalModal && selectedSession && (
+                <PreEvaluationModal
+                    sessionId={selectedSession.id}
+                    onClose={() => {
+                        setShowPreEvalModal(false);
+                        setSelectedSession(null);
+                    }}
+                    onSubmit={handlePreEvaluationSubmit}
                 />
             )}
         </div>

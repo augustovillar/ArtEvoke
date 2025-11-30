@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
     SmallInteger,
+    Boolean,
     CheckConstraint,
     Index,
 )
@@ -128,7 +129,7 @@ class PreEvaluation(Base):
         unique=True,
     )
     meds_changes = Column(String(100), nullable=True)
-    alone = Column(String(1), nullable=True)  # Boolean as TINYINT(1)
+    alone = Column(Boolean, nullable=True)
     any_recent_conditions = Column(String(100), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
@@ -161,6 +162,7 @@ class PosEvaluation(Base):
     )
     experience = Column(SmallInteger, nullable=True)
     difficulty = Column(SmallInteger, nullable=True)
+    observations = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships

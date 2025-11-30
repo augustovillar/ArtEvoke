@@ -5,6 +5,7 @@ import { useMemoryReconstructionEvaluation } from './hooks/useMemoryReconstructi
 import ImageRecognitionQuestion from './components/ImageRecognitionQuestion';
 import ObjectiveQuestions from './components/ObjectiveQuestions';
 import ProgressBar from './components/ProgressBar';
+import PosEvaluationModal from '../../Sessions/components/PosEvaluationModal';
 import { QUESTION_TYPES } from '../../../constants/questionTypes';
 import styles from './MemoryEvaluation.module.css';
 
@@ -16,6 +17,7 @@ const MemoryEvaluation = () => {
 
     const [currentStep, setCurrentStep] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
+    const [showPosEvalModal, setShowPosEvalModal] = useState(false);
 
     // Use Memory Reconstruction evaluation hook
     const {
@@ -124,11 +126,16 @@ const MemoryEvaluation = () => {
     };
 
     const handleSaveSession = async () => {
+        // Show pos-evaluation modal first
+        setShowPosEvalModal(true);
+    };
+
+    const handlePosEvaluationSubmit = async (posEvalData) => {
+        setShowPosEvalModal(false);
         setIsSaving(true);
 
         try {
             await completeEvaluation();
-            alert(t('evaluation.sessionSaved') || 'Sessão salva com sucesso!');
             navigate('/sessions');
         } catch (error) {
             console.error('Erro ao salvar sessão:', error);
@@ -237,6 +244,14 @@ const MemoryEvaluation = () => {
                 )}
                 {renderCurrentStep()}
             </div>
+
+            {showPosEvalModal && (
+                <PosEvaluationModal
+                    sessionId={sessionData.sessionId}
+                    onClose={() => setShowPosEvalModal(false)}
+                    onSubmit={handlePosEvaluationSubmit}
+                />
+            )}
         </div>
     );
 };
