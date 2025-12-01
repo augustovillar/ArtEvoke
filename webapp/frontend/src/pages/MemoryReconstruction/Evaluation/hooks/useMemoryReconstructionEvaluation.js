@@ -8,6 +8,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
     const [evaluationId, setEvaluationId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(null);
+    const [objectiveAnswers, setObjectiveAnswers] = useState(null);
 
     // Function to fetch progress
     const fetchProgress = useCallback(async () => {
@@ -32,6 +33,29 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         return progressData;
     }, [sessionId]);
 
+    // Function to fetch objective answers from memory reconstruction
+    const fetchObjectiveAnswers = useCallback(async () => {
+        if (!sessionId) return null;
+        
+        const token = localStorage.getItem('token');
+        const answersResponse = await fetch(
+            `/api/evaluation/memory-reconstruction/objective-answers/${sessionId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!answersResponse.ok) {
+            throw new Error(`HTTP error! status: ${answersResponse.status}`);
+        }
+
+        const answersData = await answersResponse.json();
+        setObjectiveAnswers(answersData);
+        return answersData;
+    }, [sessionId]);
+
     // Initialize evaluation and get progress on mount
     useEffect(() => {
         if (!sessionId) {
@@ -51,6 +75,9 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
                 } else {
                     throw new Error('Evaluation not found - should have been created');
                 }
+
+                // Fetch objective answers from memory reconstruction
+                await fetchObjectiveAnswers();
             } catch (err) {
                 console.error('[Evaluation Hook] Error initializing evaluation:', err);
             } finally {
@@ -59,7 +86,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         };
 
         initializeEvaluation();
-    }, [sessionId, fetchProgress]);
+    }, [sessionId, fetchProgress, fetchObjectiveAnswers]);
 
     /**
      * Save a select image question answer
@@ -163,6 +190,7 @@ export const useMemoryReconstructionEvaluation = (sessionId) => {
         evaluationId,
         loading,
         progress,
+        objectiveAnswers,
         refreshProgress: fetchProgress,
         saveSelectImageAnswer,
         saveObjectiveAnswer,

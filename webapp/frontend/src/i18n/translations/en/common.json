@@ -357,7 +357,32 @@
     "errorInitializing": "Error initializing evaluation. Please try again.",
     "errorSavingStory": "Error saving story. Please try again.",
     "errorSavingQuestion": "Error saving answer. Please try again.",
-    "sessionDataNotFound": "Session data not found. Redirecting..."
+    "sessionDataNotFound": "Session data not found. Redirecting...",
+    "questions": {
+      "environment": "What was the environment of the story?",
+      "period": "What time of day was it?",
+      "emotion": "What was the predominant emotion?"
+    },
+    "options": {
+      "environment": {
+        "open": "Open",
+        "closed": "Closed",
+        "urban": "Urban",
+        "rural": "Rural"
+      },
+      "period": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "night": "Night"
+      },
+      "emotion": {
+        "happiness": "Happiness",
+        "sadness": "Sadness",
+        "anger": "Anger",
+        "surprise": "Surprise",
+        "disgust": "Disgust"
+      }
+    }
   },
   "roleSelection": {
     "subtitle": "Select whether you are a doctor or a patient",

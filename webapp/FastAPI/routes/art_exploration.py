@@ -32,7 +32,7 @@ PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
 
 
 def load_prompt(language: Language) -> str:
-    filename = f"story_prompt_{language.value}.md"
+    filename = f"ae_prompt_{language.value}.md"
     filepath = os.path.join(PROMPTS_DIR, filename)
     
     with open(filepath, "r", encoding="utf-8") as f:

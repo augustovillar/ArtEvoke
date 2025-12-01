@@ -41,6 +41,11 @@ class SaveStoryOpenQuestionResponseDTO(BaseModel):
 class GetChronologyEventsResponseDTO(BaseModel):
     events: List[str]
 
+class GetObjectiveAnswersResponseDTO(BaseModel):
+    environment: Optional[str]
+    time_of_day: Optional[str]
+    emotion: Optional[str]
+
 class SaveChronologicalOrderQuestionRequestDTO(BaseModel):
     eval_id: str
     selected_option_0: str = None

@@ -82,6 +82,30 @@ const useSave = () => {
             setSavedStoryData(saveData);
             setSectionIds(result.section_ids || []);
             setHasSaved(true);
+
+            // If in session mode, automatically analyze the story
+            if (sessionId && result.id) {
+                try {
+                    await fetch(
+                        `/api/memory/${result.id}/analyze-story`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                story: storyText,
+                                language: language
+                            })
+                        }
+                    );
+
+                } catch (analyzeError) {
+                    console.error('Error analyzing story:', analyzeError);
+                    // Don't fail the entire operation if analysis fails
+                }
+            }
         } catch (error) {
             console.error('Error saving:', error);
             setSaveMessage(t('memoryReconstruction.messages.saveFailed'));
