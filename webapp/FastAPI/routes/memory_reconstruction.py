@@ -308,7 +308,6 @@ async def analyze_story(
     
     response_content = response.choices[0].message.content.strip()
     
-    # Parse the response using the existing helper function
     parsed_data = parse_llm_json_response(response_content, raise_on_error=True)
     
     environment = parsed_data.get("environment", "")
@@ -321,7 +320,6 @@ async def analyze_story(
             detail="LLM response is missing required fields"
         )
     
-    # If memory_reconstruction_id is provided, update the record
     memory_reconstruction = db.query(MemoryReconstruction).filter(
         MemoryReconstruction.id == memory_reconstruction_id,
         MemoryReconstruction.patient_id == current_user["id"]
