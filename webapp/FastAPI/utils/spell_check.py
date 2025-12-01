@@ -61,9 +61,5 @@ def check_and_correct_text(text: str, language: Language) -> str:
             end = match.offset + match.error_length
             corrected_text = corrected_text[:start] + match.replacements[0] + corrected_text[end:]
     
-    if len(matches) > 0:
-        print(f"Spell check corrected {len(matches)} issue(s)")
     return corrected_text
     
-
-
