@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 from routes import art_routes, doctor_routes, patient_routes, session_routes, memory_reconstruction, vr_routes, art_exploration, evaluation_routes
 import database
+from utils.spell_check import initialize_language_tools
 
 load_dotenv()
 
@@ -51,6 +52,8 @@ app.include_router(evaluation_routes.router, prefix="/api/evaluation", tags=["Ev
 @app.on_event("startup")
 async def startup_event():
     await database.connect_to_mysql()
+    initialize_language_tools()
+    print("✅ Spell checking tools initialized")
 
 
 @app.on_event("shutdown")
