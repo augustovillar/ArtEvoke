@@ -122,8 +122,20 @@ chmod 755 ~/artevoke
 cd ~/artevoke
 git clone <your-repo-url> .
 
-# Or if you have the code locally, use SCP:
-# From your local machine:
+# Or if you have the code locally, use rsync (RECOMMENDED - much faster):
+# From your local machine (from webapp directory):
+cd webapp/deployment/scripts
+./fast-deploy.sh <PUBLIC_IP> ~/.ssh/your-key.pem
+
+# Or use rsync directly (fastest, incremental transfers):
+rsync -avz --progress \
+  -e "ssh -i ~/.ssh/your-key.pem" \
+  --exclude='node_modules' --exclude='__pycache__' --exclude='*.pyc' \
+  --exclude='.git' --exclude='build' --exclude='*.snapshot' \
+  --exclude='data/static' --exclude='env/.backend.env' \
+  /path/to/webapp/ ubuntu@<PUBLIC_IP>:~/artevoke/webapp/
+
+# Or use SCP (slower, transfers everything):
 scp -i ~/.ssh/your-key.pem -r /path/to/webapp/* ubuntu@<PUBLIC_IP>:~/artevoke/webapp/
 
 # Navigate to webapp directory

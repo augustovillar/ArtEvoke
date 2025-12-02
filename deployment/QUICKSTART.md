@@ -113,3 +113,16 @@ ssh -i ~/.ssh/artevoke-key.pem ubuntu@<VM_IP> 'cd ~/artevoke/webapp && docker co
 ssh -i ~/.ssh/artevoke-key.pem ubuntu@<VM_IP> 'cd ~/artevoke/webapp && git pull && docker compose up -d --build'
 ```
 
+## Troubleshooting
+
+### Permission denied when creating directories
+
+If you get "Permission denied" errors:
+
+```bash
+# Fix ownership and permissions
+sudo chown -R ubuntu:ubuntu ~/artevoke
+chmod 755 ~/artevoke
+mkdir -p ~/artevoke/webapp
+```
+

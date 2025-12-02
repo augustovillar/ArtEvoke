@@ -46,7 +46,7 @@ services:
     environment:
       - STATIC_DIR=/app/data/static
       - DATA_DIR=/app/data
-      - LOCAL_EMBEDDING_MODEL=false
+      - LOCAL_EMBEDDING_MODEL=true
     volumes:
       - ./FastAPI:/app
       - ./data:/app/data 
