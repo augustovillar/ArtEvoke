@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from orm.session_models import Session as SessionModel
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import select
 from orm import get_db, ArtExploration, Images, CatalogItem
 from api_types.art_exploration import (
     SaveArtExplorationRequestDTO,
@@ -16,11 +17,11 @@ from api_types.common import (
 )
 from utils.auth import get_current_user
 from clients import get_maritaca_client
+from utils.text_correction import parse_llm_json_response
 import uuid
 from typing import List, Optional
 import os
 import json
-import re
 
 router = APIRouter()
 
@@ -105,9 +106,9 @@ async def get_art_explorations(
     from orm.session_models import Session as SessionModel
     
     # Subquery to get all art_exploration_ids that are referenced in sessions
-    session_ae_ids = db.query(SessionModel.art_exploration_id).filter(
+    session_ae_ids = select(SessionModel.art_exploration_id).where(
         SessionModel.art_exploration_id.isnot(None)
-    ).subquery()
+    )
     
     total_count = db.query(ArtExploration).filter(
         ArtExploration.patient_id == current_user["id"],
@@ -236,26 +237,14 @@ async def generate_story(
 
     content = response.choices[0].message.content.strip()
     
-    json_str = None
-    code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
-    if code_block_match:
-        json_str = code_block_match.group(1)
-    else:
-        json_match = re.search(r'\{.*\}', content, re.DOTALL)
-        if json_match:
-            json_str = json_match.group(0)
-    
-    if not json_str:
-        raise HTTPException(
-            status_code=500,
-            detail="The AI response does not contain valid JSON format"
-        )
-    
     try:
-        parsed = json.loads(json_str)
+        parsed = parse_llm_json_response(content, raise_on_error=True)
         
-        if 'story' in parsed and 'text' not in parsed:
-            parsed['text'] = parsed.pop('story')
+        if isinstance(parsed, dict) and 'story' in parsed and 'text' not in parsed:
+            raise HTTPException(
+                status_code=500,
+                detail='AI response contains "story" field but "text" field is required. Please check the prompt configuration.'
+            )
         
         response_data = GenerateStoryResponse(**parsed)
         
@@ -268,13 +257,17 @@ async def generate_story(
         return response_data.model_dump()
     except HTTPException:
         raise
-    except json.JSONDecodeError:
+    except (ValueError, json.JSONDecodeError) as e:
+        print(f"Response content: {content[:500]}") 
         raise HTTPException(
             status_code=500,
-            detail="Failed to parse the AI response as JSON"
+            detail=f"Failed to parse the AI response as JSON: {str(e)}"
         )
-    except Exception:
+    except Exception as e:
+        print(f"Response content: {content[:500]}") 
+        if hasattr(e, 'errors'):
+            print(f"Validation errors: {e.errors()}")
         raise HTTPException(
             status_code=500,
-            detail="Failed to validate the AI response structure"
+            detail=f"Failed to validate the AI response structure: {str(e)}"
         )

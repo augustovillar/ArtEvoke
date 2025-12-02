@@ -15,9 +15,7 @@ import logging
 from sqlalchemy.orm import Session, joinedload
 from orm import CatalogItem
 from utils.auth import get_current_user
-
-def correct_grammer_and_translate(text, src_language):
-    return text
+from utils.spell_check import check_and_correct_text
 
 
 router = APIRouter()
@@ -28,7 +26,7 @@ logger = logging.getLogger(__name__)
 async def search_images(
     body: SearchImagesRequestDTO, db=Depends(get_db)
 ) -> SearchImagesResponse:
-    text = correct_grammer_and_translate(body.story, body.language.value)
+    text = check_and_correct_text(body.story, body.language)
     listArt = get_top_k_images_from_text(text, body.dataset, k=6)
 
     return {"images": listArt}
@@ -38,7 +36,7 @@ async def search_images(
 async def select_images_per_section(
     body: SelectImagesPerSectionRequestDTO, db=Depends(get_db)
 ) -> SelectImagesResponse:
-    story = correct_grammer_and_translate(body.story, body.language.value)
+    story = check_and_correct_text(body.story, body.language)
 
     sections = doTextSegmentation(body.segmentation, story, max_sections=8)
     results = []

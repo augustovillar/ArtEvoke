@@ -92,6 +92,7 @@ class SectionVRResponseDTO(SectionItem):
 
 class ImproveTextRequestDTO(BaseModel):
     raw_text: str
+    language: Optional[Language] = None
 
 class ImproveTextResponseDTO(BaseModel):
     processed_text: str
