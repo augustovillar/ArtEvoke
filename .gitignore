@@ -93,3 +93,10 @@ project_assets/scripts/.cache/*
 project_assets/tests/qdrant/model_cache/*
 project_assets/tests/qdrant/qdrant_storage/*
 project_assets/tests/qdrant/qdrant_results_local_multi_config.csv
+webapp/deployment/terraform/terraform.tfvars
+webapp/deployment/terraform/.terraform/providers/**
+
+
+deployment/terraform/.terraform/*
+deployment/terraform/terraform.tfvars
+deployment/.aws-credentials
