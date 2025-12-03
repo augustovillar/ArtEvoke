@@ -32,7 +32,7 @@ PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
 
 
 def load_prompt(language: Language) -> str:
-    filename = f"story_prompt_{language.value}.md"
+    filename = f"ae_prompt_{language.value}.md"
     filepath = os.path.join(PROMPTS_DIR, filename)
     
     with open(filepath, "r", encoding="utf-8") as f:
@@ -231,13 +231,13 @@ async def generate_story(
     response = client.chat.completions.create(
         model="sabiazinho-3",
         messages=messages,
-        max_tokens=1024,
+        max_tokens=2048,
         temperature=0.9,
     )
 
     content = response.choices[0].message.content.strip()
     
-    try:
+    try:   
         parsed = parse_llm_json_response(content, raise_on_error=True)
         
         if isinstance(parsed, dict) and 'story' in parsed and 'text' not in parsed:

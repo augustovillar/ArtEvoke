@@ -5,6 +5,7 @@ import { useMemoryReconstructionEvaluation } from './hooks/useMemoryReconstructi
 import ImageRecognitionQuestion from './components/ImageRecognitionQuestion';
 import ObjectiveQuestions from './components/ObjectiveQuestions';
 import ProgressBar from './components/ProgressBar';
+import PosEvaluationModal from '../../Sessions/components/PosEvaluationModal';
 import { QUESTION_TYPES } from '../../../constants/questionTypes';
 import styles from './MemoryEvaluation.module.css';
 
@@ -16,44 +17,60 @@ const MemoryEvaluation = () => {
 
     const [currentStep, setCurrentStep] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
+    const [showPosEvalModal, setShowPosEvalModal] = useState(false);
 
     // Use Memory Reconstruction evaluation hook
     const {
         loading: evaluationLoading,
         progress,
+        objectiveAnswers,
         saveSelectImageAnswer,
         saveObjectiveAnswer,
         completeEvaluation,
     } = useMemoryReconstructionEvaluation(sessionData?.sessionId);
 
     // Perguntas objetivas - mapeadas para os tipos do banco
-    // TODO: Perguntas serão geradas por IA futuramente
-    const objectiveQuestions = [
+    const objectiveQuestions = objectiveAnswers ? [
         { 
             id: 'environment',
             type: QUESTION_TYPES.ENVIRONMENT, 
-            text: 'Como era o ambiente da história?', 
+            text: t('evaluation.questions.environment'), 
             questionType: 'multiple-choice',
-            options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
-            correctOption: 'Aberto'
+            options: [
+                t('evaluation.options.environment.open'),
+                t('evaluation.options.environment.closed'),
+                t('evaluation.options.environment.urban'),
+                t('evaluation.options.environment.rural')
+            ],
+            correctOption: objectiveAnswers.environment
         },
         { 
             id: 'period',
             type: QUESTION_TYPES.PERIOD, 
-            text: 'Que parte do dia era?', 
+            text: t('evaluation.questions.period') || 'Que parte do dia era?', 
             questionType: 'multiple-choice', 
-            options: ['Manhã', 'Tarde', 'Noite'],
-            correctOption: 'Tarde'
+            options: [
+                t('evaluation.options.period.morning'),
+                t('evaluation.options.period.afternoon'),
+                t('evaluation.options.period.night')
+            ],
+            correctOption: objectiveAnswers.time_of_day
         },
         { 
             id: 'emotion',
             type: QUESTION_TYPES.EMOTION, 
-            text: 'Qual emoção foi predominante na história?', 
+            text: t('evaluation.questions.emotion'), 
             questionType: 'multiple-choice',
-            options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],
-            correctOption: 'Felicidade'
+            options: [
+                t('evaluation.options.emotion.happiness'),
+                t('evaluation.options.emotion.sadness'),
+                t('evaluation.options.emotion.anger'),
+                t('evaluation.options.emotion.surprise'),
+                t('evaluation.options.emotion.disgust')
+            ],
+            correctOption: objectiveAnswers.emotion
         }
-    ];
+    ] : [];
 
     const totalSteps = (sessionData?.phase1?.sections?.length || 0) + objectiveQuestions.length;
 
@@ -124,11 +141,16 @@ const MemoryEvaluation = () => {
     };
 
     const handleSaveSession = async () => {
+        // Show pos-evaluation modal first
+        setShowPosEvalModal(true);
+    };
+
+    const handlePosEvaluationSubmit = async (posEvalData) => {
+        setShowPosEvalModal(false);
         setIsSaving(true);
 
         try {
             await completeEvaluation();
-            alert(t('evaluation.sessionSaved') || 'Sessão salva com sucesso!');
             navigate('/sessions');
         } catch (error) {
             console.error('Erro ao salvar sessão:', error);
@@ -139,7 +161,7 @@ const MemoryEvaluation = () => {
     };
 
     const renderCurrentStep = () => {
-        if (!sessionData?.phase1?.sections || !progress) {
+        if (!sessionData?.phase1?.sections || !progress || !objectiveAnswers) {
             return <div>{t('evaluation.loading') || 'Carregando...'}</div>;
         }
 
@@ -230,13 +252,16 @@ const MemoryEvaluation = () => {
             </div>
             
             <div className={styles.content}>
-                {isSaving && (
-                    <div className={styles.savingIndicator}>
-                        {t('evaluation.saving') || 'Salvando resposta...'}
-                    </div>
-                )}
                 {renderCurrentStep()}
             </div>
+
+            {showPosEvalModal && (
+                <PosEvaluationModal
+                    sessionId={sessionData.sessionId}
+                    onClose={() => setShowPosEvalModal(false)}
+                    onSubmit={handlePosEvaluationSubmit}
+                />
+            )}
         </div>
     );
 };

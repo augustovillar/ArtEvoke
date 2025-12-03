@@ -24,6 +24,7 @@
     "save": "Salvar",
     "saved": "Salvo",
     "saving": "Salvando...",
+    "submitting": "Enviando...",
     "delete": "Excluir",
     "edit": "Editar",
     "submit": "Enviar",
@@ -31,6 +32,7 @@
     "success": "Sucesso",
     "loading": "Carregando...",
     "confirm": "Confirmar",
+    "continue": "Continuar",
     "yes": "Sim",
     "no": "Não"
   },
@@ -357,7 +359,32 @@
     "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
     "errorSavingStory": "Erro ao salvar história. Tente novamente.",
     "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",
-    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando..."
+    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando...",
+    "questions": {
+      "environment": "Como era o ambiente da história?",
+      "period": "Que parte do dia era?",
+      "emotion": "Qual emoção foi predominante na história?"
+    },
+    "options": {
+      "environment": {
+        "open": "Aberto",
+        "closed": "Fechado",
+        "urban": "Urbano",
+        "rural": "Rural"
+      },
+      "period": {
+        "morning": "Manhã",
+        "afternoon": "Tarde",
+        "night": "Noite"
+      },
+      "emotion": {
+        "happiness": "Felicidade",
+        "sadness": "Tristeza",
+        "anger": "Raiva",
+        "surprise": "Surpresa",
+        "disgust": "Nojo"
+      }
+    }
   },
   "roleSelection": {
     "subtitle": "Selecione se você é um médico ou paciente",
@@ -558,6 +585,43 @@
       "noResults": "Nenhum resultado disponível ainda.",
       "pendingMessage": "Esta sessão ainda não foi iniciada pelo paciente.",
       "inProgressMessage": "Esta sessão está em andamento."
+    }
+  },
+  "preEvaluation": {
+    "description": "Por favor, responda às seguintes perguntas antes de iniciar sua sessão.",
+    "medsChanges": "Houve alguma mudança nos seus medicamentos recentemente?",
+    "medsChangesPlaceholder": "Descreva quaisquer mudanças nos medicamentos...",
+    "alone": "Você completará esta sessão sozinho(a)?",
+    "recentConditions": "Há alguma condição de saúde recente que devemos saber?",
+    "recentConditionsPlaceholder": "Descreva quaisquer condições de saúde recentes...",
+    "errors": {
+      "submitFailed": "Falha ao enviar pré-avaliação",
+      "aloneRequired": "Por favor, indique se você completará esta sessão sozinho(a)"
+    }
+  },
+  "posEvaluation": {
+    "description": "Obrigado por completar a sessão! Por favor, avalie sua experiência.",
+    "experience": "Como você avalia sua experiência geral?",
+    "difficulty": "Qual foi o nível de dificuldade da sessão para você?",
+    "observations": "Alguma sugestão para melhorar sua experiência? (opcional)",
+    "observationsPlaceholder": "Compartilhe seus pensamentos ou sugestões...",
+    "ratingMin": "Muito Ruim",
+    "ratingMax": "Excelente",
+    "errors": {
+      "submitFailed": "Falha ao enviar avaliação",
+      "requiredFields": "Por favor, avalie tanto a experiência quanto a dificuldade"
+    }
+  },
+  "evaluations": {
+    "title": "Informações do Paciente",
+    "viewButton": "Info do Paciente",
+    "preEvaluation": "Avaliação Pré-Sessão",
+    "posEvaluation": "Avaliação Pós-Sessão",
+    "submittedAt": "Enviado em",
+    "noPreEvaluation": "Nenhuma avaliação pré-sessão disponível",
+    "noPosEvaluation": "Nenhuma avaliação pós-sessão disponível",
+    "errors": {
+      "loadFailed": "Falha ao carregar dados das avaliações"
     }
   },
   "results": {

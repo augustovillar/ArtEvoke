@@ -28,12 +28,25 @@ filename_columns = {Dataset.wikiart: "file_name", Dataset.semart: "file_name", D
 art_name_columns = {Dataset.wikiart: "file_name", Dataset.semart: "file_name", Dataset.ipiranga: None}
 
 
-def get_embedding(text):
+def get_embedding(text: str):
+    """
+    Get a single normalized embedding vector for a piece of text.
+    """
     embedding = encode_text([text], convert_to_numpy=True)
-    embedding = embedding / np.linalg.norm(
-        embedding, axis=1, keepdims=True
-    )  # Normalize
+    embedding = embedding / np.linalg.norm(embedding, axis=1, keepdims=True)  # Normalize
     return embedding.astype("float32")
+
+
+def get_embeddings_for_texts(texts: list[str]):
+    """
+    Get normalized embeddings for a list of texts in a single API call.
+    """
+    if not texts:
+        return np.empty((0, 0), dtype="float32")
+
+    embeddings = encode_text(texts, convert_to_numpy=True)
+    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)  # Normalize
+    return embeddings.astype("float32")
 
 
 def format_catalog_item_info(catalog_item: CatalogItem, include_full_metadata: bool = True) -> ImageItem:
@@ -130,70 +143,112 @@ def format_catalog_item_info(catalog_item: CatalogItem, include_full_metadata: b
     return ImageItem(**artwork_info)
 
 
-def get_top_k_images_from_text(text: str, dataset: Dataset, k=3):
+def _search_top_k_from_embedding(
+    embedding_vector: np.ndarray, dataset: Dataset, k: int = 3
+):
     """
-    Search for top k similar images using Qdrant vector database and return CatalogItem information
+    Internal helper: given a single embedding vector, search Qdrant and return formatted images.
     """
     if dataset not in available_datasets:
         raise ValueError(f"Dataset {dataset} not available. Available: {available_datasets}")
-    
-    # Get query embedding
-    query_embedding = get_embedding(text)
-    
-    # Get collection name for Qdrant
+
     collection_name = dataset.value
-    
+
     # Search in Qdrant with error handling
     try:
         search_results = _get_qdrant_client().search(
             collection_name=collection_name,
-            query_vector=query_embedding[0].tolist(),  # Convert numpy array to list
+            query_vector=embedding_vector.tolist(),
             limit=k,
-            with_payload=True
+            with_payload=True,
         )
     except Exception as e:
         print(f"❌ Error searching Qdrant collection {collection_name}: {e}")
         return []
-    
+
     db = _get_session_local()()
     try:
         images = []
         for result in search_results:
-            
             payload = result.payload
-            
+
             # Get the artwork ID from the payload
-            artwork_id = payload.get('id')
+            artwork_id = payload.get("id")
             if not artwork_id:
                 continue
-            
+
             # Query CatalogItem based on dataset and artwork ID
             catalog_item = None
             if dataset == Dataset.semart:
-                catalog_item = db.query(CatalogItem).filter(
-                    CatalogItem.semart_id == artwork_id,
-                    CatalogItem.source == Dataset.semart
-                ).first()
+                catalog_item = (
+                    db.query(CatalogItem)
+                    .filter(
+                        CatalogItem.semart_id == artwork_id,
+                        CatalogItem.source == Dataset.semart,
+                    )
+                    .first()
+                )
             elif dataset == Dataset.wikiart:
-                catalog_item = db.query(CatalogItem).filter(
-                    CatalogItem.wikiart_id == artwork_id,
-                    CatalogItem.source == Dataset.wikiart
-                ).first()
+                catalog_item = (
+                    db.query(CatalogItem)
+                    .filter(
+                        CatalogItem.wikiart_id == artwork_id,
+                        CatalogItem.source == Dataset.wikiart,
+                    )
+                    .first()
+                )
             elif dataset == Dataset.ipiranga:
-                catalog_item = db.query(CatalogItem).filter(
-                    CatalogItem.ipiranga_id == artwork_id,
-                    CatalogItem.source == Dataset.ipiranga
-                ).first()
-            
+                catalog_item = (
+                    db.query(CatalogItem)
+                    .filter(
+                        CatalogItem.ipiranga_id == artwork_id,
+                        CatalogItem.source == Dataset.ipiranga,
+                    )
+                    .first()
+                )
+
             if not catalog_item:
                 continue
-            
+
             # Use the helper function to format the catalog item
-            image_item = format_catalog_item_info(catalog_item, include_full_metadata=True)
+            image_item = format_catalog_item_info(
+                catalog_item, include_full_metadata=True
+            )
             if image_item:
                 images.append(image_item)
-        
+
         return images
-        
+
     finally:
         db.close()
+
+
+def get_top_k_images_from_text(text: str, dataset: Dataset, k: int = 3):
+    """
+    Search for top k similar images using Qdrant vector database and return CatalogItem information.
+    (Single text version)
+    """
+    # Get query embedding (shape: (1, dim))
+    query_embedding = get_embedding(text)
+    return _search_top_k_from_embedding(query_embedding[0], dataset, k)
+
+
+def get_top_k_images_for_sections(
+    sections: list[str], dataset: Dataset, k: int = 3
+):
+    """
+    Batched version for multiple sections:
+    - Calls the embeddings API once with all sections
+    - Then runs one Qdrant search per section embedding
+    """
+    if not sections:
+        return []
+
+    embeddings = get_embeddings_for_texts(sections)
+    results = []
+
+    for section_text, section_embedding in zip(sections, embeddings):
+        images = _search_top_k_from_embedding(section_embedding, dataset, k)
+        results.append({"section": section_text, "images": images})
+
+    return results

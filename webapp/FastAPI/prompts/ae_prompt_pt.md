@@ -10,14 +10,12 @@ Após escrever a história, você deve fornecer:
 
 1. **text**: O texto completo da história
 2. **Events**: Exatamente 4 eventos da história, cada um como uma frase curta (2-6 palavras), listados em ordem cronológica conforme ocorrem na história
-3. **Distractor**: Uma frase curta (2-6 palavras) que descreve algo que NÃO é um evento da história
-4. **Environment**: O ambiente da história. Escolha um: Open, Urban, Closed ou Rural
-5. **TimeOfDay**: A parte do dia na história. Escolha um: Morning, Afternoon ou Night
-6. **Emotion**: A emoção predominante na história. Escolha um: Happiness, Sadness, Anger, Surprise ou Disgust
+4. **Environment**: O ambiente da história. Escolha um: Aberto, Urbano, Fechado ou Rural
+5. **TimeOfDay**: A parte do dia na história. Escolha um: Manhã, Tarde ou Noite
+6. **Emotion**: A emoção predominante na história. Escolha um: Felicidade, Tristeza, Raiva, Supresa ou Nojo
 
-IMPORTANTE: Você DEVE retornar um objeto JSON com a chave "text" (NÃO "story") contendo a história.
 
-Formate sua resposta como JSON com a seguinte estrutura:
+# Output
 ```json
 {
   "text": "O texto completo da história aqui...",
@@ -27,11 +25,8 @@ Formate sua resposta como JSON com a seguinte estrutura:
     "Terceira frase de evento",
     "Quarta frase de evento"
   ],
-  "distractor": "Uma frase que não é um evento da história",
-  "environment": "Open",
-  "timeOfDay": "Morning",
-  "emotion": "Happiness"
+  "environment": "Aberto",
+  "timeOfDay": "Manhã",
+  "emotion": "Felicidade"
 }
 ```
-
-Lembre-se: Use "text" não "story" como chave para o conteúdo da história.

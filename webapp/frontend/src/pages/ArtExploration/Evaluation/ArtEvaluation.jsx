@@ -5,6 +5,7 @@ import { StoryWritingQuestion, ChronologyOrderQuestion } from './components';
 import { useEvaluationSubmit } from './hooks';
 import ObjectiveQuestions from '../../MemoryReconstruction/Evaluation/components/ObjectiveQuestions';
 import ProgressBar from '../../MemoryReconstruction/Evaluation/components/ProgressBar';
+import PosEvaluationModal from '../../Sessions/components/PosEvaluationModal';
 import { millisecondsToTimeString } from '../../../utils/timeFormatter';
 import { QUESTION_TYPES } from '../../../constants/questionTypes';
 import styles from './ArtEvaluation.module.css';
@@ -26,6 +27,7 @@ const ArtEvaluation = () => {
     objectiveQuestions: []
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [showPosEvalModal, setShowPosEvalModal] = useState(false);
 
   const objectiveQuestions = [
     {
@@ -153,6 +155,12 @@ const ArtEvaluation = () => {
   };
 
   const handleSaveSession = async () => {
+    // Show pos-evaluation modal first
+    setShowPosEvalModal(true);
+  };
+
+  const handlePosEvaluationSubmit = async (posEvalData) => {
+    setShowPosEvalModal(false);
     setIsSaving(true);
     const completeSession = { ...sessionData, evaluation: evaluationData, completedAt: new Date().toISOString() };
     try {
@@ -175,7 +183,6 @@ const ArtEvaluation = () => {
       // TODO: Implement API call to persist Art Exploration evaluation data
       // await fetch('/api/sessions/art-exploration/evaluation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(completeSession) });
       console.log('Saving Art Exploration session:', completeSession);
-      alert(t('evaluation.completed'));
       navigate('/sessions');
     } catch (err) {
       console.error('Erro ao salvar sessão de Art Exploration:', err);
@@ -251,6 +258,14 @@ const ArtEvaluation = () => {
         <ProgressBar current={currentStep + 1} total={totalSteps} />
       </div>
       <div className={styles.content}>{renderCurrentStep()}</div>
+
+      {showPosEvalModal && (
+        <PosEvaluationModal
+          sessionId={sessionData.sessionId}
+          onClose={() => setShowPosEvalModal(false)}
+          onSubmit={handlePosEvaluationSubmit}
+        />
+      )}
     </div>
   );
 };

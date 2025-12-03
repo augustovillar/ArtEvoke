@@ -3,6 +3,7 @@ from routes import get_db
 from utils.text_processing import doTextSegmentation
 from utils.embeddings import (
     get_top_k_images_from_text,
+    get_top_k_images_for_sections,
 )
 from api_types.common import (
     SearchImagesRequestDTO,
@@ -39,13 +40,10 @@ async def select_images_per_section(
     story = check_and_correct_text(body.story, body.language)
 
     sections = doTextSegmentation(body.segmentation, story, max_sections=8)
-    results = []
-
-    for section in sections:
-        section_images = get_top_k_images_from_text(
-            section, body.dataset, k=body.k
-        )
-        results.append({"section": section, "images": section_images})
+    # Batched embeddings: one embeddings API call for all sections
+    results = get_top_k_images_for_sections(
+        sections, body.dataset, k=body.k
+    )
 
     return {"sections": results}
 

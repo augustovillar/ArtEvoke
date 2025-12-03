@@ -10,6 +10,8 @@ from api_types.memory_reconstruction import (
     DeleteMemoryReconstructionResponseDTO,
     MemoryReconstructionResponse,
     SectionResponse,
+    AnalyzeStoryRequestDTO,
+    AnalyzeStoryResponseDTO,
 )
 from api_types.common import (
     ImproveTextRequestDTO,
@@ -21,7 +23,6 @@ from utils.auth import (
 from typing import Optional
 import uuid
 import os
-import json
 from clients import get_maritaca_client
 from utils.text_correction import parse_llm_json_response
 
@@ -39,6 +40,18 @@ def load_speech_correct_prompt(language: str = "pt") -> str:
         filename = "speech_correct_text_en.md"
     else:
         filename = "speech_correct_text_pt.md"
+    
+    filepath = os.path.join(PROMPTS_DIR, filename)
+    with open(filepath, "r", encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def load_mr_prompt(language: str = "pt") -> str:
+    """Load the memory reconstruction analysis prompt based on language."""
+    if language == "en":
+        filename = "mr_prompt_en.md"
+    else:
+        filename = "mr_prompt_pt.md"
     
     filepath = os.path.join(PROMPTS_DIR, filename)
     with open(filepath, "r", encoding="utf-8") as f:
@@ -155,6 +168,9 @@ async def get_memory_reconstructions(
             story=mr.story,
             dataset=mr.dataset,
             language=mr.language,
+            environment=mr.environment,
+            time_of_day=mr.time_of_day,
+            emotion=mr.emotion,
             segmentation_strategy=mr.segmentation_strategy,
             created_at=mr.created_at,
             sections=sections,
@@ -241,3 +257,85 @@ async def improve_text(
     processed_text = parse_llm_json_response(response_content, json_key="improved_text", raise_on_error=True)
     
     return ImproveTextResponseDTO(processed_text=processed_text)
+
+
+@router.post("/{memory_reconstruction_id}/analyze-story", response_model=AnalyzeStoryResponseDTO)
+async def analyze_story(
+    memory_reconstruction_id: str, 
+    body: AnalyzeStoryRequestDTO,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> AnalyzeStoryResponseDTO:
+    """
+    Analyze a story to extract environment, time of day, and emotion.
+    
+    - **story**: The story text to analyze (max 900 characters)
+    - **language**: Language code ('pt' or 'en')
+    
+    Returns:
+    - **environment**: Environment type (Open/Aberto, Urban/Urbano, Closed/Fechado, Rural)
+    - **time_of_day**: Time of day (Morning/Manhã, Afternoon/Tarde, Night/Noite)
+    - **emotion**: Predominant emotion (Happiness/Felicidade, Sadness/Tristeza, Anger/Raiva, Surprise/Supresa, Disgust/Nojo)
+    
+    Requires authentication (patient or doctor).
+    """
+    if len(body.story) > 900:
+        raise HTTPException(
+            status_code=400,
+            detail="Story is too long. Maximum length is 900 characters."
+        )
+    
+    if not body.story.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Story cannot be empty."
+        )
+    
+    language = body.language.value
+    prompt_template = load_mr_prompt(language)
+    
+    messages = [
+        {"role": "system", "content": prompt_template},
+        {"role": "user", "content": body.story}
+    ]
+    
+    response = client.chat.completions.create(
+        model="sabiazinho-3",
+        messages=messages,
+        max_tokens=512,
+        temperature=0.3,
+    )
+    
+    response_content = response.choices[0].message.content.strip()
+    
+    parsed_data = parse_llm_json_response(response_content, raise_on_error=True)
+    
+    environment = parsed_data.get("environment", "")
+    time_of_day = parsed_data.get("timeOfDay", "")
+    emotion = parsed_data.get("emotion", "")
+    
+    if not environment or not time_of_day or not emotion:
+        raise HTTPException(
+            status_code=500,
+            detail="LLM response is missing required fields"
+        )
+    
+    memory_reconstruction = db.query(MemoryReconstruction).filter(
+        MemoryReconstruction.id == memory_reconstruction_id,
+        MemoryReconstruction.patient_id == current_user["id"]
+    ).first()
+    
+    if not memory_reconstruction:
+        raise HTTPException(status_code=404, detail="Memory reconstruction not found")
+    
+    memory_reconstruction.environment = environment
+    memory_reconstruction.time_of_day = time_of_day
+    memory_reconstruction.emotion = emotion
+    
+    db.commit()
+    
+    return AnalyzeStoryResponseDTO(
+        environment=environment,
+        time_of_day=time_of_day,
+        emotion=emotion
+    )
