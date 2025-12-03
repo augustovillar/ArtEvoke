@@ -1,0 +1,6 @@
+aws_region      = "sa-east-1"
+project_name    = "artevoke"
+instance_type   = "g4dn.xlarge" # CPU-only: t3.large, t3.xlarge (no GPU support)
+instance_ami    = ""  # Ubuntu 22.04 LTS
+key_pair_name   = "your-key-pair-name"  # Must exist in AWS
+root_volume_size = 50  # GB

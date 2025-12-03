@@ -99,5 +99,8 @@ webapp/deployment/terraform/.terraform/providers/**
 
 
 deployment/terraform/.terraform/*
-deployment/terraform/terraform.tfvars
+terraform.tfvars
 deployment/.aws-credentials
+.terraform.lock.hcl
+terraform.tfstate.backup
+terraform.tfstate
