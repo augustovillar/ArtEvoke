@@ -21,7 +21,6 @@ const ArtExplorationSession = () => {
     const navigate = useNavigate();
 
     const [storyText, setStoryText] = useState('');
-    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
 
     const [showInterruption, setShowInterruption] = useState(false);
@@ -31,12 +30,8 @@ const ArtExplorationSession = () => {
 
     const { t, i18n } = useTranslation('common');
 
-    useEffect(() => {
-        const currentLang = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
-        if (currentLang === 'en' || currentLang === 'pt') {
-            setLanguage(currentLang);
-        }
-    }, [i18n.language]);
+    // Get language from i18n
+    const language = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
 
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
@@ -203,8 +198,6 @@ const ArtExplorationSession = () => {
             <KeywordInputForm
                 storyText={storyText}
                 setStoryText={setStoryText}
-                language={language}
-                setLanguage={setLanguage}
                 dataset={dataset}
                 setDataset={setDataset}
                 onSubmit={handleSubmit}

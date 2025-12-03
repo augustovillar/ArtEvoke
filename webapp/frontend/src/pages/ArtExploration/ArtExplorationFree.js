@@ -15,10 +15,12 @@ import {
 
 const ArtExplorationFree = () => {
     const [storyText, setStoryText] = useState('');
-    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
 
-    const { t } = useTranslation('common');
+    const { t, i18n } = useTranslation('common');
+
+    // Get language from i18n
+    const language = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
 
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
@@ -66,8 +68,6 @@ const ArtExplorationFree = () => {
             <KeywordInputForm
                 storyText={storyText}
                 setStoryText={setStoryText}
-                language={language}
-                setLanguage={setLanguage}
                 dataset={dataset}
                 setDataset={setDataset}
                 onSubmit={handleSubmit}
