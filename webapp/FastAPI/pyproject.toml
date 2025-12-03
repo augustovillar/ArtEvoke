@@ -21,9 +21,6 @@ dependencies = [
     "bcrypt==4.0.1",
     "cryptography==44.0.2",
     
-    # ML & AI Models
-    "sentence-transformers==4.1.0",
-    
     # Vector Search
     "qdrant-client==1.15.1",
     
