@@ -46,20 +46,11 @@ services:
     environment:
       - STATIC_DIR=/app/data/static
       - DATA_DIR=/app/data
-      - LOCAL_EMBEDDING_MODEL=true
     volumes:
       - ./FastAPI:/app
       - ./data:/app/data 
-      - ~/.cache/huggingface:/root/.cache/huggingface  # Cache all Hugging Face models
     networks:
       - app_network
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
 
   frontend:
     build:

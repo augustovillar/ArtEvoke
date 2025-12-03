@@ -92,6 +92,7 @@ project_assets/scripts/.cache/*
 #Qdrant tests
 project_assets/tests/qdrant/model_cache/*
 project_assets/tests/qdrant/qdrant_storage/*
+project_assets/scripts/qdrant_storage/*
 project_assets/tests/qdrant/qdrant_results_local_multi_config.csv
 webapp/deployment/terraform/terraform.tfvars
 webapp/deployment/terraform/.terraform/providers/**
