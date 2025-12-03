@@ -1,18 +1,11 @@
 import numpy as np
 from orm import CatalogItem
 from api_types.common import Dataset, ImageItem
-from clients import get_embedding_client, get_database_client, get_qdrant_client, encode_text
+from clients import get_database_client, get_qdrant_client, encode_text
 
 # Lazy client initialization
-_embedding_model = None
 _SessionLocal = None
 _qdrant_client = None
-
-def _get_embedding_model():
-    global _embedding_model
-    if _embedding_model is None:
-        _embedding_model = get_embedding_client()
-    return _embedding_model
 
 def _get_session_local():
     global _SessionLocal
