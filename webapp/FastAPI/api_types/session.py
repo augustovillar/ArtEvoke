@@ -39,7 +39,7 @@ class SessionResponse(BaseModel):
 # PreEvaluation types
 class PreEvaluationCreate(BaseModel):
     meds_changes: Optional[str] = None
-    alone: Optional[bool] = None
+    alone: bool
     any_recent_conditions: Optional[str] = None
 
 
@@ -47,7 +47,7 @@ class PreEvaluationResponse(BaseModel):
     id: str
     session_id: str
     meds_changes: Optional[str] = None
-    alone: Optional[bool] = None
+    alone: bool
     any_recent_conditions: Optional[str] = None
     created_at: datetime
 

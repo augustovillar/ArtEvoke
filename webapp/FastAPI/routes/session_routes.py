@@ -583,6 +583,7 @@ async def create_pos_evaluation(
         session_id=session_id,
         experience=pos_eval_data.experience,
         difficulty=pos_eval_data.difficulty,
+        observations=pos_eval_data.observations
     )
     
     db.add(new_pos_eval)

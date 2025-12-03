@@ -237,11 +237,6 @@ const MemoryEvaluation = () => {
             </div>
             
             <div className={styles.content}>
-                {isSaving && (
-                    <div className={styles.savingIndicator}>
-                        {t('evaluation.saving') || 'Salvando resposta...'}
-                    </div>
-                )}
                 {renderCurrentStep()}
             </div>
 

@@ -79,6 +79,13 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.char-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
 .required-asterisk {
     color: #dc2626;
     margin-left: 4px;

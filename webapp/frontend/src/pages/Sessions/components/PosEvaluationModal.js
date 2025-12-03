@@ -4,6 +4,7 @@ import './PosEvaluationModal.css';
 
 const PosEvaluationModal = ({ sessionId, onClose, onSubmit }) => {
     const { t } = useTranslation('common');
+    const MAX_OBSERVATIONS_LENGTH = 1000;
     const [formData, setFormData] = useState({
         experience: null,
         difficulty: null,
@@ -109,10 +110,19 @@ const PosEvaluationModal = ({ sessionId, onClose, onSubmit }) => {
                             <textarea
                                 id="observations"
                                 value={formData.observations}
-                                onChange={(e) => handleChange('observations', e.target.value)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value.length <= MAX_OBSERVATIONS_LENGTH) {
+                                        handleChange('observations', value);
+                                    }
+                                }}
                                 placeholder={t('posEvaluation.observationsPlaceholder')}
                                 rows="4"
+                                maxLength={MAX_OBSERVATIONS_LENGTH}
                             />
+                            <div className="char-counter">
+                                {formData.observations.length}/{MAX_OBSERVATIONS_LENGTH}
+                            </div>
                         </div>
                     </div>
 

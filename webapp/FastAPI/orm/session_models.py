@@ -129,7 +129,7 @@ class PreEvaluation(Base):
         unique=True,
     )
     meds_changes = Column(String(100), nullable=True)
-    alone = Column(Boolean, nullable=True)
+    alone = Column(Boolean, nullable=False)
     any_recent_conditions = Column(String(100), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
