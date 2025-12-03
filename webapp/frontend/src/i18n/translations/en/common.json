@@ -24,6 +24,7 @@
     "save": "Save",
     "saved": "Saved",
     "saving": "Saving...",
+    "submitting": "Submitting...",
     "delete": "Delete",
     "edit": "Edit",
     "submit": "Submit",
@@ -31,6 +32,7 @@
     "success": "Success",
     "loading": "Loading...",
     "confirm": "Confirm",
+    "continue": "Continue",
     "yes": "Yes",
     "no": "No"
   },
@@ -582,6 +584,43 @@
       "noResults": "No results available yet.",
       "pendingMessage": "This session has not been started by the patient yet.",
       "inProgressMessage": "This session is in progress."
+    }
+  },
+  "preEvaluation": {
+    "description": "Please answer the following questions before starting your session.",
+    "medsChanges": "Have there been any changes to your medications recently?",
+    "medsChangesPlaceholder": "Describe any medication changes...",
+    "alone": "Will you be completing this session alone?",
+    "recentConditions": "Are there any recent health conditions we should be aware of?",
+    "recentConditionsPlaceholder": "Describe any recent health conditions...",
+    "errors": {
+      "submitFailed": "Failed to submit pre-evaluation",
+      "aloneRequired": "Please indicate if you will be completing this session alone"
+    }
+  },
+  "posEvaluation": {
+    "description": "Thank you for completing the session! Please rate your experience.",
+    "experience": "How would you rate your overall experience?",
+    "difficulty": "How difficult was the session for you?",
+    "observations": "Any suggestions to improve your experience? (optional)",
+    "observationsPlaceholder": "Share your thoughts or suggestions...",
+    "ratingMin": "Very Poor",
+    "ratingMax": "Excellent",
+    "errors": {
+      "submitFailed": "Failed to submit evaluation",
+      "requiredFields": "Please rate both experience and difficulty"
+    }
+  },
+  "evaluations": {
+    "title": "Patient Information",
+    "viewButton": "Patient Info",
+    "preEvaluation": "Pre-Session Evaluation",
+    "posEvaluation": "Post-Session Evaluation",
+    "submittedAt": "Submitted at",
+    "noPreEvaluation": "No pre-session evaluation available",
+    "noPosEvaluation": "No post-session evaluation available",
+    "errors": {
+      "loadFailed": "Failed to load evaluation data"
     }
   },
   "results": {

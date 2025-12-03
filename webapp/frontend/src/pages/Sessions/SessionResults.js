@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import MemoryReconstructionResults from './components/MemoryReconstructionResults';
 import ArtExplorationResults from './components/ArtExplorationResults';
+import EvaluationsInfoModal from './components/EvaluationsInfoModal';
 import './SessionResults.css';
 
 const SessionResults = () => {
@@ -15,6 +16,10 @@ const SessionResults = () => {
     const [error, setError] = useState(null);
     const [results, setResults] = useState(null);
     const [notCompleted, setNotCompleted] = useState(false);
+    const [showEvaluationsModal, setShowEvaluationsModal] = useState(false);
+    const [preEvaluation, setPreEvaluation] = useState(null);
+    const [posEvaluation, setPosEvaluation] = useState(null);
+    const [loadingEvaluations, setLoadingEvaluations] = useState(false);
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -88,6 +93,48 @@ const SessionResults = () => {
         }
     };
 
+    const handleViewEvaluations = async () => {
+        setLoadingEvaluations(true);
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Fetch both evaluations in parallel
+            const [preResponse, posResponse] = await Promise.all([
+                fetch(`/api/sessions/${sessionId}/pre-evaluation`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }),
+                fetch(`/api/sessions/${sessionId}/pos-evaluation`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+            ]);
+            
+            if (preResponse.ok) {
+                const preData = await preResponse.json();
+                setPreEvaluation(preData);
+            } else {
+                setPreEvaluation(null);
+            }
+            
+            if (posResponse.ok) {
+                const posData = await posResponse.json();
+                setPosEvaluation(posData);
+            } else {
+                setPosEvaluation(null);
+            }
+            
+            setShowEvaluationsModal(true);
+        } catch (err) {
+            console.error('Error fetching evaluations:', err);
+            alert(t('evaluations.errors.loadFailed'));
+        } finally {
+            setLoadingEvaluations(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="results-container">
@@ -145,6 +192,13 @@ const SessionResults = () => {
                     ← {t('common.back')}
                 </button>
                 <h1>{t('results.title')}</h1>
+                <button 
+                    className="btn-view-evaluations" 
+                    onClick={handleViewEvaluations}
+                    disabled={loadingEvaluations}
+                >
+                    {loadingEvaluations ? t('common.loading') : t('evaluations.viewButton')}
+                </button>
             </div>
 
             <div className="results-info">
@@ -168,6 +222,15 @@ const SessionResults = () => {
 
             {results.mode === 'art_exploration' && results.art_exploration_results && (
                 <ArtExplorationResults data={results.art_exploration_results} />
+            )}
+
+            {showEvaluationsModal && (
+                <EvaluationsInfoModal
+                    sessionId={sessionId}
+                    onClose={() => setShowEvaluationsModal(false)}
+                    preEvaluation={preEvaluation}
+                    posEvaluation={posEvaluation}
+                />
             )}
         </div>
     );

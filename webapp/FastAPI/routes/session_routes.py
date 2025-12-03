@@ -17,10 +17,20 @@ from orm import (
     Evaluation,
     SelectImageQuestion,
     ObjectiveQuestion,
+    PreEvaluation,
+    PosEvaluation,
 )
 from utils.auth import get_current_user, verify_doctor_role
 from utils.embeddings import format_catalog_item_info
-from api_types.session import SessionCreate, SessionUpdate, SessionResponse
+from api_types.session import (
+    SessionCreate, 
+    SessionUpdate, 
+    SessionResponse,
+    PreEvaluationCreate,
+    PreEvaluationResponse,
+    PosEvaluationCreate,
+    PosEvaluationResponse,
+)
 from api_types.common import ImageItem
 from api_types.evaluation import (
     SessionResultsResponse,
@@ -442,6 +452,183 @@ async def get_session_results(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unknown session mode: {session.mode}"
         )
+
+
+# ============================================================================
+# PRE-EVALUATION ENDPOINTS
+# ============================================================================
+
+@router.post("/{session_id}/pre-evaluation", response_model=PreEvaluationResponse, status_code=status.HTTP_201_CREATED)
+async def create_pre_evaluation(
+    session_id: str,
+    pre_eval_data: PreEvaluationCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Create pre-evaluation questionnaire for a session"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    if current_user["id"] != session.patient_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the patient can create pre-evaluation",
+        )
+    
+    existing_pre_eval = db.query(PreEvaluation).filter(
+        PreEvaluation.session_id == session_id
+    ).first()
+    
+    if existing_pre_eval:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Pre-evaluation already exists for this session"
+        )
+    
+    new_pre_eval = PreEvaluation(
+        id=str(uuid.uuid4()),
+        session_id=session_id,
+        meds_changes=pre_eval_data.meds_changes,
+        alone=pre_eval_data.alone,
+        any_recent_conditions=pre_eval_data.any_recent_conditions,
+    )
+    
+    db.add(new_pre_eval)
+    db.commit()
+    db.refresh(new_pre_eval)
+    
+    return new_pre_eval
+
+
+@router.get("/{session_id}/pre-evaluation", response_model=PreEvaluationResponse)
+async def get_pre_evaluation(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get pre-evaluation questionnaire for a session"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    if (
+        current_user["id"] != session.patient_id
+        and current_user["id"] != session.doctor_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this pre-evaluation",
+        )
+    
+    pre_eval = db.query(PreEvaluation).filter(
+        PreEvaluation.session_id == session_id
+    ).first()
+    
+    if not pre_eval:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pre-evaluation not found for this session"
+        )
+    
+    return pre_eval
+
+
+# ============================================================================
+# POS-EVALUATION ENDPOINTS
+# ============================================================================
+
+@router.post("/{session_id}/pos-evaluation", response_model=PosEvaluationResponse, status_code=status.HTTP_201_CREATED)
+async def create_pos_evaluation(
+    session_id: str,
+    pos_eval_data: PosEvaluationCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Create pos-evaluation questionnaire for a session"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    if current_user["id"] != session.patient_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the patient can create pos-evaluation",
+        )
+    
+    existing_pos_eval = db.query(PosEvaluation).filter(
+        PosEvaluation.session_id == session_id
+    ).first()
+    
+    if existing_pos_eval:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Pos-evaluation already exists for this session"
+        )
+    
+    new_pos_eval = PosEvaluation(
+        id=str(uuid.uuid4()),
+        session_id=session_id,
+        experience=pos_eval_data.experience,
+        difficulty=pos_eval_data.difficulty,
+        observations=pos_eval_data.observations
+    )
+    
+    db.add(new_pos_eval)
+    db.commit()
+    db.refresh(new_pos_eval)
+    
+    return new_pos_eval
+
+
+@router.get("/{session_id}/pos-evaluation", response_model=PosEvaluationResponse)
+async def get_pos_evaluation(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get pos-evaluation questionnaire for a session"""
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+    
+    if (
+        current_user["id"] != session.patient_id
+        and current_user["id"] != session.doctor_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this pos-evaluation",
+        )
+    
+    # Get pos-evaluation
+    pos_eval = db.query(PosEvaluation).filter(
+        PosEvaluation.session_id == session_id
+    ).first()
+    
+    if not pos_eval:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pos-evaluation not found for this session"
+        )
+    
+    return pos_eval
 
 
 # ============================================================================
