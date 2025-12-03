@@ -34,6 +34,9 @@ class MemoryReconstructionResponse(BaseModel):
     story: str
     dataset: Dataset
     language: Language
+    environment: Optional[str] = None
+    time_of_day: Optional[str] = None
+    emotion: Optional[str] = None
     segmentation_strategy: SegmentationStrategy
     created_at: datetime
     sections: List[SectionResponse]
@@ -54,4 +57,15 @@ class SaveMemoryReconstructionResponseDTO(BaseModel):
 class DeleteMemoryReconstructionResponseDTO(BaseModel):
     message: str
     id: str
+
+
+class AnalyzeStoryRequestDTO(BaseModel):
+    story: str
+    language: Language
+
+
+class AnalyzeStoryResponseDTO(BaseModel):
+    environment: str
+    time_of_day: str
+    emotion: str
 

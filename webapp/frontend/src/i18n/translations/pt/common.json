@@ -357,7 +357,32 @@
     "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
     "errorSavingStory": "Erro ao salvar história. Tente novamente.",
     "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",
-    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando..."
+    "sessionDataNotFound": "Dados da sessão não encontrados. Redirecionando...",
+    "questions": {
+      "environment": "Como era o ambiente da história?",
+      "period": "Que parte do dia era?",
+      "emotion": "Qual emoção foi predominante na história?"
+    },
+    "options": {
+      "environment": {
+        "open": "Aberto",
+        "closed": "Fechado",
+        "urban": "Urbano",
+        "rural": "Rural"
+      },
+      "period": {
+        "morning": "Manhã",
+        "afternoon": "Tarde",
+        "night": "Noite"
+      },
+      "emotion": {
+        "happiness": "Felicidade",
+        "sadness": "Tristeza",
+        "anger": "Raiva",
+        "surprise": "Surpresa",
+        "disgust": "Nojo"
+      }
+    }
   },
   "roleSelection": {
     "subtitle": "Selecione se você é um médico ou paciente",

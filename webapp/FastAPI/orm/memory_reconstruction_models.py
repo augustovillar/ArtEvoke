@@ -45,6 +45,9 @@ class MemoryReconstruction(Base):
         Enum(Language, name="memory_reconstruction_language"), 
         nullable=False
     )
+    environment = Column(String(50), nullable=True)
+    time_of_day = Column(String(50), nullable=True)
+    emotion = Column(String(50), nullable=True)
     segmentation_strategy = Column(
         Enum(SegmentationStrategy, name="segmentation_strategy"), 
         nullable=False

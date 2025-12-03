@@ -10,14 +10,11 @@ After writing the story, you must provide:
 
 1. **text**: The complete story text
 2. **Events**: Exactly 4 events from the story, each as a short phrase (2-6 words), listed in chronological order as they occur in the story
-3. **Distractor**: One short phrase (2-6 words) that describes something that is NOT an event from the story
-4. **Environment**: The environment of the story. Choose one: Open, Urban, Closed, or Rural
-5. **TimeOfDay**: The time of day in the story. Choose one: Morning, Afternoon, or Night
-6. **Emotion**: The predominant emotion in the story. Choose one: Happiness, Sadness, Anger, Surprise, or Disgust
+3. **Environment**: The environment of the story. Choose one: Open, Urban, Closed, or Rural
+4. **TimeOfDay**: The time of day in the story. Choose one: Morning, Afternoon, or Night
+5. **Emotion**: The predominant emotion in the story. Choose one: Happiness, Sadness, Anger, Surprise, or Disgust
 
-IMPORTANT: You MUST return a JSON object with the key "text" (NOT "story") containing the story.
-
-Format your response as JSON with the following structure:
+# Output
 ```json
 {
   "text": "The complete story text here...",
@@ -27,11 +24,8 @@ Format your response as JSON with the following structure:
     "Third event phrase",
     "Fourth event phrase"
   ],
-  "distractor": "A phrase that is not an event from the story",
   "environment": "Open",
   "timeOfDay": "Morning",
   "emotion": "Happiness"
 }
 ```
-
-Remember: Use "text" not "story" as the key for the story content.

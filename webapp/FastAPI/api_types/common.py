@@ -58,7 +58,6 @@ class SelectImagesResponse(BaseModel):
 class GenerateStoryResponse(BaseModel):
     text: str
     events: List[str]
-    distractor: str
     environment: str
     timeOfDay: str
     emotion: str

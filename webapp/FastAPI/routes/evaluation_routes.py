@@ -25,6 +25,7 @@ from api_types.evaluation import (
     SaveStoryOpenQuestionRequestDTO,
     SaveStoryOpenQuestionResponseDTO,
     GetChronologyEventsResponseDTO,
+    GetObjectiveAnswersResponseDTO,
     SaveChronologicalOrderQuestionRequestDTO,
     SaveChronologicalOrderQuestionResponseDTO,
     GetSelectImageQuestionResponseDTO,
@@ -394,6 +395,38 @@ async def get_select_image_question(
     return GetSelectImageQuestionResponseDTO(
         shown_images=shown_images_formatted,
         distractors=distractors
+    )
+
+
+@router.get("/memory-reconstruction/objective-answers/{session_id}", response_model=GetObjectiveAnswersResponseDTO, status_code=status.HTTP_200_OK)
+async def get_memory_reconstruction_objective_answers(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get the correct answers for objective questions (environment, time_of_day, emotion)
+    from the Memory Reconstruction record.
+    """
+    session = verify_session_access(session_id, current_user, db)
+    
+    if not session.memory_reconstruction_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Session does not have a memory reconstruction associated"
+        )
+    
+    memory_reconstruction = db.query(MemoryReconstruction).filter(
+        MemoryReconstruction.id == session.memory_reconstruction_id
+    ).first()
+    
+    if not memory_reconstruction:
+        raise HTTPException(status_code=404, detail="Memory reconstruction not found")
+    
+    return GetObjectiveAnswersResponseDTO(
+        environment=memory_reconstruction.environment,
+        time_of_day=memory_reconstruction.time_of_day,
+        emotion=memory_reconstruction.emotion
     )
 
 
