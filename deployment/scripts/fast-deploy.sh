@@ -2,7 +2,7 @@
 # Fast deployment script using rsync
 # Usage: ./fast-deploy.sh <VM_IP> [SSH_KEY_PATH]
 
-VM_IP=${1:-"3.234.106.218"}
+VM_IP=${1:-"54.204.24.131"}
 SSH_KEY=${2:-"~/.ssh/artevoke-key.pem"}
 
 # Expand ~ in SSH_KEY path
@@ -13,14 +13,20 @@ WEBAPP_DIR="$(cd "$SCRIPT_DIR/../../" && pwd)/webapp"
 
 echo "🚀 Fast deploying webapp to $VM_IP..."
 
-# Create remote directory
-ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$VM_IP "mkdir -p ~/artevoke/webapp && sudo chown -R ubuntu:ubuntu ~/artevoke"
+# Create remote directory with proper permissions
+# First ensure the parent directory exists and has correct ownership
+ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$VM_IP "
+  mkdir -p ~/artevoke
+  sudo chown -R ubuntu:ubuntu ~/artevoke 2>/dev/null || true
+  chmod -R 755 ~/artevoke
+  mkdir -p ~/artevoke/webapp
+"
 
-# Use rsync for fast, incremental transfers
-# Excludes common files that don't need to be transferred
 rsync -avz --delete \
   --progress \
   -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
+  --include='env/' \
+  --include='env/**' \
   --exclude='node_modules' \
   --exclude='__pycache__' \
   --exclude='*.pyc' \

@@ -149,38 +149,6 @@ resource "aws_instance" "vm" {
               apt-get update
               apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
               
-              # Install NVIDIA drivers and container toolkit (for GPU support)
-              # Check if instance has GPU by checking instance metadata
-              INSTANCE_TYPE=$(curl -s http://169.254.169.254/latest/meta-data/instance-type || echo "")
-              if [[ "$INSTANCE_TYPE" == g* ]] || [[ "$INSTANCE_TYPE" == p* ]]; then
-                echo "GPU instance detected ($INSTANCE_TYPE), installing NVIDIA drivers..." >> /var/log/user-data.log
-                
-                # Install NVIDIA drivers
-                apt-get install -y ubuntu-drivers-common
-                DEBIAN_FRONTEND=noninteractive ubuntu-drivers autoinstall || true
-                
-                # Wait a bit for drivers to be available
-                sleep 10
-                
-                # Install NVIDIA Container Toolkit
-                distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-                curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-                curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
-                    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-                    tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-                
-                apt-get update
-                apt-get install -y nvidia-container-toolkit
-                
-                # Configure Docker to use NVIDIA runtime
-                nvidia-ctk runtime configure --runtime=docker || true
-                systemctl restart docker || true
-                
-                echo "NVIDIA drivers and container toolkit installed" >> /var/log/user-data.log
-              else
-                echo "CPU-only instance detected, skipping GPU drivers" >> /var/log/user-data.log
-              fi
-              
               # Add ubuntu user to docker group
               usermod -aG docker ubuntu
               
@@ -188,8 +156,10 @@ resource "aws_instance" "vm" {
               curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               chmod +x /usr/local/bin/docker-compose
               
-              # Create directory for application (in home directory, no sudo needed)
+              # Create directory for application with correct ownership
               mkdir -p /home/ubuntu/artevoke
+              chown -R ubuntu:ubuntu /home/ubuntu/artevoke
+              chmod -R 755 /home/ubuntu/artevoke
               
               # Log completion
               echo "Docker and Docker Compose installed successfully" >> /var/log/user-data.log
