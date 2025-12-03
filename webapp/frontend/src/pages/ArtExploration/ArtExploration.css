@@ -4,7 +4,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem 1.5rem;
+    padding: 1.25rem 1.75rem;
     margin: 1rem 0 2rem 0;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -33,15 +33,17 @@
 }
 
 .banner-content h3 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.35rem;
     font-weight: 600;
+    letter-spacing: 0.3px;
 }
 
 .banner-content p {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     opacity: 0.95;
+    line-height: 1.5;
 }
 
 @keyframes slideInDown {
@@ -53,6 +55,87 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Instructions Section Styling */
+.mode-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 0.75rem;
+    text-align: center;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.content-box h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.content-box p {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #4a5568;
+    margin-bottom: 1rem;
+}
+
+.content-box p strong {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.instructions-list {
+    list-style: none;
+    counter-reset: instruction-counter;
+    padding-left: 2.5rem;
+    margin-top: 1.5rem;
+}
+
+.instructions-list li {
+    counter-increment: instruction-counter;
+    position: relative;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #2d3748;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 8px;
+    border-left: 4px solid #4299e1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+}
+
+.instructions-list li:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.instructions-list li::before {
+    content: counter(instruction-counter);
+    position: absolute;
+    left: -2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);
 }
 
 .art-exploration-textbox {

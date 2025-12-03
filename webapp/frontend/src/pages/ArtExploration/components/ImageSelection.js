@@ -16,7 +16,7 @@ const ImageSelection = ({
     }
 
     return (
-        <div className="content-box">
+        <div id="image-selection-section" className="content-box">
             <h1>{t('artExploration.imageSelection')}</h1>
             <p>{t('artExploration.imageSelectionDesc')}</p>
             <div className="images-grid">

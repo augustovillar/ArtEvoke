@@ -5,8 +5,6 @@ import SpeechInput from '../../../features/speech';
 const KeywordInputForm = ({ 
     storyText, 
     setStoryText, 
-    language, 
-    setLanguage, 
     dataset, 
     setDataset, 
     onSubmit, 
@@ -22,10 +20,6 @@ const KeywordInputForm = ({
             setDisplayText(storyText);
         }
     }, [storyText, isProcessingText]);
-
-    const handleLanguageChange = (event) => {
-        setLanguage(event.target.value);
-    };
 
     const handleDatasetChange = (event) => {
         setDataset(event.target.value);
@@ -50,20 +44,6 @@ const KeywordInputForm = ({
                     disabled={isProcessingText}
                 />
                 <div className="select-row">
-                    <div className="select-group">
-                        <label htmlFor="language-select-id" className="select-label">
-                            {t('artExploration.selectLanguage')}
-                        </label>
-                        <select
-                            id="language-select-id"
-                            className="language-select"
-                            value={language}
-                            onChange={handleLanguageChange}
-                        >
-                            <option value="en">English</option>
-                            <option value="pt">Portuguese</option>
-                        </select>
-                    </div>
                     <div className="select-group">
                         <label htmlFor="dataset-select-id" className="select-label">
                             {t('artExploration.selectDataset')}
