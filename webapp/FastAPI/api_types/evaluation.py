@@ -42,9 +42,9 @@ class GetChronologyEventsResponseDTO(BaseModel):
     events: List[str]
 
 class GetObjectiveAnswersResponseDTO(BaseModel):
-    environment: Optional[str]
-    time_of_day: Optional[str]
-    emotion: Optional[str]
+    environment: str
+    time_of_day: str
+    emotion: str
 
 class SaveChronologicalOrderQuestionRequestDTO(BaseModel):
     eval_id: str
