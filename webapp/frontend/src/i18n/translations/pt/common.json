@@ -210,7 +210,7 @@
       "step3": "Clique em Enviar e aguarde as imagens aparecerem",
       "step4": "Selecione uma ou mais imagens e clique em Gerar História"
     },
-    "enterKeywords": "Digite algumas palavras-chave para buscar arte!",
+    "enterKeywords": "Digite uma ou mais palavras-chave para buscar arte!",
     "placeholder": "Digite algumas palavras-chave aqui...",
     "selectLanguage": "Selecionar Idioma:",
     "selectDataset": "Selecionar Conjunto de Dados:",
@@ -303,7 +303,7 @@
     "submitButton": "Enviar",
     "searching": "Buscando...",
     "chooseImagesTitle": "Escolha uma imagem para cada seção",
-    "sectionLabel": "Seção:",
+    "sectionLabel": "Seção",
     "imageAlt": "Seção {{sectionIndex}} Imagem {{imageIndex}}",
     "showMoreImages": "Mostrar 5 Imagens por Seção",
     "saveStory": "Salvar História",

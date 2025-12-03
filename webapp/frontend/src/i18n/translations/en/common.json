@@ -210,7 +210,7 @@
       "step3": "Click Submit and wait for the images to appear",
       "step4": "Select one or more images and click Generate Story"
     },
-    "enterKeywords": "Enter some keywords to search for art!",
+    "enterKeywords": "Enter one or more keywords to search for art!",
     "placeholder": "Input some keywords here...",
     "selectLanguage": "Select Language:",
     "selectDataset": "Select Dataset:",
@@ -303,7 +303,7 @@
     "submitButton": "Submit",
     "searching": "Searching...",
     "chooseImagesTitle": "Choose one image for each section",
-    "sectionLabel": "Section:",
+    "sectionLabel": "Section",
     "imageAlt": "Section {{sectionIndex}} Image {{imageIndex}}",
     "showMoreImages": "Show 5 Images per Section",
     "saveStory": "Save Story",
