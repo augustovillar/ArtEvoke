@@ -61,10 +61,6 @@ services:
       - backend
     networks:
       - app_network
-    volumes:
-      - ./frontend/src:/app/src:ro
-      - ./frontend/public:/app/public:ro
-      - /app/node_modules
 
   nginx:
     image: nginx:latest
