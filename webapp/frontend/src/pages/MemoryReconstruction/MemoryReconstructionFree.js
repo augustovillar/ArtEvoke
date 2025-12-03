@@ -57,6 +57,18 @@ const MemoryReconstructionFree = () => {
         return () => registerContent(null);
     }, [registerContent]);
 
+    // Scroll to image selection when search completes
+    useEffect(() => {
+        if (sectionsWithImages.length > 0 && !loading) {
+            const imageSelectionElement = document.getElementById('image-selection-section');
+            if (imageSelectionElement) {
+                setTimeout(() => {
+                    imageSelectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, [sectionsWithImages.length, loading]);
+
     const handleSubmit = () => {
         clearSelection();
         resetSaveState();
