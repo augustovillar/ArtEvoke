@@ -362,6 +362,7 @@
     "dropHere": "Drop here",
     "completeOrder": "Complete the ordering to continue.",
     "removeEvent": "Remove event",
+    "clickPositionToPlace": "Click on a position below to place the selected event",
     "errorInitializing": "Error initializing evaluation. Please try again.",
     "errorSavingStory": "Error saving story. Please try again.",
     "errorSavingQuestion": "Error saving answer. Please try again.",

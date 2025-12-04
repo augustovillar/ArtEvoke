@@ -12,6 +12,7 @@ const ChronologyOrderQuestion = ({ events, onAnswer, isSubmitting = false }) => 
     const [shuffledEvents, setShuffledEvents] = useState([]);
     const [orderedEvents, setOrderedEvents] = useState([]);
     const [draggedItem, setDraggedItem] = useState(null);
+    const [selectedEvent, setSelectedEvent] = useState(null); // For touch/click selection
     const [attempts, setAttempts] = useState(0);
 
     useEffect(() => {
@@ -33,6 +34,26 @@ const ChronologyOrderQuestion = ({ events, onAnswer, isSubmitting = false }) => 
         
         if (!eventText) return;
 
+        placeEventInPosition(eventText, position);
+    };
+
+    const handleClickEvent = (eventText) => {
+        // If clicking the same event, deselect it
+        if (selectedEvent === eventText) {
+            setSelectedEvent(null);
+            return;
+        }
+        setSelectedEvent(eventText);
+    };
+
+    const handleClickPosition = (position) => {
+        if (!selectedEvent) return;
+
+        placeEventInPosition(selectedEvent, position);
+        setSelectedEvent(null);
+    };
+
+    const placeEventInPosition = (eventText, position) => {
         // Remove from shuffled events if it's still there
         setShuffledEvents(prev => prev.filter(item => item !== eventText));
         
@@ -100,6 +121,16 @@ const ChronologyOrderQuestion = ({ events, onAnswer, isSubmitting = false }) => 
                 <p className={styles.instruction}>
                     {questionText}
                 </p>
+                {selectedEvent && (
+                    <p className={styles.helpText} style={{ 
+                        marginTop: '0.5rem', 
+                        color: '#667eea', 
+                        fontWeight: 500,
+                        fontSize: '0.95rem'
+                    }}>
+                        {t('evaluation.clickPositionToPlace') || 'Clique em uma posição abaixo para colocar o evento selecionado'}
+                    </p>
+                )}
             </div>
 
             <div className={styles.gameArea}>
@@ -115,6 +146,8 @@ const ChronologyOrderQuestion = ({ events, onAnswer, isSubmitting = false }) => 
                                 index={index}
                                 onDragStart={handleDragStart}
                                 isDragging={draggedItem === event}
+                                onClick={handleClickEvent}
+                                isSelected={selectedEvent === event}
                             />
                         ))}
                     </div>
@@ -132,6 +165,8 @@ const ChronologyOrderQuestion = ({ events, onAnswer, isSubmitting = false }) => 
                                 event={event}
                                 onDrop={handleDrop}
                                 onRemove={() => handleRemoveFromOrder(position)}
+                                onClick={() => handleClickPosition(position)}
+                                isSelectable={selectedEvent !== null}
                             />
                         ))}
                     </div>
