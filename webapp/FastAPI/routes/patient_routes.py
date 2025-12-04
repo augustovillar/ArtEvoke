@@ -49,3 +49,6 @@ async def complete_patient(request: CompletePatientRequest, db: Session = Depend
     patient.status = 'active'
 
     db.commit()
+    db.refresh(patient)
+    
+    return MessageResponse(message="Patient profile completed successfully")
