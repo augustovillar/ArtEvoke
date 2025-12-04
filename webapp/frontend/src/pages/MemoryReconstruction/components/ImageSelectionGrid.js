@@ -22,13 +22,13 @@ const ImageSelectionGrid = ({
     }
 
     return (
-        <div className="content-box">
+        <div id="image-selection-section" className="content-box">
             <h1>{t('memoryReconstruction.chooseImagesTitle')}</h1>
             {sectionsWithImages.map((sectionData, sectionIndex) => (
                 <div key={sectionIndex} className="section-images-container">
                     {sectionData.section && (
                         <p>
-                            <strong>{t('memoryReconstruction.sectionLabel')}</strong> {sectionData.section}
+                            <strong>{t('memoryReconstruction.sectionLabel')} {sectionIndex + 1}:</strong> {sectionData.section}
                         </p>
                     )}
                     <div className="images-grid">

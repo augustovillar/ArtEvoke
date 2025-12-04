@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './ArtExploration.css';
@@ -21,7 +21,6 @@ const ArtExplorationSession = () => {
     const navigate = useNavigate();
 
     const [storyText, setStoryText] = useState('');
-    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
 
     const [showInterruption, setShowInterruption] = useState(false);
@@ -31,17 +30,28 @@ const ArtExplorationSession = () => {
 
     const { t, i18n } = useTranslation('common');
 
-    useEffect(() => {
-        const currentLang = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
-        if (currentLang === 'en' || currentLang === 'pt') {
-            setLanguage(currentLang);
-        }
-    }, [i18n.language]);
+    // Get language from i18n - reactive to language changes
+    const language = useMemo(() => {
+        const lang = i18n.resolvedLanguage || i18n.language || localStorage.getItem('i18nextLng') || 'en';
+        return lang.split('-')[0].toLowerCase();
+    }, [i18n.language, i18n.resolvedLanguage]);
 
     const { images, submitLoading, searchImages } = useImageSearch();
     const { selectedImages, handleImageToggle, clearSelections } = useImageSelection();
     const { generateLoading, responseText, storyData, generateStory } = useStoryGeneration();
     const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
+
+    // Scroll to image selection when search completes
+    useEffect(() => {
+        if (images.length > 0 && !submitLoading) {
+            const imageSelectionElement = document.getElementById('image-selection-section');
+            if (imageSelectionElement) {
+                setTimeout(() => {
+                    imageSelectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, [images.length, submitLoading]);
 
     // Load session data on mount
     useEffect(() => {
@@ -103,7 +113,7 @@ const ArtExplorationSession = () => {
     };
 
     const handleGenerateStory = () => {
-        resetSaveState(); 
+        resetSaveState();
         generateStory(selectedImages, language);
     };
 
@@ -203,8 +213,6 @@ const ArtExplorationSession = () => {
             <KeywordInputForm
                 storyText={storyText}
                 setStoryText={setStoryText}
-                language={language}
-                setLanguage={setLanguage}
                 dataset={dataset}
                 setDataset={setDataset}
                 onSubmit={handleSubmit}

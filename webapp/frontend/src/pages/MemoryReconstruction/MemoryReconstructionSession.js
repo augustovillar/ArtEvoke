@@ -23,19 +23,14 @@ const MemoryReconstructionSession = () => {
     const { t, i18n } = useTranslation('common');
 
     const [storyText, setStoryText] = useState('');
-    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
     const [segmentation, setSegmentation] = useState('conservative');
     const [showInterruption, setShowInterruption] = useState(false);
     const [interruptionTime, setInterruptionTime] = useState(10);
     const [loadingSession, setLoadingSession] = useState(false);
 
-    useEffect(() => {
-        const currentLang = i18n.language.split('-')[0];
-        if (currentLang === 'en' || currentLang === 'pt') {
-            setLanguage(currentLang);
-        }
-    }, [i18n.language]);
+    // Get language from i18n
+    const language = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
 
     const { 
         sectionsWithImages, 
@@ -98,6 +93,18 @@ const MemoryReconstructionSession = () => {
         ]);
         return () => registerContent(null);
     }, [registerContent]);
+
+    // Scroll to image selection when search completes
+    useEffect(() => {
+        if (sectionsWithImages.length > 0 && !loading) {
+            const imageSelectionElement = document.getElementById('image-selection-section');
+            if (imageSelectionElement) {
+                setTimeout(() => {
+                    imageSelectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, [sectionsWithImages.length, loading]);
 
     const handleSubmit = () => {
         clearSelection();
@@ -217,8 +224,6 @@ const MemoryReconstructionSession = () => {
                 <StoryInputForm
                     storyText={storyText}
                     onStoryTextChange={setStoryText}
-                    language={language}
-                    onLanguageChange={(e) => setLanguage(e.target.value)}
                     dataset={dataset}
                     onDatasetChange={(e) => setDataset(e.target.value)}
                     segmentation={segmentation}

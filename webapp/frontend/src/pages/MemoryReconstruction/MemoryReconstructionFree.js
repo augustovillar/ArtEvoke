@@ -14,12 +14,14 @@ import useSave from './hooks/useSave';
 const MemoryReconstructionFree = () => {
     const contentRef = useRef(null);
     const { registerContent } = useReadAloud();
-    const { t } = useTranslation('common');
+    const { t, i18n } = useTranslation('common');
 
     const [storyText, setStoryText] = useState('');
-    const [language, setLanguage] = useState('pt');
     const [dataset, setDataset] = useState('wikiart');
     const [segmentation, setSegmentation] = useState('conservative');
+
+    // Get language from i18n
+    const language = i18n.language.split('-')[0]; // 'pt-BR' -> 'pt'
 
     const { 
         sectionsWithImages, 
@@ -54,6 +56,18 @@ const MemoryReconstructionFree = () => {
         ]);
         return () => registerContent(null);
     }, [registerContent]);
+
+    // Scroll to image selection when search completes
+    useEffect(() => {
+        if (sectionsWithImages.length > 0 && !loading) {
+            const imageSelectionElement = document.getElementById('image-selection-section');
+            if (imageSelectionElement) {
+                setTimeout(() => {
+                    imageSelectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, [sectionsWithImages.length, loading]);
 
     const handleSubmit = () => {
         clearSelection();
@@ -94,8 +108,6 @@ const MemoryReconstructionFree = () => {
                 <StoryInputForm
                     storyText={storyText}
                     onStoryTextChange={setStoryText}
-                    language={language}
-                    onLanguageChange={(e) => setLanguage(e.target.value)}
                     dataset={dataset}
                     onDatasetChange={(e) => setDataset(e.target.value)}
                     segmentation={segmentation}

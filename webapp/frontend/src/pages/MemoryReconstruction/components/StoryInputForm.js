@@ -5,8 +5,6 @@ import SpeechInput from '../../../features/speech';
 const StoryInputForm = ({
     storyText,
     onStoryTextChange,
-    language,
-    onLanguageChange,
     dataset,
     onDatasetChange,
     segmentation,
@@ -44,20 +42,6 @@ const StoryInputForm = ({
                     disabled={isProcessingText}
                 />
                 <div className="select-row">
-                    <div className="select-group">
-                        <label htmlFor="language-select-id" className="select-label">
-                            {t('memoryReconstruction.selectLanguage')}
-                        </label>
-                        <select
-                            id="language-select-id"
-                            className="language-select"
-                            value={language}
-                            onChange={onLanguageChange}
-                        >
-                            <option value="en">{t('memoryReconstruction.languages.en')}</option>
-                            <option value="pt">{t('memoryReconstruction.languages.pt')}</option>
-                        </select>
-                    </div>
                     <div className="select-group">
                         <label htmlFor="dataset-select-id" className="select-label">
                             {t('memoryReconstruction.selectDataset')}

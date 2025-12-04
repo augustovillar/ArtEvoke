@@ -9,27 +9,22 @@ const InstructionsSection = () => {
 
     useEffect(() => {
         registerContent(contentRef, [
-            t('artExploration.description1'),
-            t('artExploration.description2')
+            t('artExploration.description')
         ]);
         return () => registerContent(null);
     }, [registerContent, t]);
 
     return (
         <div className="content-box" ref={contentRef}>
-            <h1>{t('artExploration.title')}</h1>
-            <p>
-                {t('artExploration.description1')}
-                <br></br>
-                <br></br>
-                {t('artExploration.description2')}
-                <br></br>
-                <br></br>
-                {t('artExploration.description3')}
-            </p>
+            <div className="mode-title">{t('artExploration.modeTitle')}</div>
+            <h1>{t('artExploration.pageTitle')}</h1>
+            <p>{t('artExploration.description')}</p>
+            <p><strong>{t('artExploration.optionsIntro')}</strong></p>
             <ol className="instructions-list">
-                <li>{t('artExploration.instruction1')}</li>
-                <li>{t('artExploration.instruction2')}</li>
+                <li>{t('artExploration.instructions.step1')}</li>
+                <li>{t('artExploration.instructions.step2')}</li>
+                <li>{t('artExploration.instructions.step3')}</li>
+                <li>{t('artExploration.instructions.step4')}</li>
             </ol>
         </div>
     );

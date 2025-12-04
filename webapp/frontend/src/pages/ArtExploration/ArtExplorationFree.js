@@ -1,5 +1,5 @@
 // src/pages/ArtExploration/ArtExplorationFree.js
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './ArtExploration.css';
 import {
@@ -15,10 +15,15 @@ import {
 
 const ArtExplorationFree = () => {
     const [storyText, setStoryText] = useState('');
-    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('wikiart');
 
-    const { t } = useTranslation('common');
+    const { t, i18n } = useTranslation('common');
+
+    // Get language from i18n - reactive to language changes
+    const language = useMemo(() => {
+        const lang = i18n.resolvedLanguage || i18n.language || localStorage.getItem('i18nextLng') || 'en';
+        return lang.split('-')[0].toLowerCase();
+    }, [i18n.language, i18n.resolvedLanguage]);
 
     // Custom hooks
     const { images, submitLoading, searchImages } = useImageSearch();
@@ -26,13 +31,25 @@ const ArtExplorationFree = () => {
     const { generateLoading, responseText, storyData, generateStory } = useStoryGeneration();
     const { isSaving, hasSaved, saveStory, resetSaveState } = useSave();
 
+    // Scroll to image selection when search completes
+    useEffect(() => {
+        if (images.length > 0 && !submitLoading) {
+            const imageSelectionElement = document.getElementById('image-selection-section');
+            if (imageSelectionElement) {
+                setTimeout(() => {
+                    imageSelectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, [images.length, submitLoading]);
+
     const handleSubmit = () => {
         searchImages(storyText, language, dataset);
     };
 
     const handleGenerateStory = () => {
         resetSaveState();
-        generateStory(selectedImages);
+        generateStory(selectedImages, language);
     };
 
     const handleRegenerateClick = () => {
@@ -66,8 +83,6 @@ const ArtExplorationFree = () => {
             <KeywordInputForm
                 storyText={storyText}
                 setStoryText={setStoryText}
-                language={language}
-                setLanguage={setLanguage}
                 dataset={dataset}
                 setDataset={setDataset}
                 onSubmit={handleSubmit}

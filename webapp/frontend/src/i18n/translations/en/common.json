@@ -200,20 +200,24 @@
     "sectionImageAlt": "Section {{section}} Image {{number}}"
   },
   "artExploration": {
-    "title": "Art Exploration Instructions",
-    "description1": "The art exploration tool allows you to search for art pieces by typing in some keywords. Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.",
-    "description2": "Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.",
-    "description3": "Before submitting, you can play with 2 options",
-    "instruction1": "You can select the language that you used in order to help our model correct the spelling and translate to english",
-    "instruction2": "You can choose one of 3 databases for our model to search from, giving you a wider array of results",
-    "enterKeywords": "Enter some keywords to search for art!",
+    "modeTitle": "Art Exploration",
+    "pageTitle": "How It Works",
+    "description": "Type keywords in the box below. Our tool will search for related paintings and you can select the one you like most. Then, the system will generate a story based on your chosen painting.",
+    "optionsIntro": "Follow the instructions below:",
+    "instructions": {
+      "step1": "Type keywords in the text field to search for art",
+      "step2": "Choose one of the 3 databases for our model to search for artworks",
+      "step3": "Click Submit and wait for the images to appear",
+      "step4": "Select one or more images and click Generate Story"
+    },
+    "enterKeywords": "Enter one or more keywords to search for art!",
     "placeholder": "Input some keywords here...",
     "selectLanguage": "Select Language:",
     "selectDataset": "Select Dataset:",
     "submit": "Submit",
     "searching": "Searching...",
-    "imageSelection": "Image Selection",
-    "imageSelectionDesc": "Our AI model chose these paintings as the ones most resembling your input. Please **select one or more** of them to generate a story. Selected images will remain chosen across multiple searches.",
+    "imageSelection": "Images Selection",
+    "imageSelectionDesc": "Please select one or more of them to generate a story. Selected images will remain chosen across multiple searches.",
     "generateStory": "Generate Story from {{count}} Selected Image(s)",
     "generatingStory": "Generating Story...",
     "clearSelections": "Clear All Selections",
@@ -256,9 +260,10 @@
     "loginLink": "Already registered? Login here!"
   },
   "memoryReconstruction": {
-    "pageTitle": "Memory Reconstruction Instructions",
-    "description": "The memory reconstruction tool allows you to input a story or a memory (or part of it). After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story. If you are not satisfied with the given result, you can click on the \"Show 5 images per section\" button to generate even more images.",
-    "optionsIntro": "After inputting the text, you are given 3 options to play with.",
+    "modeTitle": "Memory Reconstruction",
+    "pageTitle": "How It Works",
+    "description": "Write a story or memory in the box below. Our tool will split your text into parts and show paintings related to each part.",
+    "optionsIntro": "Follow the instructions below:",
     "sessionModeBanner": {
       "title": "Session Mode Active",
       "description": "This is a formal assessment that will be saved for medical review."
@@ -268,9 +273,10 @@
       "description": "You are practicing. Your data will be saved, but it is not part of a formal session."
     },
     "instructions": {
-      "language": "You can select the language that you used in order to help our model correct the spelling and translate to english",
-      "dataset": "You can choose one of 3 databases for our model to search from, giving you a wider array of results",
-      "segmentation": "You can choose if you want to text to be segmented more conservatively or broadly"
+      "step1": "Write your story or memory in the text field",
+      "step2": "Choose one of the 3 databases for our model to search for artworks",
+      "step3": "Choose how to divide the text: in more parts (Conservative) or fewer parts (Broader)",
+      "step4": "Click Submit and wait for the images to appear"
     },
     "writeStoryTitle": "Write your story below!",
     "textareaPlaceholder": "Input some keywords here...",
@@ -297,7 +303,7 @@
     "submitButton": "Submit",
     "searching": "Searching...",
     "chooseImagesTitle": "Choose one image for each section",
-    "sectionLabel": "Section:",
+    "sectionLabel": "Section",
     "imageAlt": "Section {{sectionIndex}} Image {{imageIndex}}",
     "showMoreImages": "Show 5 Images per Section",
     "saveStory": "Save Story",
@@ -356,6 +362,7 @@
     "dropHere": "Drop here",
     "completeOrder": "Complete the ordering to continue.",
     "removeEvent": "Remove event",
+    "clickPositionToPlace": "Click on a position below to place the selected event",
     "errorInitializing": "Error initializing evaluation. Please try again.",
     "errorSavingStory": "Error saving story. Please try again.",
     "errorSavingQuestion": "Error saving answer. Please try again.",

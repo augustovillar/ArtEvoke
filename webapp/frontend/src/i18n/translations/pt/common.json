@@ -200,20 +200,24 @@
     "sectionImageAlt": "Seção {{section}} Imagem {{number}}"
   },
   "artExploration": {
-    "title": "Instruções de Exploração de Arte",
-    "description1": "A ferramenta de exploração de arte permite buscar peças de arte digitando algumas palavras-chave. Nosso modelo de IA retornará algumas pinturas do nosso banco de dados, e você pode então selecionar a que achar mais interessante, e o modelo gerará uma história baseada nela.",
-    "description2": "Finalmente, se a história gerada não for do seu agrado, você pode escolher regenerar uma nova história, ou recomeçar.",
-    "description3": "Antes de enviar, você pode brincar com 2 opções",
-    "instruction1": "Você pode selecionar o idioma que usou para ajudar nosso modelo a corrigir a ortografia e traduzir para o inglês",
-    "instruction2": "Você pode escolher um de 3 bancos de dados para nosso modelo buscar, dando-lhe uma gama mais ampla de resultados",
-    "enterKeywords": "Digite algumas palavras-chave para buscar arte!",
+    "modeTitle": "Exploração de Arte",
+    "pageTitle": "Como Funciona",
+    "description": "Digite palavras-chave no campo abaixo. Nossa ferramenta vai buscar pinturas relacionadas e você pode selecionar a que mais gostar. Depois, o sistema vai gerar uma história baseada na pintura escolhida.",
+    "optionsIntro": "Siga as instruções abaixo:",
+    "instructions": {
+      "step1": "Digite palavras-chave no campo de texto para buscar arte",
+      "step2": "Escolha um dos 3 bancos de dados para nosso modelo buscar as obras de arte",
+      "step3": "Clique em Enviar e aguarde as imagens aparecerem",
+      "step4": "Selecione uma ou mais imagens e clique em Gerar História"
+    },
+    "enterKeywords": "Digite uma ou mais palavras-chave para buscar arte!",
     "placeholder": "Digite algumas palavras-chave aqui...",
     "selectLanguage": "Selecionar Idioma:",
     "selectDataset": "Selecionar Conjunto de Dados:",
     "submit": "Enviar",
     "searching": "Buscando...",
-    "imageSelection": "Seleção de Imagem",
-    "imageSelectionDesc": "Nosso modelo de IA escolheu essas pinturas como as que mais se assemelham à sua entrada. Por favor **selecione uma ou mais** delas para gerar uma história. Imagens selecionadas permanecerão escolhidas entre múltiplas buscas.",
+    "imageSelection": "Seleção de Imagens",
+    "imageSelectionDesc": "Por favor selecione uma ou mais delas para gerar uma história. Imagens selecionadas permanecerão escolhidas entre múltiplas buscas.",
     "generateStory": "Gerar História de {{count}} Imagem(ns) Selecionada(s)",
     "generatingStory": "Gerando História...",
     "clearSelections": "Limpar Todas as Seleções",
@@ -256,9 +260,10 @@
     "loginLink": "Já é registrado? Faça login aqui!"
   },
   "memoryReconstruction": {
-    "pageTitle": "Instruções de Reconstrução da Memória",
-    "description": "A ferramenta de reconstrução da memória permite que você insira uma história ou uma memória (ou parte dela). Após enviar o texto, nosso modelo de IA irá segmentar o texto e sugerir a melhor pintura correspondente por seção da base de dados selecionada, o que pode ajudá-lo a lembrar de mais detalhes da história. Se não estiver satisfeito com o resultado, pode clicar no botão \"Mostrar 5 imagens por seção\" para gerar ainda mais imagens.",
-    "optionsIntro": "Após inserir o texto, você tem 3 opções para explorar.",
+    "modeTitle": "Reconstrução da Memória",
+    "pageTitle": "Como Funciona",
+    "description": "Escreva uma história ou memória no campo abaixo. Nossa ferramenta vai dividir o texto em partes e mostrar pinturas relacionadas a cada parte.",
+    "optionsIntro": "Siga as instruções abaixo:",
     "sessionModeBanner": {
       "title": "Modo Sessão Ativo",
       "description": "Esta é uma avaliação formal que será salva para revisão médica."
@@ -268,9 +273,10 @@
       "description": "Você está praticando. Seus dados serão salvos, mas não fazem parte de uma sessão formal."
     },
     "instructions": {
-      "language": "Você pode selecionar o idioma que usou para ajudar nosso modelo a corrigir a ortografia e traduzir para o inglês",
-      "dataset": "Você pode escolher uma de 3 bases de dados para nosso modelo pesquisar, oferecendo uma gama mais ampla de resultados",
-      "segmentation": "Você pode escolher se quer que o texto seja segmentado de forma mais conservadora ou ampla"
+      "step1": "Escreva sua história ou memória no campo de texto",
+      "step2": "Escolha um dos 3 bancos de dados para nosso modelo buscar as obras de arte",
+      "step3": "Escolha como dividir o texto: em mais partes (Conservador) ou menos partes (Mais Amplo)",
+      "step4": "Clique em Enviar e aguarde as imagens aparecerem"
     },
     "writeStoryTitle": "Escreva sua história abaixo!",
     "textareaPlaceholder": "Digite algumas palavras-chave aqui...",
@@ -297,7 +303,7 @@
     "submitButton": "Enviar",
     "searching": "Buscando...",
     "chooseImagesTitle": "Escolha uma imagem para cada seção",
-    "sectionLabel": "Seção:",
+    "sectionLabel": "Seção",
     "imageAlt": "Seção {{sectionIndex}} Imagem {{imageIndex}}",
     "showMoreImages": "Mostrar 5 Imagens por Seção",
     "saveStory": "Salvar História",
@@ -356,6 +362,7 @@
     "dropHere": "Solte aqui",
     "completeOrder": "Complete a ordenação para continuar.",
     "removeEvent": "Remover evento",
+    "clickPositionToPlace": "Clique em uma posição abaixo para colocar o evento selecionado",
     "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
     "errorSavingStory": "Erro ao salvar história. Tente novamente.",
     "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",
