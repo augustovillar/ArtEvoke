@@ -8,6 +8,8 @@ export default function SpeechInput({ onChange, initialValue = '', onInterimText
   const recognitionRef = useRef(null);
   const accumulatedTextRef = useRef('');
   const baseTextRef = useRef(initialValue || '');
+  const processedResultsRef = useRef(new Set()); // Track processed result indices
+  const lastInterimRef = useRef(''); // Track last interim result to avoid duplicates
 
   const correctText = async (text, language) => {
     try {
@@ -59,27 +61,85 @@ export default function SpeechInput({ onChange, initialValue = '', onInterimText
 
     accumulatedTextRef.current = '';
     baseTextRef.current = initialValue || '';
+    processedResultsRef.current = new Set();
+    lastInterimRef.current = '';
 
     recognition.onresult = (event) => {
-      let finalTranscript = '';
-      let interimTranscript = '';
+      let currentInterim = '';
       
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + ' ';
+      // Process all results
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        const transcript = result[0].transcript.trim();
+        
+        if (!transcript) continue;
+        
+        const resultKey = `${i}-${transcript}`;
+        
+        if (result.isFinal) {
+          if (!processedResultsRef.current.has(resultKey)) {
+            processedResultsRef.current.add(resultKey);
+            
+            const normalizedNew = transcript.toLowerCase().replace(/\s+/g, ' ').trim();
+            const normalizedAccumulated = accumulatedTextRef.current.toLowerCase().replace(/\s+/g, ' ').trim();
+            
+            if (normalizedAccumulated) {
+              if (normalizedNew.startsWith(normalizedAccumulated)) {
+                accumulatedTextRef.current = transcript + ' ';
+              } 
+              else if (!normalizedAccumulated.startsWith(normalizedNew)) {
+                const newWords = normalizedNew.split(' ');
+                const accumulatedWords = normalizedAccumulated.split(' ');
+                
+                let overlapLength = 0;
+                for (let j = 1; j <= Math.min(accumulatedWords.length, newWords.length); j++) {
+                  const accumulatedEnd = accumulatedWords.slice(-j).join(' ');
+                  const newStart = newWords.slice(0, j).join(' ');
+                  if (accumulatedEnd === newStart) {
+                    overlapLength = j;
+                  }
+                }
+                
+                if (overlapLength > 0) {
+                  const mergedWords = [
+                    ...accumulatedWords,
+                    ...newWords.slice(overlapLength)
+                  ].join(' ');
+                  accumulatedTextRef.current = mergedWords + ' ';
+                } else {
+                  accumulatedTextRef.current += transcript + ' ';
+                }
+              }
+            } else {
+              accumulatedTextRef.current = transcript + ' ';
+            }
+          }
         } else {
-          interimTranscript += event.results[i][0].transcript + ' ';
+          const normalizedInterim = transcript.toLowerCase().replace(/\s+/g, ' ').trim();
+          const normalizedLastInterim = lastInterimRef.current.toLowerCase().replace(/\s+/g, ' ').trim();
+          
+          if (normalizedInterim !== normalizedLastInterim && 
+              normalizedInterim.length >= normalizedLastInterim.length) {
+            currentInterim = transcript;
+            lastInterimRef.current = transcript;
+          } else if (normalizedInterim === normalizedLastInterim) {
+            currentInterim = lastInterimRef.current;
+          }
         }
       }
       
-      // Accumulate final results (don't add to base yet, wait until processing)
-      if (finalTranscript.trim()) {
-        accumulatedTextRef.current += finalTranscript;
-      }
-      
-      // Show text in real-time (base + accumulated final + interim)
       const currentText = baseTextRef.current;
-      const totalText = (currentText + ' ' + accumulatedTextRef.current + ' ' + interimTranscript).trim();
+      const accumulatedFinal = accumulatedTextRef.current.trim();
+      const interimToShow = currentInterim.trim();
+      
+      let totalText = currentText;
+      if (accumulatedFinal) {
+        totalText = totalText ? `${totalText} ${accumulatedFinal}` : accumulatedFinal;
+      }
+      if (interimToShow) {
+        totalText = totalText ? `${totalText} ${interimToShow}` : interimToShow;
+      }
+      totalText = totalText.trim();
       
       if (onInterimText) {
         onInterimText(totalText, false);
@@ -96,32 +156,29 @@ export default function SpeechInput({ onChange, initialValue = '', onInterimText
     recognition.onend = async () => {
       setIsListening(false);
       
-      // Process accumulated text when recording ends
+      processedResultsRef.current = new Set();
+      lastInterimRef.current = '';
+      
       const textToProcess = accumulatedTextRef.current.trim();
       if (textToProcess) {
         const currentText = baseTextRef.current;
         const fullText = currentText ? `${currentText} ${textToProcess}` : textToProcess;
         
-        // Show the text that will be processed (before correction)
         if (onInterimText) {
           onInterimText(fullText, false); // Show text first
         } else {
           onChange(fullText);
         }
         
-        // If text improvement is disabled, just add the text directly
         if (!improveText) {
-          // Update base text with new text (no correction)
           baseTextRef.current = fullText;
           onChange(fullText);
           accumulatedTextRef.current = '';
           return;
         }
         
-        // Small delay to ensure text is displayed before processing
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Notify parent that we're processing (to gray out the text)
         setIsProcessing(true);
         if (onProcessingChange) {
           onProcessingChange(true);
@@ -130,17 +187,13 @@ export default function SpeechInput({ onChange, initialValue = '', onInterimText
           onInterimText(fullText, true); // true = isProcessing (gray out)
         }
         
-        // Process and get corrected text
         const correctedText = await correctText(textToProcess, currentLang);
         
-        // Update base text with corrected text
         const newBaseText = currentText ? `${currentText} ${correctedText}` : correctedText;
         baseTextRef.current = newBaseText;
         
-        // Update with corrected text
         onChange(newBaseText);
         
-        // Clear processing state
         setIsProcessing(false);
         if (onProcessingChange) {
           onProcessingChange(false);
