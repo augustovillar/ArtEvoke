@@ -362,6 +362,7 @@
     "dropHere": "Solte aqui",
     "completeOrder": "Complete a ordenação para continuar.",
     "removeEvent": "Remover evento",
+    "clickPositionToPlace": "Clique em uma posição abaixo para colocar o evento selecionado",
     "errorInitializing": "Erro ao iniciar avaliação. Tente novamente.",
     "errorSavingStory": "Erro ao salvar história. Tente novamente.",
     "errorSavingQuestion": "Erro ao salvar resposta. Tente novamente.",

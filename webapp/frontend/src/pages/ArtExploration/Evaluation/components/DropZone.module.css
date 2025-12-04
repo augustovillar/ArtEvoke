@@ -22,6 +22,27 @@
     background: rgba(40, 167, 69, 0.1);
 }
 
+.dropZone.selectable {
+    border-color: #667eea;
+    border-style: dashed;
+    background: rgba(102, 126, 234, 0.05);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.dropZone.selectable:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: #5568d3;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
 .positionNumber {
     display: flex;
     align-items: center;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './DropZone.module.css';
 
-const DropZone = ({ position, event, onDrop, onRemove }) => {
+const DropZone = ({ position, event, onDrop, onRemove, onClick, isSelectable }) => {
     const { t } = useTranslation();
     const [isDropTarget, setIsDropTarget] = useState(false);
 
@@ -21,16 +21,27 @@ const DropZone = ({ position, event, onDrop, onRemove }) => {
         onDrop(e, position);
     };
 
-    const handleRemoveClick = () => {
+    const handleRemoveClick = (e) => {
+        e.stopPropagation(); // Prevent triggering onClick when clicking remove
         onRemove(position);
+    };
+
+    const handleClick = (e) => {
+        // Only handle click if there's a selected event (touch/click mode)
+        if (isSelectable && onClick) {
+            e.preventDefault();
+            onClick(position);
+        }
     };
 
     return (
         <div
-            className={`${styles.dropZone} ${isDropTarget ? styles.dropTarget : ''} ${event ? styles.filled : ''}`}
+            className={`${styles.dropZone} ${isDropTarget ? styles.dropTarget : ''} ${event ? styles.filled : ''} ${isSelectable ? styles.selectable : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onClick={handleClick}
+            style={{ cursor: isSelectable ? 'pointer' : 'default' }}
         >
             <div className={styles.positionNumber}>
                 {position + 1}.
