@@ -33,26 +33,41 @@ const ArtEvaluation = () => {
     {
       id: 'environment',
       type: QUESTION_TYPES.ENVIRONMENT,
-      text: 'Como era o ambiente da história?', 
+      text: t('evaluation.questions.environment'), 
       questionType: 'multiple-choice',
-      options: ['Aberto', 'Fechado', 'Urbano', 'Rural'],
-      correctOption: 'Aberto'
+      options: [
+        t('evaluation.options.environment.open'),
+        t('evaluation.options.environment.closed'),
+        t('evaluation.options.environment.urban'),
+        t('evaluation.options.environment.rural')
+      ],
+      correctOption: t('evaluation.options.environment.open')
     },
     {
       id: 'period',
       type: QUESTION_TYPES.PERIOD, 
-      text: 'Que parte do dia era?', 
+      text: t('evaluation.questions.period'), 
       questionType: 'multiple-choice', 
-      options: ['Manhã', 'Tarde', 'Noite'],
-      correctOption: 'Tarde'
+      options: [
+        t('evaluation.options.period.morning'),
+        t('evaluation.options.period.afternoon'),
+        t('evaluation.options.period.night')
+      ],
+      correctOption: t('evaluation.options.period.afternoon')
     },
     {
       id: 'emotion',
       type: QUESTION_TYPES.EMOTION, 
-      text: 'Qual emoção foi predominante na história?', 
+      text: t('evaluation.questions.emotion'), 
       questionType: 'multiple-choice',
-      options: ['Felicidade', 'Tristeza', 'Raiva', 'Surpresa', 'Nojo'],
-      correctOption: 'Felicidade'
+      options: [
+        t('evaluation.options.emotion.happiness'),
+        t('evaluation.options.emotion.sadness'),
+        t('evaluation.options.emotion.anger'),
+        t('evaluation.options.emotion.surprise'),
+        t('evaluation.options.emotion.disgust')
+      ],
+      correctOption: t('evaluation.options.emotion.happiness')
     }
   ];
 
